@@ -1,0 +1,18 @@
+table;field;type;size;nullable;autoincrement;description
+tbl_pedreiros;id;3;0;True;True;Código
+tbl_pedreiros;nome;202;120;True;False;Nome
+tbl_pedreiros;apelido;202;60;True;False;Apelido
+tbl_pedreiros;preco_m2;6;0;True;False;Preço por metro quadrado
+tbl_pedreiros;deletado;11;0;False;False;Deletado
+tbl_clientes;id;3;0;True;True;Código
+tbl_clientes;nome;202;120;True;False;Nome
+tbl_clientes;deletado;11;0;False;False;Deletado
+tbl_fornecedores;id;3;0;True;True;Código
+tbl_fornecedores;nome;202;120;True;False;Nome
+tbl_fornecedores;deletado;11;0;False;False;Deletado
+tbl_produtos;id;3;0;True;True;Código
+tbl_produtos;nome;202;120;True;False;Nome
+tbl_produtos;deletado;11;0;False;False;Deletado
+tbl_obras;id;3;0;True;True;Código
+tbl_obras;endereco;202;120;True;False;Endereço
+tbl_obras;deletado;11;0;False;False;Deletado
