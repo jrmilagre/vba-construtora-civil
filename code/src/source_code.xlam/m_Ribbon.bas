@@ -83,12 +83,15 @@ Sub dyMenuOutrosCadastros(control As IRibbonControl, ByRef returnedVal)
 '   Read the XML markup from the active sheet
     XMLcode = "<menu xmlns=" & Chr(34) & "http://schemas.microsoft.com/office/2006/01/customui" & Chr(34)
     XMLcode = XMLcode & " >"
-    XMLcode = XMLcode & "<button id=" & Chr(34) & "bBens" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
-    XMLcode = XMLcode & " label=" & Chr(34) & "Bens" & Chr(34)
+    
+    XMLcode = XMLcode & "<button id=" & Chr(34) & "bBairros" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
+    XMLcode = XMLcode & " label=" & Chr(34) & "Bairros" & Chr(34)
     XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
-    XMLcode = XMLcode & "<button id=" & Chr(34) & "bCartoes" & Chr(34) & " image=" & Chr(34) & "cartoes" & Chr(34)
-    XMLcode = XMLcode & " label=" & Chr(34) & "Cartões de crédito" & Chr(34)
+    
+    XMLcode = XMLcode & "<button id=" & Chr(34) & "bTiposObra" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
+    XMLcode = XMLcode & " label=" & Chr(34) & "Tipos de obra" & Chr(34)
     XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
+    
     XMLcode = XMLcode & "</menu>"
 
     returnedVal = XMLcode
@@ -98,8 +101,8 @@ Sub ActionDyMenuOutrosCadastros(control As IRibbonControl)
 '   Executed when Sheet1 is active
     If Conecta() = True Then
         Select Case control.ID
-            'Case "bBens": fBens.Show
-            'Case "bCartoes": fCartoes.Show
+            'Case "bBairros": fBa.Show
+            Case "bTiposObra": fTiposObra.Show
             Case Else: MsgBox "Botão ainda não implementado", vbInformation
         End Select
     End If

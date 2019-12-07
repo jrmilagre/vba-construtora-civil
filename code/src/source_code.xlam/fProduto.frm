@@ -1,29 +1,28 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fObras 
-   Caption         =   ":: Cadastro de Obras ::"
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fProduto 
+   Caption         =   ":: Cadastro de Produtos ::"
    ClientHeight    =   7800
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   9120
-   OleObjectBlob   =   "fObras.frx":0000
+   OleObjectBlob   =   "fProduto.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
-Attribute VB_Name = "fObras"
+Attribute VB_Name = "fProduto"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-Private oObra               As New cObra
-Private oTipoObra           As New cTipoObra
+Private oProduto            As New cProduto
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
-Private Const sTable As String = "tbl_obras"
-Private Const sCampoOrderBy As String = "endereco"
+Private Const sTable As String = "tbl_produtos"
+Private Const sCampoOrderBy As String = "nome"
+
 Private Sub UserForm_Initialize()
      
-    Call cbbTipoPopular
     Call lstPrincipalPopular(sCampoOrderBy)
     Call EventosCampos
     Call Campos("Desabilitar")
@@ -34,12 +33,6 @@ Private Sub UserForm_Initialize()
     
     MultiPage1.Value = 0
 
-End Sub
-Private Sub UserForm_Terminate()
-    
-    ' Destrói objeto da classe cProduto
-    Set oObra = Nothing
-    Call Desconecta
 End Sub
 Private Sub lblHdNome_Click():
     Call lstPrincipalPopular(sCampoOrderBy)
@@ -105,21 +98,40 @@ Private Sub btnConfirmar_Click()
             If sDecisao = vbNewLine & "Inclusão" Then
             
                 ' Chama método para incluir registro no banco de dados
-                oObra.Inclui
+                oProduto.Inclui
                 Call lstPrincipalPopular(sCampoOrderBy)
+                ' Inclui registro na ListBox
+'                With lstPrincipal
+'                    .AddItem
+'                    .List(.ListCount - 1, 0) = oProduto.NomeFantasia
+'                    .List(.ListCount - 1, 1) = oProduto.ID
+'                    .List(.ListCount - 1, 2) = oProduto.Endereco
+'                End With
+                    
+                
+                'Call ListBoxOrdenar
                 
             ElseIf sDecisao = vbNewLine & "Alteração" Then
                 
                 ' Chama método para alterar dados no banco de dados
-                oObra.Altera
+                oProduto.Altera
                 Call lstPrincipalPopular(sCampoOrderBy)
+                ' Replica as alterações na ListBox
+'                With lstPrincipal
+'                    .List(.ListIndex, 0) = oProduto.NomeFantasia
+'                    .List(.ListIndex, 2) = oProduto.Endereco
+'                End With
+                
+                
+                'Call ListBoxOrdenar
                     
             ElseIf sDecisao = vbNewLine & "Exclusão" Then
                         
                 ' Chama método para deletar registro do banco de dados
-                oObra.Exclui
+                oProduto.Exclui
                 Call lstPrincipalPopular(sCampoOrderBy)
-
+                ' Remove item da ListBox
+                'lstPrincipal.RemoveItem (lstPrincipal.ListIndex)
             End If
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
@@ -185,7 +197,7 @@ Private Sub PosDecisaoTomada(Decisao As String)
     
     If Decisao <> "Exclusão" Then
         Call Campos("Habilitar")
-        txbEndereco.SetFocus
+        txbNome.SetFocus
     End If
     
     lstPrincipal.Enabled = False
@@ -197,28 +209,18 @@ End Sub
 
 Private Sub lstPrincipal_Change()
 
-    Dim n As Long
-    Dim iTipoID As Integer
-
     If bListBoxOrdenando = False Then
     
         If btnAlterar.Enabled = False Then btnAlterar.Enabled = True
         If btnExcluir.Enabled = False Then btnExcluir.Enabled = True
         
         If lstPrincipal.ListIndex >= 0 Then
-            oObra.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
+            oProduto.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oObra.ID = 0, "", oObra.ID), "00000")
-        lblCabEndereco.Caption = oObra.Endereco
-        txbEndereco.Text = oObra.Endereco
-        
-        For n = 0 To cbbTipo.ListCount - 1
-            If CInt(cbbTipo.List(n, 1)) = oObra.TipoID Then
-                cbbTipo.ListIndex = n
-                Exit For
-            End If
-        Next n
+        lblID.Caption = Format(IIf(oProduto.ID = 0, "", oProduto.ID), "00000")
+        lblCabNome.Caption = oProduto.Nome
+        txbNome.Text = oProduto.Nome
                 
     End If
 
@@ -247,16 +249,13 @@ End Sub
 Private Sub Campos(Acao As String)
 
     If Acao = "Desabilitar" Then
-        txbEndereco.Enabled = False: lblNome.Enabled = False
-        cbbTipo.Enabled = False: lblTipo.Enabled = False
+        txbNome.Enabled = False: lblNome.Enabled = False
     ElseIf Acao = "Habilitar" Then
-        txbEndereco.Enabled = True: lblNome.Enabled = True
-        cbbTipo.Enabled = True: lblTipo.Enabled = True
+        txbNome.Enabled = True: lblNome.Enabled = True
     ElseIf Acao = "Limpar" Then
         lblID.Caption = ""
-        lblCabEndereco.Caption = ""
-        txbEndereco.Text = ""
-        cbbTipo.ListIndex = -1
+        lblCabNome.Caption = ""
+        txbNome.Text = ""
         lstPrincipal.ListIndex = -1
     End If
 
@@ -295,7 +294,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
 
     Dim col As New Collection
     
-    Set col = oObra.Listar(OrderBy)
+    Set col = oProduto.Listar(OrderBy)
     
     With lstPrincipal
         .Clear                              ' Limpa ListBox
@@ -308,9 +307,9 @@ Private Sub lstPrincipalPopular(OrderBy As String)
         
         For Each n In col
             .AddItem
-            oObra.Carrega CLng(n)
-            .List(.ListCount - 1, 0) = oObra.Endereco
-            .List(.ListCount - 1, 1) = oObra.ID
+            oProduto.Carrega CLng(n)
+            .List(.ListCount - 1, 0) = oProduto.Nome
+            .List(.ListCount - 1, 1) = oProduto.ID
         Next n
         
     End With
@@ -323,71 +322,21 @@ Private Function Valida() As Boolean
     
     Valida = False
     
-    If txbEndereco.Text = Empty Then
-        MsgBox "'Nome' é um campo obrigatório", vbInformation: txbEndereco.SetFocus
+    If txbNome.Text = Empty Then
+        MsgBox "'Nome' é um campo obrigatório", vbInformation: txbNome.SetFocus
     Else
         ' Envia valores preenchidos no formulário para o objeto
-        With oObra
-            .Endereco = txbEndereco.Text
-            .TipoID = IIf(cbbTipo.ListIndex = -1, 0, CInt(cbbTipo.List(cbbTipo.ListIndex, 1)))
+        With oProduto
+            .Nome = txbNome.Text
         End With
         
         Valida = True
     End If
     
 End Function
-Private Sub cbbTipoPopular()
+Private Sub UserForm_Terminate()
     
-    Dim idx         As Integer
-    Dim col         As New Collection
-    Dim n           As Variant
-
-    Set col = oTipoObra.Listar("nome")
-    
-    idx = cbbTipo.ListIndex
-    
-    cbbTipo.Clear
-    
-    For Each n In col
-        
-        oTipoObra.Carrega CLng(n)
-    
-        With cbbTipo
-            .AddItem
-            .List(.ListCount - 1, 0) = oTipoObra.Nome
-            .List(.ListCount - 1, 1) = oTipoObra.ID
-        End With
-        
-    Next n
-    
-    cbbTipo.ListIndex = idx
-
-End Sub
-Private Sub cbbTipo_AfterUpdate()
-    
-    Dim vbResposta As VbMsgBoxResult
-    Dim idx As Integer
-    Dim n As Integer
-    
-    If cbbTipo.ListIndex = -1 And cbbTipo.Text <> "" Then
-        
-        vbResposta = MsgBox("Este Tipo de obra não existe, deseja cadastrá-lo?", vbQuestion + vbYesNo)
-        
-        If vbResposta = vbYes Then
-            oTipoObra.Nome = RTrim(cbbTipo.Text)
-            oTipoObra.Inclui
-            idx = oTipoObra.ID
-            Call cbbTipoPopular
-            For n = 0 To cbbTipo.ListCount - 1
-                If CInt(cbbTipo.List(n, 1)) = idx Then
-                    cbbTipo.ListIndex = n
-                    Exit For
-                End If
-            Next n
-        Else
-            cbbTipo.ListIndex = -1
-        End If
-        
-    End If
-
+    ' Destrói objeto da classe cProduto
+    Set oProduto = Nothing
+    Call Desconecta
 End Sub
