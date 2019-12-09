@@ -136,7 +136,7 @@ Conecta:
         Line Input #1, sText
         
         ' Ignora o cabeçalho
-        If Trim(sText) <> "table;field;type;size;nullable;autoincrement;description" Then
+        If Mid(sText, 1, 5) <> "table" Then
             
             myArray = Split(sText, ";")
                         
@@ -173,21 +173,22 @@ Conecta:
                 oCatalogo.Tables.Append oTabela
             End If
             
-            ' VERIFICA SE EXISTE CAMPO
-            Dim oCampo          As ADOX.Column
-            Dim bExisteCampo    As Boolean
-            
-            Set oCampo = New ADOX.Column
-            bExisteCampo = False
-            
-            For Each oCampo In oCatalogo.Tables(myArray(0)).Columns
-                
-                If oCampo.name = myArray(1) Then
-                    bExisteCampo = True
-                    Exit For
-                End If
-                
-            Next oCampo
+            '--- VERIFICA SE EXISTE CAMPO ---------------------------+
+            Dim oCampo          As ADOX.Column                      '|
+            Dim bExisteCampo    As Boolean                          '|
+                                                                    '|
+            Set oCampo = New ADOX.Column                            '|
+            bExisteCampo = False                                    '|
+                                                                    '|
+            For Each oCampo In oCatalogo.Tables(myArray(0)).Columns '|
+                                                                    '|
+                If oCampo.name = myArray(1) Then                    '|
+                    bExisteCampo = True                             '|
+                    Exit For                                        '|
+                End If                                              '|
+                                                                    '|
+            Next oCampo                                             '|
+            '--------------------------------------------------------+
             
             Set oCampo = Nothing
             
@@ -215,6 +216,53 @@ Conecta:
                 
                 oCatalogo.Tables(myArray(0)).Columns.Append oCampo
                 
+                ' Cria chave primária
+                If CBool(myArray(7)) = True Then
+                        
+                    Dim idx As ADOX.Index
+                    
+                    Set idx = New ADOX.Index
+
+                    With idx
+                        .name = "PK_" & myArray(0)
+                        .IndexNulls = adIndexNullsAllow
+                        .PrimaryKey = True
+                        .Unique = True
+                        .Columns.Append myArray(1)
+                    End With
+                    
+                    oCatalogo.Tables(myArray(0)).Indexes.Append idx
+                    
+                    Set idx = Nothing
+
+                End If
+                
+                ' Cria chave estrangeira
+                If myArray(8) <> "False" Then
+
+                    Dim fk As ADOX.Key
+                    
+                    Set fk = New ADOX.Key
+                    
+                    Dim fkArr() As String
+
+                    fkArr = Split(myArray(8), ".")
+
+                    With fk
+                       .name = "Chave estrangeira"
+                       .Type = adKeyForeign
+                       .RelatedTable = fkArr(0)
+                       .Columns.Append myArray(1)
+                       .Columns(myArray(1)).RelatedColumn = fkArr(1)
+                       .UpdateRule = adRICascade
+                    End With
+
+                    oCatalogo.Tables(myArray(0)).Keys.Append fk
+                    
+                    Set fk = Nothing
+                    
+                End If
+                
                 Set oCampo = Nothing
                 
             End If
@@ -225,8 +273,11 @@ Conecta:
     
     Close #1
     
-    cnn.Close
+    
+    
     Set oCatalogo = Nothing
+    
+    Call Desconecta
     
     MsgBox "Banco de dados atualizado com sucesso!", vbInformation
 
