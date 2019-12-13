@@ -10,6 +10,7 @@ Sub OnActionButton(control As IRibbonControl)
             Case "btnFornecedores": fFornecedores.Show
             Case "btnProdutos": fProdutos.Show
             Case "btnObras": fObras.Show
+            Case "btnCompras": fCompras.Show
             Case "btnDicionarioDados": Call AtualizaBD
             'Case "btnOrcamentos": fOrcamentos.Show
             Case Else: MsgBox "Botão ainda não implementado", vbInformation
@@ -84,9 +85,9 @@ Sub dyMenuOutrosCadastros(control As IRibbonControl, ByRef returnedVal)
     XMLcode = "<menu xmlns=" & Chr(34) & "http://schemas.microsoft.com/office/2006/01/customui" & Chr(34)
     XMLcode = XMLcode & " >"
     
-    XMLcode = XMLcode & "<button id=" & Chr(34) & "bBairros" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
-    XMLcode = XMLcode & " label=" & Chr(34) & "Bairros" & Chr(34)
-    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
+'    XMLcode = XMLcode & "<button id=" & Chr(34) & "bBairros" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
+'    XMLcode = XMLcode & " label=" & Chr(34) & "Bairros" & Chr(34)
+'    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
     
     XMLcode = XMLcode & "<button id=" & Chr(34) & "bTiposObra" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
     XMLcode = XMLcode & " label=" & Chr(34) & "Tipos de obra" & Chr(34)

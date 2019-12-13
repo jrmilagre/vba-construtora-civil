@@ -7,7 +7,7 @@ Option Private Module   ' Deixa o módulo privado (invisível)
 ' ---> Microsoft ADO Ext. 2.8 for DDL and Security
 
 Public cnn  As ADODB.Connection  ' Objeto de conexão com o banco de dados
-Public rst  As ADODB.Recordset   ' Objeto de armazenamento de dados
+Public rst  As ADODB.RecordSet   ' Objeto de armazenamento de dados
 Public cat  As ADOX.Catalog
 Public sSQL As String
 Private Const sBanco As String = "database_test.mdb"
@@ -249,7 +249,7 @@ Conecta:
                     fkArr = Split(myArray(8), ".")
 
                     With fk
-                       .name = "Chave estrangeira"
+                       .name = "FK_" & fkArr(0) & "->" & fkArr(1) & "=" & myArray(0) & "->" & myArray(1)
                        .Type = adKeyForeign
                        .RelatedTable = fkArr(0)
                        .Columns.Append myArray(1)
@@ -273,12 +273,33 @@ Conecta:
     
     Close #1
     
-    
-    
     Set oCatalogo = Nothing
     
     Call Desconecta
     
     MsgBox "Banco de dados atualizado com sucesso!", vbInformation
+
+End Sub
+Public Sub IncluiRegistrosTeste()
+
+    If Conecta = True Then
+        sSQL = "INSERT INTO tbl_produtos ([nome]) VALUES ('Cimento') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_produtos ([nome]) VALUES ('Cal') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_fornecedores ([nome]) VALUES ('Cardoso') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_fornecedores ([nome]) VALUES ('Orlando') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_tipos_obra ([nome]) VALUES ('Casa') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_tipos_obra ([nome]) VALUES ('Sobrado') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_pedreiros ([nome], [apelido], [preco_m2]) VALUES ('Aparecido', 'Cidinho', 300.00) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_estados ([nome], [uf]) VALUES ('Minas Gerais', 'MG') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_estados ([nome], [uf]) VALUES ('São Paulo', 'SP') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_clientes ([nome]) VALUES ('Jairo Milagre') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_clientes ([nome]) VALUES ('Dalila Emanuela') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_obras ([endereco], [tipo_id], [bairro], [cidade], [uf], [cliente_id]) VALUES ('Rua dos Gaviões, 156', 2, 'Parque dos Pássaros', 'Extrema', 'MG', 1) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_obras ([endereco], [tipo_id], [bairro], [cidade], [uf], [cliente_id]) VALUES ('Alameda Joaquim Marcondes da Silveira, 171', 1, 'Campos Olivotti', 'Extrema', 'MG', 2) ": cnn.Execute sSQL
+        
+        Call Desconecta
+    End If
+    
+    
 
 End Sub

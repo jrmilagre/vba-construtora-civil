@@ -17,6 +17,7 @@ Option Explicit
 
 Private oObra               As New cObra
 Private oTipoObra           As New cTipoObra
+Private oCliente            As New cCliente
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
 Private Const sTable As String = "tbl_obras"
@@ -24,6 +25,7 @@ Private Const sCampoOrderBy As String = "endereco"
 Private Sub UserForm_Initialize()
      
     Call cbbTipoPopular
+    Call cbbClientePopular
     Call lstPrincipalPopular(sCampoOrderBy)
     Call EventosCampos
     Call Campos("Desabilitar")
@@ -40,6 +42,33 @@ Private Sub UserForm_Terminate()
     ' Destrói objeto da classe cProduto
     Set oObra = Nothing
     Call Desconecta
+End Sub
+Private Sub cbbClientePopular()
+    
+    Dim idx         As Integer
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oCliente.Listar("nome")
+    
+    idx = cbbCliente.ListIndex
+    
+    cbbCliente.Clear
+    
+    For Each n In col
+        
+        oCliente.Carrega CLng(n)
+    
+        With cbbCliente
+            .AddItem
+            .List(.ListCount - 1, 0) = oCliente.Nome
+            .List(.ListCount - 1, 1) = oCliente.ID
+        End With
+        
+    Next n
+    
+    cbbCliente.ListIndex = idx
+
 End Sub
 Private Sub lblHdNome_Click():
     Call lstPrincipalPopular(sCampoOrderBy)
@@ -211,6 +240,10 @@ Private Sub lstPrincipal_Change()
         
         lblID.Caption = Format(IIf(oObra.ID = 0, "", oObra.ID), "00000")
         lblCabEndereco.Caption = oObra.Endereco
+        
+        txbBairro.Text = oObra.Bairro
+        txbCidade.Text = oObra.Cidade
+        cbbUF.Text = oObra.UF
         txbEndereco.Text = oObra.Endereco
         
         For n = 0 To cbbTipo.ListCount - 1
@@ -219,6 +252,17 @@ Private Sub lstPrincipal_Change()
                 Exit For
             End If
         Next n
+        
+        If oObra.ClienteID = Null Then
+            cbbCliente.ListIndex = -1
+        Else
+            For n = 0 To cbbCliente.ListCount - 1
+                If CInt(cbbCliente.List(n, 1)) = oObra.ClienteID Then
+                    cbbCliente.ListIndex = n
+                    Exit For
+                End If
+            Next n
+        End If
                 
     End If
 
@@ -227,6 +271,9 @@ Private Sub btnCancelar_Click()
     
     btnIncluir.Visible = True: btnAlterar.Visible = True: btnExcluir.Visible = True
     btnConfirmar.Visible = False: btnCancelar.Visible = False
+    
+    ' Tira a seleção
+    lstPrincipal.ListIndex = -1
     
     Call Campos("Limpar")
     Call Campos("Desabilitar")
@@ -240,23 +287,36 @@ Private Sub btnCancelar_Click()
    
     MultiPage1.Value = 0
     
-    ' Tira a seleção
-    lstPrincipal.ListIndex = -1
+    
+
 
 End Sub
 Private Sub Campos(Acao As String)
 
     If Acao = "Desabilitar" Then
-        txbEndereco.Enabled = False: lblNome.Enabled = False
+        txbEndereco.Enabled = False: lblEndereco.Enabled = False
+        txbBairro.Enabled = False: lblBairro.Enabled = False
+        txbCidade.Enabled = False: lblCidade.Enabled = False
+        cbbUF.Enabled = False: lblUF.Enabled = False
         cbbTipo.Enabled = False: lblTipo.Enabled = False
+        cbbCliente.Enabled = False: lblCliente.Enabled = False
     ElseIf Acao = "Habilitar" Then
-        txbEndereco.Enabled = True: lblNome.Enabled = True
+        txbEndereco.Enabled = True: lblEndereco.Enabled = True
+        txbBairro.Enabled = True: lblBairro.Enabled = True
+        txbCidade.Enabled = True: lblCidade.Enabled = True
+        cbbUF.Enabled = True: lblUF.Enabled = True
         cbbTipo.Enabled = True: lblTipo.Enabled = True
+        cbbCliente.Enabled = True: lblCliente.Enabled = True
     ElseIf Acao = "Limpar" Then
         lblID.Caption = ""
         lblCabEndereco.Caption = ""
         txbEndereco.Text = ""
+        txbBairro.Text = ""
+        txbCidade.Text = ""
+        cbbUF.ListIndex = -1
         cbbTipo.ListIndex = -1
+        cbbCliente.ListIndex = -1
+        
         lstPrincipal.ListIndex = -1
     End If
 
@@ -324,12 +384,20 @@ Private Function Valida() As Boolean
     Valida = False
     
     If txbEndereco.Text = Empty Then
-        MsgBox "'Nome' é um campo obrigatório", vbInformation: txbEndereco.SetFocus
+        MsgBox "'Endereço' é um campo obrigatório", vbInformation: txbEndereco.SetFocus
+    ElseIf cbbTipo.ListIndex = -1 Then
+        MsgBox "'Tipo' é um campo obrigatório", vbInformation: cbbTipo.SetFocus
     Else
         ' Envia valores preenchidos no formulário para o objeto
         With oObra
             .Endereco = txbEndereco.Text
+            .Bairro = txbBairro.Text
+            .Cidade = txbCidade.Text
+            .UF = cbbUF.Text
             .TipoID = IIf(cbbTipo.ListIndex = -1, 0, CInt(cbbTipo.List(cbbTipo.ListIndex, 1)))
+            
+            If cbbCliente.ListIndex = -1 Then .ClienteID = Null Else .ClienteID = CLng(cbbCliente.List(cbbCliente.ListIndex, 1))
+            
         End With
         
         Valida = True

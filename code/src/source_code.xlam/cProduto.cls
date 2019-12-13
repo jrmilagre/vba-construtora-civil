@@ -12,6 +12,8 @@ Option Explicit
 Private Type TProduto
     ID              As Long
     Nome            As String
+    Estoque         As Double
+    CustoMedio      As Currency
 End Type
 
 Private This As TProduto
@@ -24,6 +26,12 @@ Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 Public Property Get Nome() As String: Nome = This.Nome: End Property
 Public Property Let Nome(ByVal Value As String): This.Nome = Value: End Property
 
+Public Property Get Estoque() As Double: Estoque = This.Estoque: End Property
+Public Property Let Estoque(ByVal Value As Double): This.Estoque = Value: End Property
+
+Public Property Get CustoMedio() As Currency: CustoMedio = This.CustoMedio: End Property
+Public Property Let CustoMedio(ByVal Value As Currency): This.CustoMedio = Value: End Property
+
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
 
@@ -31,12 +39,12 @@ Public Sub Carrega(ID As Long)
     sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
     
     ' Atribui resultado da consulta SQL ao recordset
     rst.Open sSQL, cnn, adOpenStatic
     
-    '---Propriedades
+    ' Propriedades
     With rst
         Me.ID = .Fields("id").Value
         Me.Nome = .Fields("nome").Value
@@ -47,7 +55,7 @@ End Sub
 ' Rotina para incluir registro no banco de dados
 Public Sub Inclui()
 
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
 
     'Armazena na variável o comando que fará a consulta SQL no BD Access
     With rst
@@ -72,7 +80,7 @@ End Sub
 ' Rotina para alterar registro no banco de dados
 Public Sub Altera()
     
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
     
     ' Comando SQL
     sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.ID
@@ -111,7 +119,7 @@ Public Function Listar(OrderBy As String) As Collection
     sSQL = sSQL & "WHERE deletado = False "
     sSQL = sSQL & "ORDER BY " & OrderBy
 
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
     
     rst.Open sSQL, cnn, adOpenStatic
 

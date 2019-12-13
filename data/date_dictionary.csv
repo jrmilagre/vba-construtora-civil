@@ -19,4 +19,42 @@ tbl_tipos_obra;deletado;11;0;False;False;Deletado;False;False
 tbl_obras;id;3;0;True;True;Código;True;False
 tbl_obras;endereco;202;120;True;False;Endereço;False;False
 tbl_obras;tipo_id;3;0;True;False;Código do tipo da obra;False;tbl_tipos_obra.id
+tbl_obras;bairro;202;75;True;False;Bairro;False;False
+tbl_obras;cidade;202;75;True;False;Cidade;False;False
+tbl_obras;uf;202;2;True;False;UF;False;False
+tbl_obras;cliente_id;3;0;True;False;Código do cliente;False;tbl_clientes.id
 tbl_obras;deletado;11;0;False;False;Deletado;False;False
+tbl_estados;id;3;0;True;True;Código;True;False
+tbl_estados;nome;202;75;True;False;Nome;False;False
+tbl_estados;uf;202;2;True;False;Nome;False;False
+tbl_cidades;id;3;0;True;True;Código;True;False
+tbl_cidades;nome;202;120;True;False;Nome;False;False
+tbl_cidades;estado_id;3;0;True;False;Código do estado;False;tbl_estados.id
+tbl_compras;id;3;0;True;True;Código;True;False
+tbl_compras;data;7;0;True;False;Data;False;False
+tbl_compras;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
+tbl_compras_itens;compra_id;3;0;True;False;Código da compra;False;tbl_compras.id
+tbl_compras_itens;produto_id;3;0;True;False;Código do produto;False;tbl_produtos.id
+tbl_compras_itens;quantidade;0.5;0;True;False;Quantidade;False;False
+tbl_compras_itens;unitario;6;0;True;False;Valor unitário;False;False
+tbl_compras_itens;total;6;0;True;False;Valor total;False;False
+tbl_compras_itens;data;7;0;True;False;Data;False;False
+tbl_compras_itens;fornecedor_id;3;0;True;False;Código do fornecedor;False;False
+tbl_compras_itens;qtde_req;0.5;0;True;False;Quantidade requisitada;False;False
+tbl_compras_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False
+tbl_titulos_pagar;compra_id;3;0;True;False;Código da compra;False;tbl_compras.id
+tbl_titulos_pagar;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
+tbl_titulos_pagar;observacao;202;100;True;False;Observação;False;False
+tbl_titulos_pagar;vencimento;7;0;True;False;Vencimento;False;False
+tbl_titulos_pagar;valor;6;0;True;False;Valor do título;False;False
+tbl_titulos_pagar;data;7;0;True;False;Data;False;False
+tbl_titulos_pagar;r_e_c_n_o_;3;0;False;True;Recno;False;False
+tbl_requisicoes;obra_id;3;0;True;False;Código da obra;False;tbl_obras.id
+tbl_requisicoes;data;7;0;True;False;Data;False;False
+tbl_requisicoes;produto_id;3;0;True;False;Código do produto;False;False
+tbl_requisicoes;quantidade;0.5;0;True;False;Quantidade;False;False
+tbl_requisicoes;unitario;6;0;True;False;Valor unitário;False;False
+tbl_requisicoes;total;6;0;True;False;Valor total;False;False
+tbl_requisicoes;tbl_origem;202;10;True;False;Tabela de origem;False;False
+tbl_requisicoes;recno_origem;3;0;True;False;Código da compra;False;False
+tbl_requisicoes;r_e_c_n_o_;3;0;False;True;Recno;False;False

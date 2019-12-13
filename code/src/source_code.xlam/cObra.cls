@@ -12,7 +12,11 @@ Option Explicit
 Private Type TTipoObra
     ID              As Long
     Endereco        As String
+    Bairro          As String
+    Cidade          As String
+    UF              As String
     TipoID          As Integer
+    ClienteID       As Variant
 End Type
 
 Private This As TTipoObra
@@ -28,6 +32,18 @@ Public Property Let Endereco(ByVal Value As String): This.Endereco = Value: End 
 Public Property Get TipoID() As Integer: TipoID = This.TipoID: End Property
 Public Property Let TipoID(ByVal Value As Integer): This.TipoID = Value: End Property
 
+Public Property Get Bairro() As String: Bairro = This.Bairro: End Property
+Public Property Let Bairro(ByVal Value As String): This.Bairro = Value: End Property
+
+Public Property Get Cidade() As String: Cidade = This.Cidade: End Property
+Public Property Let Cidade(ByVal Value As String): This.Cidade = Value: End Property
+
+Public Property Get UF() As String: UF = This.UF: End Property
+Public Property Let UF(ByVal Value As String): This.UF = Value: End Property
+
+Public Property Get ClienteID() As Variant: ClienteID = This.ClienteID: End Property
+Public Property Let ClienteID(ByVal Value As Variant): This.ClienteID = Value: End Property
+
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
 
@@ -35,7 +51,7 @@ Public Sub Carrega(ID As Long)
     sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
     
     ' Atribui resultado da consulta SQL ao recordset
     rst.Open sSQL, cnn, adOpenStatic
@@ -44,7 +60,11 @@ Public Sub Carrega(ID As Long)
     With rst
         Me.ID = .Fields("id").Value
         Me.Endereco = .Fields("endereco").Value
+        Me.Bairro = .Fields("bairro").Value
+        Me.Cidade = .Fields("cidade").Value
+        Me.UF = .Fields("uf").Value
         Me.TipoID = .Fields("tipo_id").Value
+        Me.ClienteID = IIf(IsNull(.Fields("cliente_id").Value), Null, .Fields("cliente_id").Value)
     End With
     
 End Sub
@@ -52,7 +72,7 @@ End Sub
 ' Rotina para incluir registro no banco de dados
 Public Sub Inclui()
 
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
 
     'Armazena na variável o comando que fará a consulta SQL no BD Access
     With rst
@@ -65,7 +85,11 @@ Public Sub Inclui()
         
         Me.ID = .Fields("id").Value
         .Fields("endereco").Value = Me.Endereco
+        .Fields("bairro").Value = Me.Bairro
+        .Fields("cidade").Value = Me.Cidade
+        .Fields("uf").Value = Me.UF
         .Fields("tipo_id").Value = Me.TipoID
+        .Fields("cliente_id").Value = Me.ClienteID
         
         .Update
     End With
@@ -78,7 +102,7 @@ End Sub
 ' Rotina para alterar registro no banco de dados
 Public Sub Altera()
     
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
     
     ' Comando SQL
     sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.ID
@@ -92,7 +116,11 @@ Public Sub Altera()
         
         ' Atribui novos valores aos campos
         .Fields("endereco").Value = Me.Endereco
+        .Fields("bairro").Value = Me.Bairro
+        .Fields("cidade").Value = Me.Cidade
+        .Fields("uf").Value = Me.UF
         .Fields("tipo_id").Value = Me.TipoID
+        .Fields("cliente_id").Value = Me.ClienteID
         
         ' Grava alterações
         .Update
@@ -118,7 +146,7 @@ Public Function Listar(OrderBy As String) As Collection
     sSQL = sSQL & "WHERE deletado = False "
     sSQL = sSQL & "ORDER BY " & OrderBy
 
-    Set rst = New ADODB.Recordset
+    Set rst = New ADODB.RecordSet
     
     rst.Open sSQL, cnn, adOpenStatic
 
