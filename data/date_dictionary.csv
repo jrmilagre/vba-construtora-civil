@@ -58,3 +58,7 @@ tbl_requisicoes;total;6;0;True;False;Valor total;False;False
 tbl_requisicoes;tbl_origem;202;10;True;False;Tabela de origem;False;False
 tbl_requisicoes;recno_origem;3;0;True;False;Código da compra;False;False
 tbl_requisicoes;r_e_c_n_o_;3;0;False;True;Recno;False;False
+tbl_contas;id;3;0;True;True;Código;True;False
+tbl_contas;nome;202;120;True;False;Nome;False;False
+tbl_contas;saldo_inicial;6;0;True;False;Saldo inicial;False;False
+tbl_contas;deletado;11;0;False;False;Deletado;False;False

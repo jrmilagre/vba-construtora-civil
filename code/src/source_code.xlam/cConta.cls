@@ -2,27 +2,31 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "cCliente"
+Attribute VB_Name = "cConta"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Type TCliente
+Private Type TConta
     ID              As Long
     Nome            As String
+    SaldoInicial    As Currency
 End Type
 
-Private This As TCliente
+Private This As TConta
 
-Private Const sTable As String = "tbl_clientes"
+Private Const sTable As String = "tbl_contas"
 
 Public Property Get ID() As Long: ID = This.ID: End Property
 Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 
 Public Property Get Nome() As String: Nome = This.Nome: End Property
 Public Property Let Nome(ByVal Value As String): This.Nome = Value: End Property
+
+Public Property Get SaldoInicial() As Currency: SaldoInicial = This.SaldoInicial: End Property
+Public Property Let SaldoInicial(ByVal Value As Currency): This.SaldoInicial = Value: End Property
 
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
@@ -40,6 +44,7 @@ Public Sub Carrega(ID As Long)
     With rst
         Me.ID = .Fields("id").Value
         Me.Nome = .Fields("nome").Value
+        Me.SaldoInicial = .Fields("saldo_inicial").Value
     End With
     
 End Sub
@@ -60,6 +65,7 @@ Public Sub Inclui()
         
         Me.ID = .Fields("id").Value
         .Fields("nome").Value = Me.Nome
+        .Fields("saldo_inicial").Value = Me.SaldoInicial
         
         .Update
     End With
@@ -86,6 +92,7 @@ Public Sub Altera()
         
         ' Atribui novos valores aos campos
         .Fields("nome").Value = Me.Nome
+        .Fields("saldo_inicial").Value = Me.SaldoInicial
         
         ' Grava alterações
         .Update
