@@ -108,4 +108,20 @@ Public Sub Exclui(Recno As Long)
     cnn.Execute sSQL
 
 End Sub
+Public Function GetValorBaixado(TituloID As Long) As Currency
 
+    Dim rTmp As New ADODB.RecordSet
+
+    sSQL = "SELECT sum(valor_baixado) as valor_baixado FROM tbl_pagamentos_itens WHERE titulo_id = " & TituloID
+    
+    rTmp.Open sSQL, cnn
+    
+    If Not IsNull(rTmp.Fields("valor_baixado").Value) Then
+        GetValorBaixado = rTmp.Fields("valor_baixado").Value
+    Else
+        GetValorBaixado = 0
+    End If
+    
+    Set rTmp = Nothing
+    
+End Function

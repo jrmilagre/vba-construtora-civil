@@ -89,7 +89,7 @@ Private Sub cbbFornecedor_AfterUpdate()
         Else
             cbbFornecedor.ListIndex = -1
         End If
-        
+
     End If
 End Sub
 Private Sub lstItens_Change()
@@ -562,6 +562,7 @@ Private Sub Campos(Acao As String)
         txbData.Text = ""
         cbbFornecedor.ListIndex = -1
         lstItens.Clear
+        lstTitulos.Clear
         
         lstPrincipal.ListIndex = -1
     End If
@@ -975,5 +976,10 @@ Private Sub lstTitulos_Change()
         
         btnTituloAltera.Enabled = True
         btnTituloExclui.Enabled = True
+    End If
+End Sub
+Private Sub cbbFornecedor_Change()
+    If cbbFornecedor.ListIndex > -1 And cbbFornecedor.Text <> "" Then
+        MultiPage1.Value = 2
     End If
 End Sub

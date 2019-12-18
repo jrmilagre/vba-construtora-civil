@@ -130,7 +130,7 @@ Public Function Existe(Nome As String) As Boolean
     Existe = False
     
     ' Comando SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE nome = '" & Replace(Cliente, "'", "`") & "'"
+    sSQL = "SELECT * FROM " & sTable & " WHERE nome = '" & Replace(Nome, "'", "`") & "'"
 
     ' Atribui resultado da consulta SQL ao recordset
     Set rst = cnn.Execute(sSQL)
