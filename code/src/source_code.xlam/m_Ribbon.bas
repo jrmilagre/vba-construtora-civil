@@ -91,14 +91,19 @@ Sub dyMenuOutrosCadastros(control As IRibbonControl, ByRef returnedVal)
 '    XMLcode = XMLcode & "<button id=" & Chr(34) & "bBairros" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
 '    XMLcode = XMLcode & " label=" & Chr(34) & "Bairros" & Chr(34)
 '    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
-    
-    XMLcode = XMLcode & "<button id=" & Chr(34) & "bTiposObra" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
-    XMLcode = XMLcode & " label=" & Chr(34) & "Tipos de obra" & Chr(34)
-    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
-    
+        
     XMLcode = XMLcode & "<button id=" & Chr(34) & "bContas" & Chr(34) & " image=" & Chr(34) & "Contas" & Chr(34)
     XMLcode = XMLcode & " label=" & Chr(34) & "Contas" & Chr(34)
     XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
+    
+    XMLcode = XMLcode & "<button id=" & Chr(34) & "bEtapas" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
+    XMLcode = XMLcode & " label=" & Chr(34) & "Etapas da obra" & Chr(34)
+    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
+
+    XMLcode = XMLcode & "<button id=" & Chr(34) & "bTiposObra" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
+    XMLcode = XMLcode & " label=" & Chr(34) & "Tipos de obra" & Chr(34)
+    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
+
     
     XMLcode = XMLcode & "</menu>"
 
@@ -110,8 +115,10 @@ Sub ActionDyMenuOutrosCadastros(control As IRibbonControl)
     If Conecta() = True Then
         Select Case control.ID
             'Case "bBairros": fBa.Show
-            Case "bTiposObra": fTiposObra.Show
             Case "bContas": fContas.Show
+            Case "bEtapas": fEtapas.Show
+            Case "bTiposObra": fTiposObra.Show
+            
             Case Else: MsgBox "Botão ainda não implementado", vbInformation
         End Select
     End If

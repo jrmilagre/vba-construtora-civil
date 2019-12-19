@@ -9,12 +9,12 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Type TFornecedor
+Private Type TEtapa
     ID              As Long
     Nome            As String
 End Type
 
-Private This As TFornecedor
+Private This As TEtapa
 
 Private Const sTable As String = "tbl_etapas"
 
