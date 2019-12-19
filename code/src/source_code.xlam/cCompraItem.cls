@@ -139,4 +139,21 @@ Public Sub Exclui(Recno As Long)
     cnn.Execute sSQL
 
 End Sub
+Public Function GetQtdeBaixada(ItemCompraID As Long) As Currency
+
+    Dim rTmp As New ADODB.RecordSet
+
+    sSQL = "SELECT sum(quantidade) as quantidade FROM tbl_requisicoes_itens WHERE itemcompra_id = " & ItemCompraID
+    
+    rTmp.Open sSQL, cnn
+    
+    If Not IsNull(rTmp.Fields("quantidade").Value) Then
+        GetQtdeBaixada = rTmp.Fields("quantidade").Value
+    Else
+        GetQtdeBaixada = 0
+    End If
+    
+    Set rTmp = Nothing
+    
+End Function
 

@@ -2,47 +2,27 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "cObra"
+Attribute VB_Name = "cEtapa"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Type TTipoObra
+Private Type TFornecedor
     ID              As Long
-    Endereco        As String
-    Bairro          As String
-    Cidade          As String
-    UF              As String
-    TipoID          As Integer
-    ClienteID       As Variant
+    Nome            As String
 End Type
 
-Private This As TTipoObra
+Private This As TFornecedor
 
-Private Const sTable As String = "tbl_obras"
+Private Const sTable As String = "tbl_etapas"
 
 Public Property Get ID() As Long: ID = This.ID: End Property
 Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 
-Public Property Get Endereco() As String: Endereco = This.Endereco: End Property
-Public Property Let Endereco(ByVal Value As String): This.Endereco = Value: End Property
-
-Public Property Get TipoID() As Integer: TipoID = This.TipoID: End Property
-Public Property Let TipoID(ByVal Value As Integer): This.TipoID = Value: End Property
-
-Public Property Get Bairro() As String: Bairro = This.Bairro: End Property
-Public Property Let Bairro(ByVal Value As String): This.Bairro = Value: End Property
-
-Public Property Get Cidade() As String: Cidade = This.Cidade: End Property
-Public Property Let Cidade(ByVal Value As String): This.Cidade = Value: End Property
-
-Public Property Get UF() As String: UF = This.UF: End Property
-Public Property Let UF(ByVal Value As String): This.UF = Value: End Property
-
-Public Property Get ClienteID() As Variant: ClienteID = This.ClienteID: End Property
-Public Property Let ClienteID(ByVal Value As Variant): This.ClienteID = Value: End Property
+Public Property Get Nome() As String: Nome = This.Nome: End Property
+Public Property Let Nome(ByVal Value As String): This.Nome = Value: End Property
 
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
@@ -59,12 +39,7 @@ Public Sub Carrega(ID As Long)
     '---Propriedades
     With rst
         Me.ID = .Fields("id").Value
-        Me.Endereco = .Fields("endereco").Value
-        Me.Bairro = .Fields("bairro").Value
-        Me.Cidade = .Fields("cidade").Value
-        Me.UF = .Fields("uf").Value
-        Me.TipoID = .Fields("tipo_id").Value
-        Me.ClienteID = IIf(IsNull(.Fields("cliente_id").Value), Null, .Fields("cliente_id").Value)
+        Me.Nome = .Fields("nome").Value
     End With
     
 End Sub
@@ -84,12 +59,7 @@ Public Sub Inclui()
         .AddNew
         
         Me.ID = .Fields("id").Value
-        .Fields("endereco").Value = Me.Endereco
-        .Fields("bairro").Value = Me.Bairro
-        .Fields("cidade").Value = Me.Cidade
-        .Fields("uf").Value = Me.UF
-        .Fields("tipo_id").Value = Me.TipoID
-        .Fields("cliente_id").Value = Me.ClienteID
+        .Fields("nome").Value = Me.Nome
         
         .Update
     End With
@@ -115,12 +85,7 @@ Public Sub Altera()
               LockType:=adLockOptimistic
         
         ' Atribui novos valores aos campos
-        .Fields("endereco").Value = Me.Endereco
-        .Fields("bairro").Value = Me.Bairro
-        .Fields("cidade").Value = Me.Cidade
-        .Fields("uf").Value = Me.UF
-        .Fields("tipo_id").Value = Me.TipoID
-        .Fields("cliente_id").Value = Me.ClienteID
+        .Fields("nome").Value = Me.Nome
         
         ' Grava alterações
         .Update
@@ -143,7 +108,7 @@ Public Function Listar(OrderBy As String) As Collection
 
     sSQL = "SELECT id "
     sSQL = sSQL & "FROM " & sTable & " "
-    'sSQL = sSQL & "WHERE deletado = False "
+    sSQL = sSQL & "WHERE deletado = False "
     sSQL = sSQL & "ORDER BY " & OrderBy
 
     Set rst = New ADODB.RecordSet
@@ -159,5 +124,24 @@ Public Function Listar(OrderBy As String) As Collection
     
     Set Listar = col
 
+End Function
+Public Function Existe(Nome As String) As Boolean
+
+    Existe = False
+    
+    ' Comando SQL
+    sSQL = "SELECT * FROM " & sTable & " WHERE nome = '" & Replace(Nome, "'", "`") & "'"
+
+    ' Atribui resultado da consulta SQL ao recordset
+    Set rst = cnn.Execute(sSQL)
+    
+    If rst.EOF = False Then
+        Me.ID = rst.Fields("id").Value
+        Existe = True
+    End If
+    
+    ' Destrói Recordset
+    Set rst = Nothing
+        
 End Function
 

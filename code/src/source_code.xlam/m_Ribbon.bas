@@ -11,8 +11,10 @@ Sub OnActionButton(control As IRibbonControl)
             Case "btnProdutos": fProdutos.Show
             Case "btnObras": fObras.Show
             Case "btnCompras": fCompras.Show
+            Case "btnRequisicoes": fRequisicoes.Show
             Case "btnPagamentos": fPagamentos.Show
             Case "btnDicionarioDados": Call AtualizaBD
+            Case "btnBackup": fBackup.Show
             'Case "btnOrcamentos": fOrcamentos.Show
             Case Else: MsgBox "Botão ainda não implementado", vbInformation
         End Select

@@ -280,6 +280,29 @@ Conecta:
     MsgBox "Banco de dados atualizado com sucesso!", vbInformation
 
 End Sub
+Public Function Backup(CaminhoBackup As String) As Boolean
+
+    On Error GoTo Sair
+    
+    Dim FSO As Object
+    Dim NewName As String
+    Set FSO = CreateObject("scripting.filesystemobject")
+    
+    sCaminho = Mid(wbCode.Path, 1, Len(wbCode.Path) - 5) & _
+               Application.PathSeparator & "data" & _
+               Application.PathSeparator & sBanco
+    
+    FSO.Copyfile sCaminho, CaminhoBackup
+    
+    MsgBox "Backup realizado com sucesso!", vbInformation
+    
+    Backup = True
+    Exit Function
+Sair:
+    Backup = False
+    MsgBox "Problema no Backup!", vbCritical
+    Exit Function
+End Function
 Public Sub IncluiRegistrosTeste()
 
     If Conecta = True Then
@@ -308,6 +331,8 @@ Public Sub IncluiRegistrosTeste()
         sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data]) VALUES (2, 2, '02/03', " & CLng(CDate("14/02/2020")) & ", 48.83, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data]) VALUES (2, 2, '03/03', " & CLng(CDate("14/03/2020")) & ", 48.84, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_contas ([nome], [saldo_inicial]) VALUES ('Dinheiro em caixa', 0) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_etapas ([nome]) VALUES ('Alvenaria') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_etapas ([nome]) VALUES ('Acabamento') ": cnn.Execute sSQL
         
         Call Desconecta
     End If

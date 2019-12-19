@@ -84,3 +84,21 @@ tbl_pagamentos_itens;titulo_valor;6;0;True;False;Valor do título;False;False
 tbl_pagamentos_itens;titulo_data;7;0;True;False;Data da emissão do título;False;False
 tbl_pagamentos_itens;titulo_vencimento;7;0;True;False;Data de vencimento do título;False;False
 tbl_pagamentos_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False
+tbl_requisicoes_itens;requisicao_id;3;0;True;False;Código da requisição;False;False
+tbl_requisicoes_itens;itemcompra_id;3;0;True;False;Código do item da compra;False;False
+tbl_requisicoes_itens;produto_id;3;0;True;False;Código do produto;False;False
+tbl_requisicoes_itens;obra_id;3;0;True;False;Código da obra;False;False
+tbl_requisicoes_itens;etapa_id;3;0;True;False;Código da etapa da obra;False;False
+tbl_requisicoes_itens;quantidade;0.5;0;True;False;Quantidade do item;False;False
+tbl_requisicoes_itens;unitario;6;0;True;False;Valor unitário;False;False
+tbl_requisicoes_itens;total;6;0;True;False;Valor unitário;False;False
+tbl_requisicoes_itens;data;7;0;True;False;Data;False;False
+tbl_requisicoes_itens;requisitado;11;0;False;False;Requisitado;False;False
+tbl_requisicoes_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False
+tbl_etapas;id;3;0;True;True;Código;True;False
+tbl_etapas;nome;202;120;True;False;Nome;False;False
+tbl_etapas;deletado;11;0;False;False;Deletado;False;False
+tbl_parametros;parametro;202;255;True;False;Parâmetro;False;False
+tbl_parametros;de;202;255;True;False;De;False;False
+tbl_parametros;ate;202;255;True;False;Até;False;False
+tbl_parametros;valor_unico;202;255;True;False;Valor único;False;False
