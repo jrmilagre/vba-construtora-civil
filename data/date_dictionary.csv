@@ -10,9 +10,12 @@ tbl_clientes;deletado;11;0;False;False;Deletado;False;False
 tbl_fornecedores;id;3;0;True;True;Código;True;False
 tbl_fornecedores;nome;202;120;True;False;Nome;False;False
 tbl_fornecedores;deletado;11;0;False;False;Deletado;False;False
+tbl_unidades_medida;id;3;0;True;True;Código;True;False
+tbl_unidades_medida;nome;202;120;True;False;Nome;False;False
+tbl_unidades_medida;abreviacao;202;2;True;False;Abreviação;False;False
 tbl_produtos;id;3;0;True;True;Código;True;False
 tbl_produtos;nome;202;120;True;False;Nome;False;False
-tbl_produtos;medida_id;3;0;True;False;Unidade de medida padrão;False;False
+tbl_produtos;um_id;3;0;True;False;Unidade de medida padrão;False;tbl_unidades_medida.id
 tbl_produtos;deletado;11;0;False;False;Deletado;False;False
 tbl_tipos_obra;id;3;0;True;True;Código;True;False
 tbl_tipos_obra;nome;202;120;True;False;Nome;False;False
@@ -37,12 +40,12 @@ tbl_compras;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_forneced
 tbl_compras_itens;compra_id;3;0;True;False;Código da compra;False;tbl_compras.id
 tbl_compras_itens;produto_id;3;0;True;False;Código do produto;False;tbl_produtos.id
 tbl_compras_itens;quantidade;0.5;0;True;False;Quantidade;False;False
-tbl_compras_itens;medida_id;3;0;True;False;Unidade de medida;False;False
+tbl_compras_itens;um_id;3;0;True;False;Unidade de medida;False;False
 tbl_compras_itens;unitario;6;0;True;False;Valor unitário;False;False
 tbl_compras_itens;total;6;0;True;False;Valor total;False;False
 tbl_compras_itens;data;7;0;True;False;Data;False;False
 tbl_compras_itens;fornecedor_id;3;0;True;False;Código do fornecedor;False;False
-tbl_compras_itens;qtde_req;0.5;0;True;False;Quantidade requisitada;False;False
+tbl_compras_itens;requisitado;11;0;False;False;Requisitado;False;False
 tbl_compras_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False
 tbl_titulos_pagar;compra_id;3;0;True;False;Código da compra;False;tbl_compras.id
 tbl_titulos_pagar;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
@@ -84,7 +87,7 @@ tbl_requisicoes_itens;produto_id;3;0;True;False;Código do produto;False;False
 tbl_requisicoes_itens;obra_id;3;0;True;False;Código da obra;False;False
 tbl_requisicoes_itens;etapa_id;3;0;True;False;Código da etapa da obra;False;False
 tbl_requisicoes_itens;quantidade;0.5;0;True;False;Quantidade do item;False;False
-tbl_requisicoes_itens;medida_id;3;0;True;False;Unidade de medida;False;False
+tbl_requisicoes_itens;um_id;3;0;True;False;Unidade de medida;False;False
 tbl_requisicoes_itens;unitario;6;0;True;False;Valor unitário;False;False
 tbl_requisicoes_itens;total;6;0;True;False;Valor unitário;False;False
 tbl_requisicoes_itens;data;7;0;True;False;Data;False;False
@@ -98,6 +101,3 @@ tbl_parametros;parametro;202;255;True;False;Parâmetro;False;False
 tbl_parametros;de;202;255;True;False;De;False;False
 tbl_parametros;ate;202;255;True;False;Até;False;False
 tbl_parametros;valor_unico;202;255;True;False;Valor único;False;False
-tbl_medidas;id;3;0;True;True;Código;True;False
-tbl_medidas;medida;202;120;True;False;Nome;False;False
-tbl_medidas;abreviacao;202;2;True;False;Abreviação;False;False

@@ -103,7 +103,10 @@ Sub dyMenuOutrosCadastros(control As IRibbonControl, ByRef returnedVal)
     XMLcode = XMLcode & "<button id=" & Chr(34) & "bTiposObra" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
     XMLcode = XMLcode & " label=" & Chr(34) & "Tipos de obra" & Chr(34)
     XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
-
+    
+    XMLcode = XMLcode & "<button id=" & Chr(34) & "bUnidadesMedida" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
+    XMLcode = XMLcode & " label=" & Chr(34) & "Unidades de medida" & Chr(34)
+    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
     
     XMLcode = XMLcode & "</menu>"
 
@@ -118,6 +121,7 @@ Sub ActionDyMenuOutrosCadastros(control As IRibbonControl)
             Case "bContas": fContas.Show
             Case "bEtapas": fEtapas.Show
             Case "bTiposObra": fTiposObra.Show
+            Case "bUnidadesMedida": fUnidadesMedida.Show
             
             Case Else: MsgBox "Botão ainda não implementado", vbInformation
         End Select

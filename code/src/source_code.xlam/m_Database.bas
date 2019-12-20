@@ -306,8 +306,16 @@ End Function
 Public Sub IncluiRegistrosTeste()
 
     If Conecta = True Then
-        sSQL = "INSERT INTO tbl_produtos ([nome]) VALUES ('Cimento') ": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_produtos ([nome]) VALUES ('Cal') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_unidades_medida ([nome], [abreviacao]) VALUES ('Saco', 'SC') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_unidades_medida ([nome], [abreviacao]) VALUES ('Metro cúbico', 'M3') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_unidades_medida ([nome], [abreviacao]) VALUES ('Metro quadrado', 'M2') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_unidades_medida ([nome], [abreviacao]) VALUES ('Lata', 'LT') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_unidades_medida ([nome], [abreviacao]) VALUES ('Metro linear', 'MT') ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_produtos ([nome], [um_id]) VALUES ('Cimento', 1) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_produtos ([nome], [um_id]) VALUES ('Cal', 1) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_produtos ([nome], [um_id]) VALUES ('Areia média', 2) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_produtos ([nome], [um_id]) VALUES ('Pedra', 2) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_produtos ([nome], [um_id]) VALUES ('Laje treliça H08', 3) ": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_fornecedores ([nome]) VALUES ('Cardoso') ": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_fornecedores ([nome]) VALUES ('Orlando') ": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_tipos_obra ([nome]) VALUES ('Casa') ": cnn.Execute sSQL
