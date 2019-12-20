@@ -20,6 +20,7 @@ Private oFornecedor         As New cFornecedor
 Private oProduto            As New cProduto
 Private oCompraItem         As New cCompraItem
 Private oTituloPagar        As New cTituloPagar
+Private oUM                 As New cUnidadeMedida
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
@@ -33,6 +34,7 @@ Private Sub UserForm_Initialize()
 
     Call cbbFornecedorPopular
     Call cbbProdutoPopular
+    Call cbbUMPopular
     Call EventosCampos
     
     Set myRst = New ADODB.RecordSet
@@ -93,8 +95,23 @@ Private Sub cbbFornecedor_AfterUpdate()
     End If
 End Sub
 Private Sub lstItens_Change()
+
+    Dim i As Integer
+    
     If lstItens.ListIndex > -1 And btnItemConfirmar.Caption <> "Alterar" Then
-        cbbProduto.Text = lstItens.List(lstItens.ListIndex, 0)
+    
+        For i = 0 To cbbProduto.ListCount - 1
+            If cbbProduto.List(i, 1) = lstItens.List(lstItens.ListIndex, 1) Then
+                cbbProduto.ListIndex = i: Exit For
+            End If
+        Next i
+        
+        For i = 0 To cbbUM.ListCount - 1
+            If cbbUM.List(i, 1) = lstItens.List(lstItens.ListIndex, 7) Then
+                cbbUM.ListIndex = i: Exit For
+            End If
+        Next i
+        
         txbQtde.Text = lstItens.List(lstItens.ListIndex, 2)
         txbUnitario.Text = lstItens.List(lstItens.ListIndex, 3)
         txbTotal.Text = lstItens.List(lstItens.ListIndex, 4)
@@ -129,6 +146,7 @@ Private Sub btnConfirmar_Click()
                 With oCompraItem
                     .ProdutoID = CLng(lstItens.List(i, 1))
                     .Quantidade = CDbl(lstItens.List(i, 2))
+                    .UmID = CLng(lstItens.List(i, 7))
                     .Unitario = CDbl(lstItens.List(i, 3))
                     .Data = oCompra.Data
                     .FornecedorID = oCompra.FornecedorID
@@ -140,7 +158,11 @@ Private Sub btnConfirmar_Click()
                         If sDecisao = "Inclusão" Then
                             .Inclui
                         ElseIf sDecisao = "Alteração" Then
-                            .Altera .Recno
+                            If IsNull(lstItens.List(i, 5)) Then
+                                .Inclui
+                            Else
+                                .Altera .Recno
+                            End If
                         ElseIf sDecisao = "Exclusão" Then
                             .Exclui .Recno
                         End If
@@ -447,14 +469,15 @@ Private Sub lstItensPopular(CompraID As Long)
     
     With lstItens
         .Clear
-        .ColumnCount = 6
-        .ColumnWidths = "200pt; 0pt; 60pt; 60pt; 60pt; 0pt;"
+        .ColumnCount = 8
+        .ColumnWidths = "200pt; 0pt; 60pt; 60pt; 60pt; 0pt; 40pt; 0pt"
         .Font = "Consolas"
         
         Do Until r.EOF
             .AddItem
             
             oProduto.Carrega r.Fields("produto_id").Value
+            oUM.Carrega r.Fields("um_id").Value
             
             .List(.ListCount - 1, 0) = oProduto.Nome
             .List(.ListCount - 1, 1) = r.Fields("produto_id").Value
@@ -465,6 +488,8 @@ Private Sub lstItensPopular(CompraID As Long)
             
             .List(.ListCount - 1, 4) = Space(9 - Len(Format(cTotal, "#,##0.00"))) & Format(cTotal, "#,##0.00")
             .List(.ListCount - 1, 5) = r.Fields("r_e_c_n_o_").Value
+            .List(.ListCount - 1, 6) = oUM.Abreviacao
+            .List(.ListCount - 1, 7) = r.Fields("um_id").Value
             
             r.MoveNext
         Loop
@@ -516,6 +541,7 @@ Private Sub Campos(Acao As String)
         lblHdQuant.Enabled = False
         lblHdUnitario.Enabled = False
         lblHdTotal.Enabled = False
+        lblHdUM.Enabled = False
         Call btnItemCancelar_Click
         btnItemInclui.Visible = False
         btnItemAltera.Visible = False
@@ -543,6 +569,7 @@ Private Sub Campos(Acao As String)
         lblHdQuant.Enabled = True
         lblHdUnitario.Enabled = True
         lblHdTotal.Enabled = True
+        lblHdUM.Enabled = True
         btnItemInclui.Visible = True
         btnItemAltera.Visible = True
         btnItemExclui.Visible = True
@@ -655,6 +682,7 @@ Private Sub AcaoItem(Acao As String, Habilitar As Boolean)
         lstItens.ListIndex = -1
         cbbProduto.ListIndex = -1
         txbQtde.Text = Format(0, "#,##0.00")
+        cbbUM.ListIndex = -1
         txbUnitario.Text = Format(0, "#,##0.00")
         txbTotal.Text = Format(0, "#,##0.00")
     End If
@@ -663,6 +691,7 @@ Private Sub AcaoItem(Acao As String, Habilitar As Boolean)
         
         cbbProduto.Enabled = Habilitar: lblProduto.Enabled = Habilitar
         txbQtde.Enabled = Habilitar: lblQtde.Enabled = Habilitar
+        cbbUM.Enabled = Habilitar: lblUM.Enabled = Habilitar
         txbUnitario.Enabled = Habilitar: lblUnitario.Enabled = Habilitar
         txbTotal.Enabled = Habilitar: lblTotal.Enabled = Habilitar
         
@@ -678,6 +707,7 @@ Private Sub AcaoItem(Acao As String, Habilitar As Boolean)
         lstItens.ListIndex = -1
         cbbProduto.Enabled = Habilitar: lblProduto.Enabled = Habilitar: cbbProduto.ListIndex = -1
         txbQtde.Enabled = Habilitar: lblQtde.Enabled = Habilitar: txbQtde.Text = Empty
+        cbbUM.Enabled = Habilitar: lblUM.Enabled = Habilitar: cbbUM.ListIndex = -1
         txbUnitario.Enabled = Habilitar: lblUnitario.Enabled = Habilitar: txbUnitario.Text = Empty
         txbTotal.Enabled = Habilitar: lblTotal.Enabled = Habilitar: txbTotal.Text = Empty
         
@@ -732,8 +762,8 @@ Private Sub btnItemConfirmar_Click()
         If ValidaItem = True Then
             
             With lstItens
-                .ColumnCount = 6
-                .ColumnWidths = "200pt; 0pt; 60pt; 60pt; 60pt;"
+                .ColumnCount = 8
+                .ColumnWidths = "200pt; 0pt; 60pt; 60pt; 60pt; 0pt; 40pt; 0pt;"
                 .Font = "Consolas"
                 .AddItem
                 
@@ -742,6 +772,8 @@ Private Sub btnItemConfirmar_Click()
                 .List(.ListCount - 1, 2) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
                 .List(.ListCount - 1, 3) = Space(9 - Len(Format(CDbl(txbUnitario.Text), "#,##0.00"))) & Format(CDbl(txbUnitario.Text), "#,##0.00")
                 .List(.ListCount - 1, 4) = Space(9 - Len(Format(CDbl(txbTotal.Text), "#,##0.00"))) & Format(CDbl(txbTotal.Text), "#,##0.00")
+                .List(.ListCount - 1, 6) = cbbUM.List(cbbUM.ListIndex, 0)
+                .List(.ListCount - 1, 7) = cbbUM.List(cbbUM.ListIndex, 1)
                 
             End With
             
@@ -756,6 +788,8 @@ Private Sub btnItemConfirmar_Click()
                 .List(.ListIndex, 2) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
                 .List(.ListIndex, 3) = Space(9 - Len(Format(CDbl(txbUnitario.Text), "#,##0.00"))) & Format(CDbl(txbUnitario.Text), "#,##0.00")
                 .List(.ListIndex, 4) = Space(9 - Len(Format(CDbl(txbTotal.Text), "#,##0.00"))) & Format(CDbl(txbTotal.Text), "#,##0.00")
+                .List(.ListIndex, 6) = cbbUM.List(cbbUM.ListIndex, 0)
+                .List(.ListIndex, 7) = cbbUM.List(cbbUM.ListIndex, 1)
             End With
             
             Call btnItemCancelar_Click
@@ -978,8 +1012,30 @@ Private Sub lstTitulos_Change()
         btnTituloExclui.Enabled = True
     End If
 End Sub
-Private Sub cbbFornecedor_Change()
-    If cbbFornecedor.ListIndex > -1 And cbbFornecedor.Text <> "" Then
-        MultiPage1.Value = 2
-    End If
+Private Sub cbbUMPopular()
+    
+    Dim idx         As Integer
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oUM.Listar("abreviacao")
+    
+    idx = cbbUM.ListIndex
+    
+    cbbUM.Clear
+    
+    For Each n In col
+        
+        oUM.Carrega CLng(n)
+    
+        With cbbUM
+            .AddItem
+            .List(.ListCount - 1, 0) = oUM.Abreviacao
+            .List(.ListCount - 1, 1) = oUM.ID
+        End With
+        
+    Next n
+    
+    cbbUM.ListIndex = idx
+
 End Sub

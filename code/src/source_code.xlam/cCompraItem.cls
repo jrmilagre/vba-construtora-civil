@@ -13,6 +13,7 @@ Private Type TCompraItem
     CompraID        As Long
     ProdutoID       As Long
     Quantidade      As Double
+    UmID            As Long
     Unitario        As Currency
     Data            As Date
     FornecedorID    As Long
@@ -32,6 +33,9 @@ Public Property Let ProdutoID(ByVal Value As Long): This.ProdutoID = Value: End 
 
 Public Property Get Quantidade() As Double: Quantidade = This.Quantidade: End Property
 Public Property Let Quantidade(ByVal Value As Double): This.Quantidade = Value: End Property
+
+Public Property Get UmID() As Long: UmID = This.UmID: End Property
+Public Property Let UmID(ByVal Value As Long): This.UmID = Value: End Property
 
 Public Property Get Unitario() As Currency: Unitario = This.Unitario: End Property
 Public Property Let Unitario(ByVal Value As Currency): This.Unitario = Value: End Property
@@ -60,6 +64,7 @@ Public Sub Carrega(ID As Long)
         Me.CompraID = .Fields("compra_id").Value
         Me.ProdutoID = .Fields("produto_id").Value
         Me.Quantidade = .Fields("quantidade").Value
+        Me.UmID = .Fields("um_id").Value
         Me.Unitario = .Fields("unitario").Value
         Me.Data = .Fields("data").Value
         Me.FornecedorID = IIf(IsNull(.Fields("fornecedor_id").Value), Null, .Fields("fornecedor_id").Value)
@@ -87,6 +92,7 @@ Public Sub Inclui()
         .Fields("compra_id").Value = Me.CompraID
         .Fields("produto_id").Value = Me.ProdutoID
         .Fields("quantidade").Value = Me.Quantidade
+        .Fields("um_id").Value = Me.UmID
         .Fields("unitario").Value = Me.Unitario
         .Fields("total").Value = Me.Quantidade * Me.Unitario
         .Fields("data").Value = CLng(Data)
@@ -115,6 +121,7 @@ Public Sub Altera(Recno As Long)
         .Fields("compra_id").Value = Me.CompraID
         .Fields("produto_id").Value = Me.ProdutoID
         .Fields("quantidade").Value = Me.Quantidade
+        .Fields("um_id").Value = Me.UmID
         .Fields("unitario").Value = Me.Unitario
         .Fields("total").Value = Me.Quantidade * Me.Unitario
         .Fields("data").Value = CLng(Data)
