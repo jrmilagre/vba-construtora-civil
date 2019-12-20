@@ -23,6 +23,7 @@ Private oFornecedor         As New cFornecedor
 Private oProduto            As New cProduto
 Private oCompraItem         As New cCompraItem
 Private oRequisicaoItem     As New cRequisicaoItem
+Private oUM                 As New cUnidadeMedida
 
 Private colControles        As New Collection
 Private myRst               As ADODB.RecordSet
@@ -288,6 +289,10 @@ Private Sub Campos(Acao As String)
         lstCompraItens.ListIndex = -1
         lstRequisicoes.Clear
         lstRequisicoes.ListIndex = -1
+        
+        frmItemSelecionado.Visible = True
+        frmRequisitar.Visible = True
+        
     End If
 
 End Sub
@@ -359,8 +364,8 @@ Private Sub lstCompraItensPopular()
     
         With lstCompraItens
             .Clear
-            .ColumnCount = 9
-            .ColumnWidths = "60pt; 60pt; 80pt; 80pt; 60pt; 60pt; 60pt; 0pt; 60pt;"
+            .ColumnCount = 10
+            .ColumnWidths = "60pt; 60pt; 80pt; 80pt; 60pt; 60pt; 60pt; 0pt; 60pt; 40pt;"
             ' 0 - Data da compra do item
             ' 1 - Número da compra
             ' 2 - Nome do fornecedor
@@ -382,6 +387,7 @@ Private Sub lstCompraItensPopular()
                     
                     oFornecedor.Carrega r.Fields("fornecedor_id").Value
                     oProduto.Carrega r.Fields("produto_id").Value
+                    oUM.Carrega r.Fields("um_id").Value
                     
                     .AddItem
                     
@@ -393,10 +399,8 @@ Private Sub lstCompraItensPopular()
                     .List(.ListCount - 1, 5) = Space(9 - Len(Format(r.Fields("unitario").Value, "#,##0.00"))) & Format(r.Fields("unitario").Value, "#,##0.00")
                     .List(.ListCount - 1, 6) = Space(9 - Len(Format(r.Fields("total").Value, "#,##0.00"))) & Format(r.Fields("total").Value, "#,##0.00")
                     .List(.ListCount - 1, 7) = r.Fields("r_e_c_n_o_").Value
-                    
-                    
-                    
                     .List(.ListCount - 1, 8) = Space(9 - Len(Format(dRequisitado, "#,##0.00"))) & Format(dRequisitado, "#,##0.00")
+                    .List(.ListCount - 1, 9) = oUM.Abreviacao
                     
                 End If
                 
@@ -421,7 +425,7 @@ Private Sub lstCompraItens_Change()
         lblItemProduto.Caption = lstCompraItens.List(i, 3)
         txbQtde.Text = Format(lstCompraItens.List(i, 4) - lstCompraItens.List(i, 8), "#,##0.00")
         lblItemUnitario.Caption = lstCompraItens.List(i, 5)
-        lblItemTotal.Caption = lstCompraItens.List(i, 6)
+        lblItemTotal.Caption = Format(CDbl(lstCompraItens.List(i, 5)) * (CDbl(lstCompraItens.List(i, 4)) - CDbl(lstCompraItens.List(i, 8))), "#,##0.00")
         
         txbQtde.Enabled = True: lblQtde.Enabled = True
         cbbObra.Enabled = True: lblObra.Enabled = True
@@ -491,7 +495,7 @@ Private Function ValidaItem() As Boolean
     ElseIf cbbEtapa.ListIndex = -1 Then
         MsgBox "Campo 'Etapa' é obrigatório", vbCritical
         MultiPage1.Value = 2: cbbEtapa.SetFocus
-    ElseIf CDbl(lstCompraItens.List(lstCompraItens.ListIndex, 4)) = CDbl(lstCompraItens.List(lstCompraItens.ListIndex, 8)) Then
+    ElseIf CDbl(txbQtde.Text) > (CDbl(lstCompraItens.List(lstCompraItens.ListIndex, 4)) - CDbl(lstCompraItens.List(lstCompraItens.ListIndex, 8))) Then
         MsgBox "Item sem saldo para requisitar", vbCritical
         MultiPage1.Value = 2
     Else
@@ -599,24 +603,36 @@ Private Sub btnConfirmar_Click()
                         oCompraItem.Carrega CLng(lstRequisicoes.List(i, 0))
                         
                         .RequisicaoID = oRequisicao.ID
-                        .ItemCompraID = oCompraItem.Recno
                         .ProdutoID = oCompraItem.ProdutoID
                         .ObraID = CLng(lstRequisicoes.List(i, 6))
                         .EtapaID = CLng(lstRequisicoes.List(i, 8))
                         .Qtde = CDbl(lstRequisicoes.List(i, 2))
+                        .UmID = oCompraItem.UmID
                         .Unitario = CCur(lstRequisicoes.List(i, 3))
                         .Total = CCur(lstRequisicoes.List(i, 4))
                         .Data = oRequisicao.Data
-                            
+                        .TabelaOrigem = "tbl_compras_itens"
+                        .RecnoOrigem = oCompraItem.Recno
+                        
                         .Inclui
                     End With
                     
+                    If oCompraItem.Quantidade = oCompraItem.GetQtdeBaixada(oRequisicaoItem.RecnoOrigem) Then
+                        oCompraItem.ItemTotalmenteRequisitado oCompraItem.Recno
+                    End If
+                    
                 ElseIf sDecisao = "Exclusão" Then
+                
+                    oCompraItem.Carrega CLng(lstRequisicoes.List(i, 0))
                 
                     With oRequisicaoItem
                         .Recno = CLng(lstRequisicoes.List(i, 9))
                         .Exclui .Recno
                     End With
+                    
+                    If oCompraItem.Quantidade > oCompraItem.GetQtdeBaixada(oCompraItem.Recno) Then
+                        oCompraItem.CancelaRequisicaoTotalItem oCompraItem.Recno
+                    End If
                     
                 End If
             Next i
@@ -709,6 +725,9 @@ Private Sub lstPrincipal_Change()
         
         lstRequisicoes.Enabled = False
         btnRequisicaoExclui.Enabled = False
+        frmRequisitar.Visible = False
+        frmItemSelecionado.Visible = False
+        
     
     End If
     
@@ -728,6 +747,7 @@ Private Sub lstRequisicoesPopular(RequisicaoID As Long)
         r.Open sSQL, cnn, adOpenStatic
     
         With lstRequisicoes
+                .Clear
                 .ColumnCount = 10
                 .ColumnWidths = "0pt; 85pt; 55pt; 55pt; 55pt; 240pt; 0pt; 60pt; 0pt; 0pt;"
                 ' Colunas
@@ -752,7 +772,7 @@ Private Sub lstRequisicoesPopular(RequisicaoID As Long)
                     oEtapa.Carrega r.Fields("etapa_id").Value
                 
                     .AddItem
-                    .List(.ListCount - 1, 0) = r.Fields("itemcompra_id").Value
+                    .List(.ListCount - 1, 0) = r.Fields("recno_origem").Value
                     .List(.ListCount - 1, 1) = oProduto.Nome
                     .List(.ListCount - 1, 2) = Space(9 - Len(Format(r.Fields("quantidade").Value, "#,##0.00"))) & Format(r.Fields("quantidade").Value, "#,##0.00")
                     .List(.ListCount - 1, 3) = Space(9 - Len(Format(r.Fields("unitario").Value, "#,##0.00"))) & Format(r.Fields("unitario").Value, "#,##0.00")

@@ -17,7 +17,6 @@ Private Type TCompraItem
     Unitario        As Currency
     Data            As Date
     FornecedorID    As Long
-    QuantReq        As Double
     Recno           As Long
 End Type
 
@@ -45,9 +44,6 @@ Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 
 Public Property Get FornecedorID() As Variant: FornecedorID = This.FornecedorID: End Property
 Public Property Let FornecedorID(ByVal Value As Variant): This.FornecedorID = Value: End Property
-
-Public Property Get QuantReq() As Double: QuantReq = This.QuantReq: End Property
-Public Property Let QuantReq(ByVal Value As Double): This.QuantReq = Value: End Property
 
 Public Property Get Recno() As Long: Recno = This.Recno: End Property
 Public Property Let Recno(ByVal Value As Long): This.Recno = Value: End Property
@@ -152,7 +148,9 @@ Public Function GetQtdeBaixada(ItemCompraID As Long) As Currency
 
     Dim rTmp As New ADODB.RecordSet
 
-    sSQL = "SELECT sum(quantidade) as quantidade FROM tbl_requisicoes_itens WHERE itemcompra_id = " & ItemCompraID
+    sSQL = "SELECT sum(quantidade) as quantidade FROM tbl_requisicoes_itens "
+    sSQL = sSQL & "WHERE tabela_origem = 'tbl_compras_itens' "
+    sSQL = sSQL & "and recno_origem = " & ItemCompraID
     
     rTmp.Open sSQL, cnn
     
@@ -165,4 +163,22 @@ Public Function GetQtdeBaixada(ItemCompraID As Long) As Currency
     Set rTmp = Nothing
     
 End Function
+Public Sub ItemTotalmenteRequisitado(ItemCompraID As Long)
+
+    sSQL = "UPDATE tbl_compras_itens "
+    sSQL = sSQL & "SET requisitado = True "
+    sSQL = sSQL & "WHERE r_e_c_n_o_ = " & ItemCompraID
+    
+    cnn.Execute sSQL
+
+End Sub
+Public Sub CancelaRequisicaoTotalItem(ItemCompraID As Long)
+
+    sSQL = "UPDATE tbl_compras_itens "
+    sSQL = sSQL & "SET requisitado = False "
+    sSQL = sSQL & "WHERE r_e_c_n_o_ = " & ItemCompraID
+    
+    cnn.Execute sSQL
+
+End Sub
 
