@@ -10,7 +10,7 @@ Public cnn  As ADODB.Connection  ' Objeto de conexão com o banco de dados
 Public rst  As ADODB.RecordSet   ' Objeto de armazenamento de dados
 Public cat  As ADOX.Catalog
 Public sSQL As String
-Private Const sBanco As String = "database_test.mdb"
+Private Const sBanco As String = "database.mdb"
 Private sCaminho As String
 
 ' Função para efetuar conexão com o banco de dados

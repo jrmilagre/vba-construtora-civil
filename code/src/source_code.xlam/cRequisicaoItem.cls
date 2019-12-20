@@ -89,14 +89,15 @@ Public Sub Inclui()
         
         Me.Recno = .Fields("r_e_c_n_o_").Value
         
-        .Fields("pagamento_id").Value = Me.PagamentoID
-        .Fields("titulo_id").Value = Me.TituloID
-        .Fields("valor_baixado").Value = Me.ValorBaixado
-        .Fields("data_baixa").Value = Me.DataBaixa
-        .Fields("fornecedor_id").Value = Me.FornecedorID
-        .Fields("titulo_valor").Value = Me.TituloValor
-        .Fields("titulo_data").Value = Me.TituloData
-        .Fields("titulo_vencimento").Value = Me.TituloVencimento
+        .Fields("requisicao_id").Value = Me.RequisicaoID
+        .Fields("itemcompra_id").Value = Me.ItemCompraID
+        .Fields("produto_id").Value = Me.ProdutoID
+        .Fields("obra_id").Value = Me.ObraID
+        .Fields("etapa_id").Value = Me.EtapaID
+        .Fields("quantidade").Value = Me.Qtde
+        .Fields("unitario").Value = Me.Unitario
+        .Fields("total").Value = Me.Total
+        .Fields("data").Value = Me.Data
         
         .Update
     End With
@@ -140,4 +141,21 @@ Public Sub Exclui(Recno As Long)
     cnn.Execute sSQL
 
 End Sub
+Public Function GetQtdeRequisitada(ItemCompraID As Long) As Double
+
+    Dim rTmp As New ADODB.RecordSet
+
+    sSQL = "SELECT sum(quantidade) as quantidade FROM tbl_requisicoes_itens WHERE itemcompra_id = " & ItemCompraID
+    
+    rTmp.Open sSQL, cnn
+    
+    If Not IsNull(rTmp.Fields("quantidade").Value) Then
+        GetQtdeRequisitada = rTmp.Fields("quantidade").Value
+    Else
+        GetQtdeRequisitada = 0
+    End If
+    
+    Set rTmp = Nothing
+    
+End Function
 

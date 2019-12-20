@@ -58,10 +58,12 @@ Public Sub Carrega(ID As Long)
     
     With rst
         Me.CompraID = .Fields("compra_id").Value
-        Me.Data = .Fields("data").Value
-        Me.FornecedorID = IIf(IsNull(.Fields("fornecedor_id").Value), Null, .Fields("fornecedor_id").Value)
+        Me.ProdutoID = .Fields("produto_id").Value
         Me.Quantidade = .Fields("quantidade").Value
         Me.Unitario = .Fields("unitario").Value
+        Me.Data = .Fields("data").Value
+        Me.FornecedorID = IIf(IsNull(.Fields("fornecedor_id").Value), Null, .Fields("fornecedor_id").Value)
+        Me.Recno = .Fields("r_e_c_n_o_").Value
     End With
     
 End Sub

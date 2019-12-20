@@ -21,6 +21,8 @@ Private oCliente            As New cCliente
 Private oEtapa              As New cEtapa
 Private oFornecedor         As New cFornecedor
 Private oProduto            As New cProduto
+Private oCompraItem         As New cCompraItem
+Private oRequisicaoItem     As New cRequisicaoItem
 
 Private colControles        As New Collection
 Private myRst               As ADODB.RecordSet
@@ -282,14 +284,17 @@ Private Sub Campos(Acao As String)
 '        cbbConta.ListIndex = -1
 '        txbValorBaixar.Text = Empty
 '
-'        lstPgtos.Clear
-'        lstPrincipal.ListIndex = -1
+        lstCompraItens.Clear
+        lstCompraItens.ListIndex = -1
+        lstRequisicoes.Clear
+        lstRequisicoes.ListIndex = -1
     End If
 
 End Sub
 Private Sub btnIncluir_Click()
     Call PosDecisaoTomada("Inclusão")
     lstPrincipal.ListIndex = -1
+    Call lstCompraItensPopular
 End Sub
 Private Sub btnAlterar_Click()
     Call PosDecisaoTomada("Alteração")
@@ -336,11 +341,12 @@ Private Sub PosDecisaoTomada(Decisao As String)
     btnPaginaFinal.Enabled = False
     
 End Sub
-Private Sub lstTitulosPopular()
+Private Sub lstCompraItensPopular()
 
     Dim r       As New ADODB.RecordSet
     Dim dQtdBx  As Currency
     Dim dSaldo  As Currency
+    Dim dRequisitado As Currency
 
     If lstPrincipal.ListIndex = -1 Then
     
@@ -351,20 +357,28 @@ Private Sub lstTitulosPopular()
         
         r.Open sSQL, cnn, adOpenStatic
     
-        With lstTitulos
+        With lstCompraItens
             .Clear
-            .ColumnCount = 7
-            .ColumnWidths = "60pt; 60pt; 60pt; 60pt; 60pt; 0pt; 0pt;"
+            .ColumnCount = 9
+            .ColumnWidths = "60pt; 60pt; 80pt; 80pt; 60pt; 60pt; 60pt; 0pt; 60pt;"
+            ' 0 - Data da compra do item
+            ' 1 - Número da compra
+            ' 2 - Nome do fornecedor
+            ' 3 - Nome do produto
+            ' 4 - Quantidade do item
+            ' 5 - Valor unitário do item
+            ' 6 - Valor total do item
+            ' 7 - Recno do item comprado
+            ' 8 - Quantidade requisitada do item
             .Font = "Consolas"
             
             Do Until r.EOF
                 
                 dQtdBx = oCompraItem.GetQtdeBaixada(r.Fields("r_e_c_n_o_").Value)
                 dSaldo = r.Fields("quantidade").Value - dQtdBx
+                dRequisitado = oRequisicaoItem.GetQtdeRequisitada(r.Fields("r_e_c_n_o_").Value)
                                 
                 If dSaldo > 0 Then
-                                
-                    .AddItem
                     
                     oFornecedor.Carrega r.Fields("fornecedor_id").Value
                     oProduto.Carrega r.Fields("produto_id").Value
@@ -375,11 +389,14 @@ Private Sub lstTitulosPopular()
                     .List(.ListCount - 1, 1) = Format(r.Fields("compra_id").Value, "0000000000")
                     .List(.ListCount - 1, 2) = oFornecedor.Nome
                     .List(.ListCount - 1, 3) = oProduto.Nome
-                    
                     .List(.ListCount - 1, 4) = Space(9 - Len(Format(r.Fields("quantidade").Value, "#,##0.00"))) & Format(r.Fields("quantidade").Value, "#,##0.00")
                     .List(.ListCount - 1, 5) = Space(9 - Len(Format(r.Fields("unitario").Value, "#,##0.00"))) & Format(r.Fields("unitario").Value, "#,##0.00")
                     .List(.ListCount - 1, 6) = Space(9 - Len(Format(r.Fields("total").Value, "#,##0.00"))) & Format(r.Fields("total").Value, "#,##0.00")
                     .List(.ListCount - 1, 7) = r.Fields("r_e_c_n_o_").Value
+                    
+                    
+                    
+                    .List(.ListCount - 1, 8) = Space(9 - Len(Format(dRequisitado, "#,##0.00"))) & Format(dRequisitado, "#,##0.00")
                     
                 End If
                 
@@ -387,48 +404,372 @@ Private Sub lstTitulosPopular()
             Loop
             
         End With
-        
     Else
-        
-        sSQL = "SELECT * "
-        sSQL = sSQL & "FROM tbl_pagamentos_itens "
-        sSQL = sSQL & "WHERE "
-        sSQL = sSQL & "pagamento_id = " & oPagamento.ID
-        
-        r.Open sSQL, cnn, adOpenStatic
-        
-        With lstTitulos
-            .Clear
-            .ColumnCount = 7
-            .ColumnWidths = "60pt; 60pt; 60pt; 60pt; 60pt; 0pt; 0pt;"
-            .Font = "Consolas"
-            
-            Do Until r.EOF
-            
-                oFornecedor.Carrega r.Fields("fornecedor_id").Value
-                oProduto.Carrega r.Fields("produto_id").Value
-                
-                .AddItem
-                
-                .List(.ListCount - 1, 0) = r.Fields("data").Value
-                .List(.ListCount - 1, 1) = Format(r.Fields("compra_id").Value, "0000000000")
-                .List(.ListCount - 1, 2) = oFornecedor.Nome
-                .List(.ListCount - 1, 3) = oProduto.Nome
-                
-                .List(.ListCount - 1, 4) = Space(9 - Len(Format(r.Fields("quantidade").Value, "#,##0.00"))) & Format(r.Fields("quantidade").Value, "#,##0.00")
-                .List(.ListCount - 1, 5) = Space(9 - Len(Format(r.Fields("unitario").Value, "#,##0.00"))) & Format(r.Fields("unitario").Value, "#,##0.00")
-                .List(.ListCount - 1, 6) = Space(9 - Len(Format(r.Fields("total").Value, "#,##0.00"))) & Format(r.Fields("total").Value, "#,##0.00")
-                .List(.ListCount - 1, 7) = r.Fields("r_e_c_n_o_").Value
-                
-                r.MoveNext
-            Loop
-            
-        End With
-        
     End If
     
     Set r = Nothing
     
-    Call TotalizaTitulos
+End Sub
+Private Sub lstCompraItens_Change()
+
+    Dim i As Integer
+        
+    If lstCompraItens.ListIndex > -1 Then
     
+        i = lstCompraItens.ListIndex
+        
+        lblItemProduto.Caption = lstCompraItens.List(i, 3)
+        txbQtde.Text = Format(lstCompraItens.List(i, 4) - lstCompraItens.List(i, 8), "#,##0.00")
+        lblItemUnitario.Caption = lstCompraItens.List(i, 5)
+        lblItemTotal.Caption = lstCompraItens.List(i, 6)
+        
+        txbQtde.Enabled = True: lblQtde.Enabled = True
+        cbbObra.Enabled = True: lblObra.Enabled = True
+        cbbEtapa.Enabled = True: lblEtapa.Enabled = True
+        btnRequisitar.Enabled = True
+        
+        lstRequisicoes.ListIndex = -1
+        btnRequisicaoExclui.Enabled = False
+        
+        
+    End If
+        
+End Sub
+Private Sub btnRequisitar_Click()
+
+    If ValidaItem = True Then
+    
+        Dim cVlrTotal As Currency
+    
+        With lstRequisicoes
+            .ColumnCount = 9
+            .ColumnWidths = "0pt; 85pt; 55pt; 55pt; 55pt; 240pt; 0pt; 60pt; 0pt;"
+            ' Colunas
+            ' 0 - Recno do item da compra
+            ' 1 - Descrição do item
+            ' 2 - Quantidade do item
+            ' 3 - Preço unitário do item
+            ' 4 - Preço total do item
+            ' 5 - Descrição da obra
+            ' 6 - Código da obra
+            ' 7 - Descrição da etapa da obra
+            ' 8 - Código da etapa da obra
+            
+            .Font = "Consolas"
+            
+            
+            oCompraItem.Carrega CLng(lstCompraItens.List(lstCompraItens.ListIndex, 7))
+        
+            .AddItem
+            .List(.ListCount - 1, 0) = oCompraItem.Recno
+            .List(.ListCount - 1, 1) = lblItemProduto.Caption
+            .List(.ListCount - 1, 2) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
+            .List(.ListCount - 1, 3) = Space(9 - Len(Format(CCur(lblItemUnitario.Caption), "#,##0.00"))) & Format(CCur(lblItemUnitario.Caption), "#,##0.00")
+            
+            cVlrTotal = CCur(txbQtde.Text) * CCur(lblItemUnitario.Caption)
+            
+            .List(.ListCount - 1, 4) = Space(9 - Len(Format(cVlrTotal, "#,##0.00"))) & Format(cVlrTotal, "#,##0.00")
+            .List(.ListCount - 1, 5) = cbbObra.List(cbbObra.ListIndex, 0) & Space(30 - Len(cbbObra.List(cbbObra.ListIndex, 0))) & " | " & cbbObra.List(cbbObra.ListIndex, 2)
+            .List(.ListCount - 1, 6) = cbbObra.List(cbbObra.ListIndex, 1)
+            .List(.ListCount - 1, 7) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
+            .List(.ListCount - 1, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 1)
+            
+        End With
+        
+        Call AtualizaColunaRequisitado(CDbl(txbQtde.Text), lstCompraItens.ListIndex)
+   
+    End If
+
+End Sub
+Private Function ValidaItem() As Boolean
+
+    ValidaItem = False
+    
+    If cbbObra.ListIndex = -1 Then
+        MsgBox "Campo 'Obra' é obrigatório", vbCritical
+        MultiPage1.Value = 2: cbbObra.SetFocus
+    ElseIf cbbEtapa.ListIndex = -1 Then
+        MsgBox "Campo 'Etapa' é obrigatório", vbCritical
+        MultiPage1.Value = 2: cbbEtapa.SetFocus
+    ElseIf CDbl(lstCompraItens.List(lstCompraItens.ListIndex, 4)) = CDbl(lstCompraItens.List(lstCompraItens.ListIndex, 8)) Then
+        MsgBox "Item sem saldo para requisitar", vbCritical
+        MultiPage1.Value = 2
+    Else
+        ValidaItem = True
+    End If
+
+End Function
+Private Sub txbQtde_AfterUpdate()
+    lblItemTotal.Caption = Format(CCur(txbQtde.Text) * CCur(lblItemUnitario.Caption), "#,##0.00")
+    txbQtde.Text = Format(txbQtde.Text, "#,##0.00")
+End Sub
+Private Sub AtualizaColunaRequisitado(Quantidade As Double, Indice As Integer)
+
+    'Dim i As Integer
+    Dim dRequisitado As Double
+    
+    'i = lstCompraItens.ListIndex
+    
+    dRequisitado = CDbl(lstCompraItens.List(Indice, 8)) + Quantidade
+    
+    lstCompraItens.List(Indice, 8) = Space(9 - Len(Format(dRequisitado, "#,##0.00"))) & Format(dRequisitado, "#,##0.00")
+    
+    lblItemProduto.Caption = ""
+    txbQtde.Text = Format(0, "#,##0.00")
+    lblItemUnitario.Caption = Format(0, "#,##0.00")
+    lblItemTotal.Caption = Format(0, "#,##0.00")
+    cbbObra.ListIndex = -1
+    cbbEtapa.ListIndex = -1
+    lstCompraItens.ListIndex = -1
+    
+    txbQtde.Enabled = False: lblQtde.Enabled = False
+    cbbObra.Enabled = False: lblObra.Enabled = False
+    cbbEtapa.Enabled = False: lblEtapa.Enabled = False
+    btnRequisitar.Enabled = False
+
+End Sub
+Private Sub lstRequisicoes_Click()
+
+    Dim i As Integer
+        
+    If lstRequisicoes.ListIndex > -1 Then
+    
+        i = lstRequisicoes.ListIndex
+        
+        btnRequisicaoExclui.Enabled = True
+        lstCompraItens.ListIndex = -1
+        
+        txbQtde.Enabled = False: lblQtde.Enabled = False
+        cbbObra.Enabled = False: lblObra.Enabled = False
+        cbbEtapa.Enabled = False: lblEtapa.Enabled = False
+        btnRequisitar.Enabled = False
+    End If
+
+End Sub
+Private Sub btnRequisicaoExclui_Click()
+    
+    If lstRequisicoes.ListIndex > -1 Then
+        
+        Dim d As Double
+        Dim i As Integer
+        
+        d = CDbl(lstRequisicoes.List(lstRequisicoes.ListIndex, 2))
+        
+        For i = 0 To lstCompraItens.ListCount - 1
+            If lstRequisicoes.List(lstRequisicoes.ListIndex, 0) = lstCompraItens.List(i, 7) Then
+                Call AtualizaColunaRequisitado(d * -1, i)
+            End If
+        Next i
+        
+        lstRequisicoes.RemoveItem (lstRequisicoes.ListIndex)
+        
+        MsgBox "Item excluído com sucesso!", vbInformation
+        
+        btnRequisicaoExclui.Enabled = False
+        
+    End If
+    
+End Sub
+Private Sub btnConfirmar_Click()
+    
+    Dim vbResposta As VBA.VbMsgBoxResult
+    Dim sDecisao As String
+    Dim i As Integer
+    
+    sDecisao = Replace(btnConfirmar.Caption, "Confirmar ", "")
+    
+    If Valida(sDecisao) = True Then
+    
+        vbResposta = MsgBox("Deseja realmente fazer a " & sDecisao & "?", vbYesNo + vbQuestion, "Pergunta")
+        
+        If vbResposta = vbYes Then
+        
+            ' Cabeçalho da requisição
+            If sDecisao = "Inclusão" Then
+                oRequisicao.Inclui
+            End If
+            
+            ' Itens requisitados
+            For i = 0 To lstRequisicoes.ListCount - 1
+            
+                If sDecisao = "Inclusão" Then
+                    
+                    With oRequisicaoItem
+                    
+                        oCompraItem.Carrega CLng(lstRequisicoes.List(i, 0))
+                        
+                        .RequisicaoID = oRequisicao.ID
+                        .ItemCompraID = oCompraItem.Recno
+                        .ProdutoID = oCompraItem.ProdutoID
+                        .ObraID = CLng(lstRequisicoes.List(i, 6))
+                        .EtapaID = CLng(lstRequisicoes.List(i, 8))
+                        .Qtde = CDbl(lstRequisicoes.List(i, 2))
+                        .Unitario = CCur(lstRequisicoes.List(i, 3))
+                        .Total = CCur(lstRequisicoes.List(i, 4))
+                        .Data = oRequisicao.Data
+                            
+                        .Inclui
+                    End With
+                    
+                ElseIf sDecisao = "Exclusão" Then
+                
+                    With oRequisicaoItem
+                        .Recno = CLng(lstRequisicoes.List(i, 9))
+                        .Exclui .Recno
+                    End With
+                    
+                End If
+            Next i
+            
+            If sDecisao = "Exclusão" Then
+                oRequisicao.Exclui oRequisicao.ID
+            End If
+            
+            If sDecisao = "Inclusão" Then
+                If lstPrincipal.ListCount < myRst.PageSize Then
+                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
+                Else
+                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption))) + 1
+                End If
+            Else
+                lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
+            End If
+            
+            Set myRst = New ADODB.RecordSet
+            Set myRst = oRequisicao.RecordSet
+        
+            With scrPagina
+                .Min = 1
+                .Max = myRst.PageCount
+            End With
+            
+            If myRst.PageCount > 0 Then
+                lPagina = myRst.PageCount
+                myRst.AbsolutePage = myRst.PageCount
+                scrPagina.Value = lPagina
+            End If
+            
+            Call lstPrincipalPopular(lPagina)
+            
+            ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
+            MsgBox sDecisao & " realizada com sucesso.", vbInformation, sDecisao & " de registro"
+            
+            MultiPage1.Value = 0
+            
+            Call btnCancelar_Click
+            
+        ElseIf vbResposta = vbNo Then
+            Call btnCancelar_Click
+        End If
+    
+    End If
+    
+End Sub
+Private Function Valida(Decisao As String) As Boolean
+    
+    Valida = False
+    
+    If Decisao = "Inclusão" Then
+        If txbData.Text = Empty Then
+            MsgBox "Campo 'Data' é obrigatório", vbCritical
+            MultiPage1.Value = 1: txbData.SetFocus
+        Else
+            If lstRequisicoes.ListCount = 0 Then
+                MsgBox "Não há itens requisitados.", vbCritical
+                MultiPage1.Value = 2
+            Else
+                With oRequisicao
+                    .Data = CDate(txbData.Text)
+                End With
+                
+                Valida = True
+            End If
+        End If
+    Else
+        Valida = True
+    End If
+
+End Function
+Private Sub lstPrincipal_Change()
+
+    Dim n As Long
+    
+    If lstPrincipal.ListIndex > -1 Then
+    
+        btnExcluir.Enabled = True
+        
+        oRequisicao.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
+        
+        lblCabID.Caption = Format(oRequisicao.ID, "0000000000")
+        lblCabData.Caption = oRequisicao.Data
+        
+        txbData.Text = oRequisicao.Data
+        
+        Call lstRequisicoesPopular(oRequisicao.ID)
+        
+        lstRequisicoes.Enabled = False
+        btnRequisicaoExclui.Enabled = False
+    
+    End If
+    
+End Sub
+Private Sub lstRequisicoesPopular(RequisicaoID As Long)
+
+    Dim r       As New ADODB.RecordSet
+
+    If lstPrincipal.ListIndex > -1 Then
+    
+        sSQL = "SELECT * "
+        sSQL = sSQL & "FROM tbl_requisicoes_itens "
+        sSQL = sSQL & "WHERE "
+        sSQL = sSQL & "requisicao_id = " & RequisicaoID & " "
+        sSQL = sSQL & "ORDER BY r_e_c_n_o_"
+        
+        r.Open sSQL, cnn, adOpenStatic
+    
+        With lstRequisicoes
+                .ColumnCount = 10
+                .ColumnWidths = "0pt; 85pt; 55pt; 55pt; 55pt; 240pt; 0pt; 60pt; 0pt; 0pt;"
+                ' Colunas
+                ' 0 - Recno do item da compra
+                ' 1 - Descrição do item
+                ' 2 - Quantidade do item
+                ' 3 - Preço unitário do item
+                ' 4 - Preço total do item
+                ' 5 - Descrição da obra
+                ' 6 - Código da obra
+                ' 7 - Descrição da etapa da obra
+                ' 8 - Código da etapa da obra
+                ' 9 - Recno do item requisitado
+                
+                .Font = "Consolas"
+                
+                Do Until r.EOF
+
+                    oProduto.Carrega r.Fields("produto_id").Value
+                    oObra.Carrega r.Fields("obra_id").Value
+                    oCliente.Carrega oObra.ClienteID
+                    oEtapa.Carrega r.Fields("etapa_id").Value
+                
+                    .AddItem
+                    .List(.ListCount - 1, 0) = r.Fields("itemcompra_id").Value
+                    .List(.ListCount - 1, 1) = oProduto.Nome
+                    .List(.ListCount - 1, 2) = Space(9 - Len(Format(r.Fields("quantidade").Value, "#,##0.00"))) & Format(r.Fields("quantidade").Value, "#,##0.00")
+                    .List(.ListCount - 1, 3) = Space(9 - Len(Format(r.Fields("unitario").Value, "#,##0.00"))) & Format(r.Fields("unitario").Value, "#,##0.00")
+                    .List(.ListCount - 1, 4) = Space(9 - Len(Format(r.Fields("total").Value, "#,##0.00"))) & Format(r.Fields("total").Value, "#,##0.00")
+                    .List(.ListCount - 1, 5) = oObra.Bairro & Space(30 - Len(oObra.Bairro)) & " | " & oCliente.Nome
+                    .List(.ListCount - 1, 6) = r.Fields("obra_id").Value
+                    .List(.ListCount - 1, 7) = oEtapa.Nome
+                    .List(.ListCount - 1, 8) = r.Fields("etapa_id").Value
+                    .List(.ListCount - 1, 9) = r.Fields("r_e_c_n_o_").Value
+                
+                    r.MoveNext
+                Loop
+            
+        End With
+    
+        Set r = Nothing
+    
+    End If
+
 End Sub
