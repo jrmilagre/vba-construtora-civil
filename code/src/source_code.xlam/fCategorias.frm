@@ -99,41 +99,22 @@ Private Sub btnConfirmar_Click()
         
             If sDecisao = vbNewLine & "Inclusão" Then
             
-                ' Chama método para incluir registro no banco de dados
                 oCategoria.Inclui
-                Call lstPrincipalPopular(sCampoOrderBy)
-                ' Inclui registro na ListBox
-'                With lstPrincipal
-'                    .AddItem
-'                    .List(.ListCount - 1, 0) = oCategoria.NomeFantasia
-'                    .List(.ListCount - 1, 1) = oCategoria.ID
-'                    .List(.ListCount - 1, 2) = oCategoria.Endereco
-'                End With
-                    
                 
-                'Call ListBoxOrdenar
+                Call lstPrincipalPopular(sCampoOrderBy)
                 
             ElseIf sDecisao = vbNewLine & "Alteração" Then
                 
-                ' Chama método para alterar dados no banco de dados
                 oCategoria.Altera
+                
                 Call lstPrincipalPopular(sCampoOrderBy)
-                ' Replica as alterações na ListBox
-'                With lstPrincipal
-'                    .List(.ListIndex, 0) = oCategoria.NomeFantasia
-'                    .List(.ListIndex, 2) = oCategoria.Endereco
-'                End With
-                
-                
-                'Call ListBoxOrdenar
                     
             ElseIf sDecisao = vbNewLine & "Exclusão" Then
                         
-                ' Chama método para deletar registro do banco de dados
                 oCategoria.Exclui
+                
                 Call lstPrincipalPopular(sCampoOrderBy)
-                ' Remove item da ListBox
-                'lstPrincipal.RemoveItem (lstPrincipal.ListIndex)
+                
             End If
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
@@ -211,6 +192,8 @@ End Sub
 
 Private Sub lstPrincipal_Change()
 
+    Dim n As Integer
+
     If bListBoxOrdenando = False Then
     
         If btnAlterar.Enabled = False Then btnAlterar.Enabled = True
@@ -223,6 +206,15 @@ Private Sub lstPrincipal_Change()
         lblID.Caption = Format(IIf(oCategoria.ID = 0, "", oCategoria.ID), "00000")
         lblCabNome.Caption = oCategoria.Categoria
         txbCategoria.Text = oCategoria.Categoria
+        txbSubcategoria.Text = oCategoria.Subcategoria
+        txbItemSubcategoria.Text = oCategoria.ItemSubcategoria
+        
+        For n = 0 To cbbPagRec.ListCount - 1
+            If cbbPagRec.List(n, 1) = oCategoria.PagRec Then
+                cbbPagRec.ListIndex = n
+                Exit For
+            End If
+        Next n
                 
     End If
 
@@ -251,13 +243,25 @@ End Sub
 Private Sub Campos(Acao As String)
 
     If Acao = "Desabilitar" Then
+        cbbPagRec.Enabled = False: lblPagRec.Enabled = False
         txbCategoria.Enabled = False: lblCategoria.Enabled = False
+        txbSubcategoria.Enabled = False: lblSubcategoria.Enabled = False
+        txbItemSubcategoria.Enabled = False: lblItemSubcategoria.Enabled = False
+        
     ElseIf Acao = "Habilitar" Then
+        cbbPagRec.Enabled = True: lblPagRec.Enabled = True
         txbCategoria.Enabled = True: lblCategoria.Enabled = True
+        txbSubcategoria.Enabled = True: lblSubcategoria.Enabled = True
+        txbItemSubcategoria.Enabled = True: lblItemSubcategoria.Enabled = True
     ElseIf Acao = "Limpar" Then
         lblID.Caption = ""
         lblCabNome.Caption = ""
+        cbbPagRec.ListIndex = -1
         txbCategoria.Text = ""
+        txbSubcategoria.Text = ""
+        txbItemSubcategoria.Text = ""
+        
+        
         lstPrincipal.ListIndex = -1
     End If
 
@@ -301,8 +305,8 @@ Private Sub lstPrincipalPopular(OrderBy As String)
     With lstPrincipal
         .Clear                              ' Limpa ListBox
         .Enabled = True                     ' Habilita ListBox
-        .ColumnCount = 3                    ' Determina número de colunas
-        .ColumnWidths = "170 pt; 0pt; 180pt;"      ' Configura largura das colunas
+        .ColumnCount = 4                    ' Determina número de colunas
+        .ColumnWidths = "170 pt; 0pt; 150pt; 150pt;"      ' Configura largura das colunas
         .Font = "Consolas"
         
         Dim n As Variant
@@ -312,6 +316,8 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             oCategoria.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oCategoria.Categoria
             .List(.ListCount - 1, 1) = oCategoria.ID
+            .List(.ListCount - 1, 2) = oCategoria.Subcategoria
+            .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
         Next n
         
     End With
@@ -329,7 +335,10 @@ Private Function Valida() As Boolean
     Else
         ' Envia valores preenchidos no formulário para o objeto
         With oCategoria
+            .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
             .Categoria = txbCategoria.Text
+            .Subcategoria = txbSubcategoria.Text
+            .ItemSubcategoria = txbItemSubcategoria.Text
         End With
         
         Valida = True
