@@ -12,6 +12,7 @@ Sub OnActionButton(control As IRibbonControl)
             Case "btnObras": fObras.Show
             Case "btnCompras": fCompras.Show
             Case "btnRequisicoes": fRequisicoes.Show
+            Case "btnLancamentoRapido": fLancamentosRapidos.Show
             Case "btnDicionarioDados": Call AtualizaBD
             Case "btnBackup": fBackup.Show
             'Case "btnOrcamentos": fOrcamentos.Show
@@ -49,6 +50,10 @@ Sub dyMenuOutrosCadastros(control As IRibbonControl, ByRef returnedVal)
     XMLcode = XMLcode & " label=" & Chr(34) & "Contas" & Chr(34)
     XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
     
+    XMLcode = XMLcode & "<button id=" & Chr(34) & "bCategorias" & Chr(34) & " image=" & Chr(34) & "Categorias" & Chr(34)
+    XMLcode = XMLcode & " label=" & Chr(34) & "Categorias" & Chr(34)
+    XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
+    
     XMLcode = XMLcode & "<button id=" & Chr(34) & "bEtapas" & Chr(34) & " imageMso=" & Chr(34) & "OpenStartPage" & Chr(34)
     XMLcode = XMLcode & " label=" & Chr(34) & "Etapas da obra" & Chr(34)
     XMLcode = XMLcode & " onAction=" & Chr(34) & "ActionDyMenuOutrosCadastros" & Chr(34) & " />"
@@ -72,6 +77,7 @@ Sub ActionDyMenuOutrosCadastros(control As IRibbonControl)
         Select Case control.ID
             'Case "bBairros": fBa.Show
             Case "bContas": fContas.Show
+            Case "bCategorias": fCategorias.Show
             Case "bEtapas": fEtapas.Show
             Case "bTiposObra": fTiposObra.Show
             Case "bUnidadesMedida": fUnidadesMedida.Show

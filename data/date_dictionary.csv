@@ -68,8 +68,9 @@ tbl_pagamentos;tipo_baixa;202;1;True;False;Tipo da baixa;False;False
 tbl_pagamentos;valor_pago;6;0;True;False;Valor pago;False;False
 tbl_contas_movimentos;conta_id;3;0;True;False;Código da conta;False;tbl_contas.id
 tbl_contas_movimentos;data;7;0;True;False;Data;False;False
-tbl_contas_movimentos;e_s;202;1;True;False;Entrada ou saída;False;False
+tbl_contas_movimentos;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
 tbl_contas_movimentos;valor;6;0;True;False;Valor;False;False
+tbl_contas_movimentos;clifor_id;3;0;True;False;Códido do cliente ou fornecedor;False;False
 tbl_contas_movimentos;tabela_origem;202;50;True;False;Tabela de origem;False;False
 tbl_contas_movimentos;recno_origem;3;0;True;False;Recno de origem;False;False
 tbl_contas_movimentos;r_e_c_n_o_;3;0;False;True;Recno;False;False
@@ -89,7 +90,7 @@ tbl_requisicoes_itens;etapa_id;3;0;True;False;Código da etapa da obra;False;Fals
 tbl_requisicoes_itens;quantidade;0.5;0;True;False;Quantidade do item;False;False
 tbl_requisicoes_itens;um_id;3;0;True;False;Unidade de medida;False;False
 tbl_requisicoes_itens;unitario;6;0;True;False;Valor unitário;False;False
-tbl_requisicoes_itens;total;6;0;True;False;Valor unitário;False;False
+tbl_requisicoes_itens;total;6;0;True;False;Valor total;False;False
 tbl_requisicoes_itens;data;7;0;True;False;Data;False;False
 tbl_requisicoes_itens;tabela_origem;202;50;True;False;Tabela de origem;False;False
 tbl_requisicoes_itens;recno_origem;3;0;True;False;Recno de origem;False;False
@@ -101,3 +102,17 @@ tbl_parametros;parametro;202;255;True;False;Parâmetro;False;False
 tbl_parametros;de;202;255;True;False;De;False;False
 tbl_parametros;ate;202;255;True;False;Até;False;False
 tbl_parametros;valor_unico;202;255;True;False;Valor único;False;False
+tbl_lancamentos_rapidos;id;3;0;True;True;Código;True;False
+tbl_lancamentos_rapidos;data;7;0;True;False;Data;False;False
+tbl_lancamentos_rapidos;conta_id;3;0;True;False;Código da conta;False;tbl_contas.id
+tbl_lancamentos_rapidos;clifor_id;3;0;True;False;Código do fornecedor ou da obra;False;False
+tbl_lancamentos_rapidos;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
+tbl_lancamentos_rapidos;valor;6;0;True;False;Valor total;False;False
+tbl_lancamentos_rapidos;requisitado;11;0;False;False;Requisitado;False;False
+tbl_lancamentos_rapidos;requisicao_id;3;0;True;False;Código da requisição;False;False
+tbl_categorias;id;3;0;True;True;Código;True;False
+tbl_categorias;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
+tbl_categorias;categoria;202;120;True;False;Categoria;False;False
+tbl_categorias;subcategoria;202;120;True;False;Subcategoria;False;False
+tbl_categorias;item_subcategoria;202;120;True;False;Item da subcategoria;False;False
+tbl_categorias;deletado;11;0;False;False;Deletado;False;False

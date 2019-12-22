@@ -666,8 +666,9 @@ Private Sub btnConfirmar_Click()
                 
                     With oContaMovimento
                         .ContaID = CLng(lstPgtos.List(i, 2))
+                        .CliForID = oPagamento.FornecedorID
                         .Data = oPagamento.Data
-                        .EntradaSaida = "S"
+                        .PagRec = "P"
                         .Valor = CCur(lstPgtos.List(i, 0))
                         .TabelaOrigem = "tbl_pagamentos"
                         .RecnoOrigem = oPagamento.ID

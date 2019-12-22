@@ -11,8 +11,9 @@ Option Explicit
 
 Private Type TContaMovimento
     ContaID         As Long
+    CliForID        As Long
     Data            As Date
-    EntradaSaida    As String
+    PagRec          As String
     Valor           As Currency
     TabelaOrigem    As String
     RecnoOrigem     As Long
@@ -26,11 +27,14 @@ Private Const sTable As String = "tbl_contas_movimentos"
 Public Property Get ContaID() As Long: ContaID = This.ContaID: End Property
 Public Property Let ContaID(ByVal Value As Long): This.ContaID = Value: End Property
 
+Public Property Get CliForID() As Long: CliForID = This.CliForID: End Property
+Public Property Let CliForID(ByVal Value As Long): This.CliForID = Value: End Property
+
 Public Property Get Data() As Date: Data = This.Data: End Property
 Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 
-Public Property Get EntradaSaida() As String: EntradaSaida = This.EntradaSaida: End Property
-Public Property Let EntradaSaida(ByVal Value As String): This.EntradaSaida = Value: End Property
+Public Property Get PagRec() As String: PagRec = This.PagRec: End Property
+Public Property Let PagRec(ByVal Value As String): This.PagRec = Value: End Property
 
 Public Property Get Valor() As Currency: Valor = This.Valor: End Property
 Public Property Let Valor(ByVal Value As Currency): This.Valor = Value: End Property
@@ -63,8 +67,6 @@ Public Sub Carrega(ID As Long)
 End Sub
 Public Sub Inclui()
 
-    'Set oProduto = New cProduto
-
     Set rst = New ADODB.RecordSet
 
     With rst
@@ -78,8 +80,9 @@ Public Sub Inclui()
         Me.Recno = .Fields("r_e_c_n_o_").Value
         
         .Fields("conta_id").Value = Me.ContaID
+        .Fields("clifor_id").Value = Me.CliForID
         .Fields("data").Value = Me.Data
-        .Fields("e_s").Value = Me.EntradaSaida
+        .Fields("pag_rec").Value = Me.PagRec
         .Fields("valor").Value = Me.Valor
         .Fields("tabela_origem").Value = Me.TabelaOrigem
         .Fields("recno_origem").Value = Me.RecnoOrigem
@@ -126,4 +129,3 @@ Public Sub Exclui(Recno As Long)
     cnn.Execute sSQL
 
 End Sub
-
