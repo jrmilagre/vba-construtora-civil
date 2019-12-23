@@ -12,6 +12,7 @@ Option Explicit
 Private Type TContaMovimento
     ContaID         As Long
     CliForID        As Long
+    CategoriaID     As Long
     Data            As Date
     PagRec          As String
     Valor           As Currency
@@ -29,6 +30,9 @@ Public Property Let ContaID(ByVal Value As Long): This.ContaID = Value: End Prop
 
 Public Property Get CliForID() As Long: CliForID = This.CliForID: End Property
 Public Property Let CliForID(ByVal Value As Long): This.CliForID = Value: End Property
+
+Public Property Get CategoriaID() As Long: CategoriaID = This.CategoriaID: End Property
+Public Property Let CategoriaID(ByVal Value As Long): This.CategoriaID = Value: End Property
 
 Public Property Get Data() As Date: Data = This.Data: End Property
 Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
@@ -81,6 +85,7 @@ Public Sub Inclui()
         
         .Fields("conta_id").Value = Me.ContaID
         .Fields("clifor_id").Value = Me.CliForID
+        .Fields("categoria_id").Value = Me.CategoriaID
         .Fields("data").Value = Me.Data
         .Fields("pag_rec").Value = Me.PagRec
         .Fields("valor").Value = Me.Valor

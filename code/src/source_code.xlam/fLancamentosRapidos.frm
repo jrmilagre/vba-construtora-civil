@@ -26,6 +26,7 @@ Private oUM                 As New cUnidadeMedida
 Private oContaMovimento     As New cContaMovimento
 Private oRequisicao         As New cRequisicao
 Private oRequisicaoItem     As New cRequisicaoItem
+Private oCategoria          As New cCategoria
 
 Private colControles        As New Collection
 Private myRst               As ADODB.RecordSet
@@ -395,6 +396,7 @@ Private Sub Campos(Acao As String)
         
         cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
         cbbObra2.Enabled = False: lblObra2.Enabled = False
+        cbbCategoria.Enabled = False: lblCategoria.Enabled = False
         chbRequisita.Enabled = False
         
         frmRequisicao.Enabled = False
@@ -418,6 +420,7 @@ Private Sub Campos(Acao As String)
         cbbPagRec.Enabled = True: lblPagRec.Enabled = True
         txbValor.Enabled = True: lblValor.Enabled = True
         cbbFornecedor.Enabled = True: lblFornecedor.Enabled = True
+        cbbCategoria.Enabled = True: lblCategoria.Enabled = True
         cbbObra2.Enabled = True: lblObra2.Enabled = True
         chbRequisita.Enabled = True
         
@@ -441,6 +444,7 @@ Private Sub Campos(Acao As String)
         txbData.Text = Empty
         cbbConta.ListIndex = -1
         cbbFornecedor.ListIndex = -1
+        cbbCategoria.Clear: cbbCategoria.ListIndex = -1
         cbbPagRec.ListIndex = -1
         txbValor.Text = Format(0, "#,##0.00")
         chbRequisita.Value = False
@@ -579,6 +583,9 @@ Private Sub cbbPagRec_Change()
             chbRequisita.Visible = False
             lblObra2.Visible = True: cbbObra2.Visible = True
         End If
+        
+        Call cbbCategoriaPopular(cbbPagRec.List(cbbPagRec.ListIndex, 1))
+        
     End If
 
 End Sub
@@ -609,6 +616,7 @@ Private Sub btnConfirmar_Click()
                 With oContaMovimento
                     .ContaID = CLng(cbbConta.List(cbbConta.ListIndex, 1))
                     .CliForID = oLancamentoRapido.CliForID
+                    .CategoriaID = oLancamentoRapido.CategoriaID
                     .Data = CDate(txbData.Text)
                     .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
                     .Valor = CCur(txbValor.Text)
@@ -721,6 +729,9 @@ Private Function Valida() As Boolean
     ElseIf cbbConta.ListIndex = -1 Then
         MsgBox "Campo 'Conta' é obrigatório", vbCritical
         MultiPage1.Value = 1: cbbConta.SetFocus
+    ElseIf cbbCategoria.ListIndex = -1 Then
+        MsgBox "Campo 'Categoria' é obrigatório", vbCritical
+        MultiPage1.Value = 1: cbbCategoria.SetFocus
     Else
         If cbbPagRec.List(cbbPagRec.ListIndex, 1) = "P" Then
             If cbbFornecedor.ListIndex = -1 Then
@@ -734,6 +745,7 @@ Private Function Valida() As Boolean
                         .Data = CDate(txbData.Text)
                         .ContaID = CLng(cbbConta.List(cbbConta.ListIndex, 1))
                         .CliForID = CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
+                        .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
                         .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
                         .Valor = CCur(txbValor.Text)
                         .Requisitado = chbRequisita.Value
@@ -751,6 +763,7 @@ Private Function Valida() As Boolean
                             .Data = CDate(txbData.Text)
                             .ContaID = CLng(cbbConta.List(cbbConta.ListIndex, 1))
                             .CliForID = CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
+                            .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
                             .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
                             .Valor = CCur(txbValor.Text)
                             .Requisitado = chbRequisita.Value
@@ -771,6 +784,7 @@ Private Function Valida() As Boolean
                     .Data = CDate(txbData.Text)
                     .ContaID = CLng(cbbConta.List(cbbConta.ListIndex, 1))
                     .CliForID = CLng(cbbObra2.List(cbbObra2.ListIndex, 1))
+                    .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
                     .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
                     .Valor = CCur(txbValor.Text)
                     .Requisitado = chbRequisita.Value
@@ -837,6 +851,16 @@ Private Sub lstPrincipal_Change()
                 End If
             Next n
         End If
+        
+        Call cbbCategoriaPopular(cbbPagRec.List(cbbPagRec.ListIndex, 1))
+        
+        For n = 0 To cbbCategoria.ListCount - 1
+            If CLng(cbbCategoria.List(n, 1)) = oLancamentoRapido.CategoriaID Then
+                cbbCategoria.ListIndex = n
+                Exit For
+            End If
+        Next n
+        
         
         chbRequisita.Value = oLancamentoRapido.Requisitado
         
@@ -1108,4 +1132,38 @@ Private Sub lstRequisicoesPopular(RequisicaoID As Long)
     
     Call TotalizaRequisicoes
     
+End Sub
+Private Sub cbbCategoriaPopular(PagRec As String)
+    
+    Dim idx         As Integer
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oCategoria.Listar("categoria, subcategoria, item_subcategoria", PagRec)
+    
+    'idx = cbbCategoria.ListIndex
+    
+    With cbbCategoria
+        .Clear
+        .ColumnCount = 4
+        .ColumnWidths = "100pt; 0pt; 100pt; 200pt;"
+    End With
+    
+    
+    For Each n In col
+        
+        oCategoria.Carrega CLng(n)
+    
+        With cbbCategoria
+            .AddItem
+            .List(.ListCount - 1, 0) = oCategoria.Categoria
+            .List(.ListCount - 1, 1) = oCategoria.ID
+            .List(.ListCount - 1, 2) = oCategoria.Subcategoria
+            .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
+        End With
+        
+    Next n
+    
+    cbbCategoria.ListIndex = -1
+
 End Sub

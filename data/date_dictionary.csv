@@ -27,6 +27,7 @@ tbl_obras;bairro;202;75;True;False;Bairro;False;False
 tbl_obras;cidade;202;75;True;False;Cidade;False;False
 tbl_obras;uf;202;2;True;False;UF;False;False
 tbl_obras;cliente_id;3;0;True;False;Código do cliente;False;tbl_clientes.id
+tbl_obras;data;7;0;True;False;Data de início;False;False
 tbl_obras;deletado;11;0;False;False;Deletado;False;False
 tbl_estados;id;3;0;True;True;Código;True;False
 tbl_estados;nome;202;75;True;False;Nome;False;False
@@ -34,6 +35,19 @@ tbl_estados;uf;202;2;True;False;Nome;False;False
 tbl_cidades;id;3;0;True;True;Código;True;False
 tbl_cidades;nome;202;120;True;False;Nome;False;False
 tbl_cidades;estado_id;3;0;True;False;Código do estado;False;tbl_estados.id
+tbl_etapas;id;3;0;True;True;Código;True;False
+tbl_etapas;nome;202;120;True;False;Nome;False;False
+tbl_etapas;deletado;11;0;False;False;Deletado;False;False
+tbl_categorias;id;3;0;True;True;Código;True;False
+tbl_categorias;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
+tbl_categorias;categoria;202;120;True;False;Categoria;False;False
+tbl_categorias;subcategoria;202;120;True;False;Subcategoria;False;False
+tbl_categorias;item_subcategoria;202;120;True;False;Item da subcategoria;False;False
+tbl_categorias;deletado;11;0;False;False;Deletado;False;False
+tbl_contas;id;3;0;True;True;Código;True;False
+tbl_contas;nome;202;120;True;False;Nome;False;False
+tbl_contas;saldo_inicial;6;0;True;False;Saldo inicial;False;False
+tbl_contas;deletado;11;0;False;False;Deletado;False;False
 tbl_compras;id;3;0;True;True;Código;True;False
 tbl_compras;data;7;0;True;False;Data;False;False
 tbl_compras;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
@@ -54,13 +68,10 @@ tbl_titulos_pagar;vencimento;7;0;True;False;Vencimento;False;False
 tbl_titulos_pagar;valor;6;0;True;False;Valor do título;False;False
 tbl_titulos_pagar;data;7;0;True;False;Data;False;False
 tbl_titulos_pagar;valor_pago;6;0;True;False;Valor pago;False;False
+tbl_titulos_pagar;categoria_id;3;0;True;False;Código da categoria;False;False
 tbl_titulos_pagar;r_e_c_n_o_;3;0;False;True;Recno;False;False
 tbl_requisicoes;id;3;0;True;True;Código;True;False
 tbl_requisicoes;data;7;0;True;False;Data;False;False
-tbl_contas;id;3;0;True;True;Código;True;False
-tbl_contas;nome;202;120;True;False;Nome;False;False
-tbl_contas;saldo_inicial;6;0;True;False;Saldo inicial;False;False
-tbl_contas;deletado;11;0;False;False;Deletado;False;False
 tbl_pagamentos;id;3;0;True;True;Código;True;False
 tbl_pagamentos;data;7;0;True;False;Data;False;False
 tbl_pagamentos;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
@@ -71,6 +82,7 @@ tbl_contas_movimentos;data;7;0;True;False;Data;False;False
 tbl_contas_movimentos;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
 tbl_contas_movimentos;valor;6;0;True;False;Valor;False;False
 tbl_contas_movimentos;clifor_id;3;0;True;False;Códido do cliente ou fornecedor;False;False
+tbl_contas_movimentos;categoria_id;3;0;True;False;Código da categoria;False;tbl_categorias.id
 tbl_contas_movimentos;tabela_origem;202;50;True;False;Tabela de origem;False;False
 tbl_contas_movimentos;recno_origem;3;0;True;False;Recno de origem;False;False
 tbl_contas_movimentos;r_e_c_n_o_;3;0;False;True;Recno;False;False
@@ -95,9 +107,6 @@ tbl_requisicoes_itens;data;7;0;True;False;Data;False;False
 tbl_requisicoes_itens;tabela_origem;202;50;True;False;Tabela de origem;False;False
 tbl_requisicoes_itens;recno_origem;3;0;True;False;Recno de origem;False;False
 tbl_requisicoes_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False
-tbl_etapas;id;3;0;True;True;Código;True;False
-tbl_etapas;nome;202;120;True;False;Nome;False;False
-tbl_etapas;deletado;11;0;False;False;Deletado;False;False
 tbl_parametros;parametro;202;255;True;False;Parâmetro;False;False
 tbl_parametros;de;202;255;True;False;De;False;False
 tbl_parametros;ate;202;255;True;False;Até;False;False
@@ -106,13 +115,17 @@ tbl_lancamentos_rapidos;id;3;0;True;True;Código;True;False
 tbl_lancamentos_rapidos;data;7;0;True;False;Data;False;False
 tbl_lancamentos_rapidos;conta_id;3;0;True;False;Código da conta;False;tbl_contas.id
 tbl_lancamentos_rapidos;clifor_id;3;0;True;False;Código do fornecedor ou da obra;False;False
+tbl_lancamentos_rapidos;categoria_id;3;0;True;False;Código da categoria;False;False
 tbl_lancamentos_rapidos;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
 tbl_lancamentos_rapidos;valor;6;0;True;False;Valor total;False;False
 tbl_lancamentos_rapidos;requisitado;11;0;False;False;Requisitado;False;False
 tbl_lancamentos_rapidos;requisicao_id;3;0;True;False;Código da requisição;False;False
-tbl_categorias;id;3;0;True;True;Código;True;False
-tbl_categorias;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
-tbl_categorias;categoria;202;120;True;False;Categoria;False;False
-tbl_categorias;subcategoria;202;120;True;False;Subcategoria;False;False
-tbl_categorias;item_subcategoria;202;120;True;False;Item da subcategoria;False;False
-tbl_categorias;deletado;11;0;False;False;Deletado;False;False
+tbl_titulos_receber;obra_id;3;0;True;False;Código da obra;False;tbl_obras.id
+tbl_titulos_receber;cliente_id;3;0;True;False;Código do cliente;False;tbl_clientes.id
+tbl_titulos_receber;observacao;202;100;True;False;Observação;False;False
+tbl_titulos_receber;vencimento;7;0;True;False;Vencimento;False;False
+tbl_titulos_receber;valor;6;0;True;False;Valor do título;False;False
+tbl_titulos_receber;data;7;0;True;False;Data;False;False
+tbl_titulos_receber;valor_recebido;6;0;True;False;Valor recebido;False;False
+tbl_titulos_receber;categoria_id;3;0;True;False;Código da categoria;False;False
+tbl_titulos_receber;r_e_c_n_o_;3;0;False;True;Recno;False;False

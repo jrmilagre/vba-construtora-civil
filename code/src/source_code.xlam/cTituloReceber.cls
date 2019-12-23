@@ -2,7 +2,7 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "cTituloPagar"
+Attribute VB_Name = "cTituloReceber"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
@@ -10,8 +10,8 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Type TTituloPagar
-    CompraID        As Long
-    FornecedorID    As Long
+    ObraID        As Long
+    ClienteID    As Long
     CategoriaID     As Long
     Observacao      As String
     Vencimento      As Date
@@ -22,13 +22,13 @@ End Type
 
 Private This As TTituloPagar
 
-Private Const sTable As String = "tbl_titulos_pagar"
+Private Const sTable As String = "tbl_titulos_receber"
 
-Public Property Get CompraID() As Long: CompraID = This.CompraID: End Property
-Public Property Let CompraID(ByVal Value As Long): This.CompraID = Value: End Property
+Public Property Get ObraID() As Long: ObraID = This.ObraID: End Property
+Public Property Let ObraID(ByVal Value As Long): This.ObraID = Value: End Property
 
-Public Property Get FornecedorID() As Long: FornecedorID = This.FornecedorID: End Property
-Public Property Let FornecedorID(ByVal Value As Long): This.FornecedorID = Value: End Property
+Public Property Get ClienteID() As Long: ClienteID = This.ClienteID: End Property
+Public Property Let ClienteID(ByVal Value As Long): This.ClienteID = Value: End Property
 
 Public Property Get CategoriaID() As Long: CategoriaID = This.CategoriaID: End Property
 Public Property Let CategoriaID(ByVal Value As Long): This.CategoriaID = Value: End Property
@@ -57,8 +57,8 @@ Public Sub Carrega(ID As Long)
     rst.Open sSQL, cnn, adOpenStatic
     
     With rst
-        Me.CompraID = .Fields("compra_id").Value
-        Me.FornecedorID = .Fields("fornecedor_id").Value
+        Me.ObraID = .Fields("obra_id").Value
+        Me.ClienteID = .Fields("cliente_id").Value
         Me.CategoriaID = .Fields("categoria_id").Value
         Me.Observacao = .Fields("observacao").Value
         Me.Vencimento = .Fields("vencimento").Value
@@ -85,8 +85,8 @@ Public Sub Inclui()
         
         Me.Recno = .Fields("r_e_c_n_o_").Value
         
-        .Fields("compra_id").Value = Me.CompraID
-        .Fields("fornecedor_id").Value = Me.FornecedorID
+        .Fields("obra_id").Value = Me.ObraID
+        .Fields("cliente_id").Value = Me.ClienteID
         .Fields("categoria_id").Value = Me.CategoriaID
         .Fields("observacao").Value = Me.Observacao
         .Fields("vencimento").Value = CLng(Me.Vencimento)
@@ -131,3 +131,4 @@ Public Function GetValorBaixado(TituloID As Long) As Currency
     Set rTmp = Nothing
     
 End Function
+

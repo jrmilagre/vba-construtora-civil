@@ -332,6 +332,8 @@ Private Function Valida() As Boolean
     
     If txbCategoria.Text = Empty Then
         MsgBox "'Categoria' é um campo obrigatório", vbInformation: txbCategoria.SetFocus
+    ElseIf txbSubcategoria.Text = Empty Then
+        MsgBox "'Subcategoria' é um campo obrigatório", vbInformation: txbSubcategoria.SetFocus
     Else
         ' Envia valores preenchidos no formulário para o objeto
         With oCategoria

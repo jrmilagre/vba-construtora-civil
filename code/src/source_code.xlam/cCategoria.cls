@@ -54,7 +54,7 @@ Public Sub Carrega(ID As Long)
         Me.PagRec = .Fields("pag_rec").Value
         Me.Categoria = .Fields("categoria").Value
         Me.Subcategoria = .Fields("subcategoria").Value
-        Me.ItemSubcategoria = .Fields("item_subcategoria").Value
+        Me.ItemSubcategoria = IIf(IsNull(.Fields("item_subcategoria").Value), "", .Fields("item_subcategoria").Value)
     End With
     
 End Sub
@@ -123,13 +123,14 @@ Public Sub Exclui()
     cnn.Execute sSQL
     
 End Sub
-Public Function Listar(OrderBy As String) As Collection
+Public Function Listar(OrderBy As String, PagRec As String) As Collection
 
     Dim col As New Collection
 
     sSQL = "SELECT id "
     sSQL = sSQL & "FROM " & sTable & " "
     sSQL = sSQL & "WHERE deletado = False "
+    sSQL = sSQL & "and pag_rec = '" & PagRec & "' "
     sSQL = sSQL & "ORDER BY " & OrderBy
 
     Set rst = New ADODB.RecordSet

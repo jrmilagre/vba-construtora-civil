@@ -14,6 +14,7 @@ Private Type TLancamentoRapido
     Data            As Date
     ContaID         As Long
     CliForID        As Long
+    CategoriaID     As Long
     PagRec          As String
     Valor           As Currency
     Requisitado     As Boolean
@@ -35,6 +36,9 @@ Public Property Let ContaID(ByVal Value As Long): This.ContaID = Value: End Prop
 
 Public Property Get CliForID() As Long: CliForID = This.CliForID: End Property
 Public Property Let CliForID(ByVal Value As Long): This.CliForID = Value: End Property
+
+Public Property Get CategoriaID() As Long: CategoriaID = This.CategoriaID: End Property
+Public Property Let CategoriaID(ByVal Value As Long): This.CategoriaID = Value: End Property
 
 Public Property Get Valor() As Currency: Valor = This.Valor: End Property
 Public Property Let Valor(ByVal Value As Currency): This.Valor = Value: End Property
@@ -67,6 +71,7 @@ Public Sub Carrega(ID As Long)
         Me.Data = .Fields("data").Value
         Me.ContaID = .Fields("conta_id").Value
         Me.CliForID = .Fields("clifor_id").Value
+        Me.CategoriaID = .Fields("categoria_id").Value
         Me.PagRec = .Fields("pag_rec").Value
         Me.Valor = .Fields("valor").Value
         Me.Requisitado = .Fields("requisitado").Value
@@ -96,10 +101,10 @@ Public Sub Inclui()
         .Fields("data").Value = Me.Data
         .Fields("conta_id").Value = Me.ContaID
         .Fields("clifor_id").Value = Me.CliForID
+        .Fields("categoria_id").Value = Me.CategoriaID
         .Fields("pag_rec").Value = Me.PagRec
         .Fields("valor").Value = Me.Valor
         .Fields("requisitado").Value = Me.Requisitado
-        
         
         .Update
     End With
@@ -107,35 +112,7 @@ Public Sub Inclui()
     Set rst = Nothing
        
 End Sub
-' Rotina para alterar registro no banco de dados
-Public Sub Altera(ID As Long)
-    
-    Set rst = New ADODB.RecordSet
-    
-    ' Comando SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
 
-    'Armazena na variável o comando que fará a consulta SQL no BD Access
-    With rst
-        .Open Source:=sSQL, _
-              ActiveConnection:=cnn, _
-              CursorType:=adOpenDynamic, _
-              LockType:=adLockOptimistic
-        
-        ' Atribui novos valores aos campos
-        .Fields("data").Value = Me.Data
-        .Fields("conta_id").Value = Me.ContaID
-        .Fields("clifor_id").Value = Me.CliForID
-        .Fields("e_s").Value = Me.PagRec
-        .Fields("valor").Value = Me.Valor
-        .Fields("requisitado").Value = Me.Requisitado
-        
-        ' Grava alterações
-        .Update
-    End With
-    
-    Set rst = Nothing
-End Sub
 Public Sub Exclui(ID As Long)
         
     sSQL = "DELETE FROM " & sTable & " WHERE id = " & ID

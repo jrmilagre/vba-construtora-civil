@@ -17,6 +17,7 @@ Private Type TTipoObra
     UF              As String
     TipoID          As Integer
     ClienteID       As Variant
+    Data            As Date
 End Type
 
 Private This As TTipoObra
@@ -44,6 +45,9 @@ Public Property Let UF(ByVal Value As String): This.UF = Value: End Property
 Public Property Get ClienteID() As Variant: ClienteID = This.ClienteID: End Property
 Public Property Let ClienteID(ByVal Value As Variant): This.ClienteID = Value: End Property
 
+Public Property Get Data() As Date: Data = This.Data: End Property
+Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
+
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
 
@@ -65,6 +69,7 @@ Public Sub Carrega(ID As Long)
         Me.UF = .Fields("uf").Value
         Me.TipoID = .Fields("tipo_id").Value
         Me.ClienteID = IIf(IsNull(.Fields("cliente_id").Value), Null, .Fields("cliente_id").Value)
+        Me.Data = .Fields("data").Value
     End With
     
 End Sub
@@ -90,6 +95,7 @@ Public Sub Inclui()
         .Fields("uf").Value = Me.UF
         .Fields("tipo_id").Value = Me.TipoID
         .Fields("cliente_id").Value = Me.ClienteID
+        .Fields("data").Value = Me.Data
         
         .Update
     End With
@@ -121,6 +127,7 @@ Public Sub Altera()
         .Fields("uf").Value = Me.UF
         .Fields("tipo_id").Value = Me.TipoID
         .Fields("cliente_id").Value = Me.ClienteID
+        .Fields("data").Value = Me.Data
         
         ' Grava alterações
         .Update
@@ -159,5 +166,21 @@ Public Function Listar(OrderBy As String) As Collection
     
     Set Listar = col
 
+End Function
+Public Function RecordSet() As ADODB.RecordSet
+
+    sSQL = "SELECT id, data "
+    sSQL = sSQL & "FROM " & sTable
+    
+    Set RecordSet = New ADODB.RecordSet
+    
+    With RecordSet
+        .CursorLocation = adUseServer
+        .CursorType = adOpenStatic
+        .LockType = adLockReadOnly
+        .PageSize = 24
+        .Open sSQL, cnn
+    End With
+    
 End Function
 

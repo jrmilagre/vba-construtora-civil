@@ -21,6 +21,7 @@ Private oProduto            As New cProduto
 Private oCompraItem         As New cCompraItem
 Private oTituloPagar        As New cTituloPagar
 Private oUM                 As New cUnidadeMedida
+Private oCategoria          As New cCategoria
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
@@ -35,6 +36,8 @@ Private Sub UserForm_Initialize()
     Call cbbFornecedorPopular
     Call cbbProdutoPopular
     Call cbbUMPopular
+    Call cbbCategoriaPopular
+    
     Call EventosCampos
     
     Set myRst = New ADODB.RecordSet
@@ -179,6 +182,7 @@ Private Sub btnConfirmar_Click()
                 With oTituloPagar
                     .CompraID = oCompra.ID
                     .FornecedorID = oCompra.FornecedorID
+                    .CategoriaID = CLng(lstTitulos.List(i, 4))
                     .Observacao = lstTitulos.List(i, 2)
                     .Vencimento = CDate(lstTitulos.List(i, 0))
                     .Valor = CCur(lstTitulos.List(i, 1))
@@ -204,12 +208,6 @@ Private Sub btnConfirmar_Click()
             If sDecisao = "Exclusão" Then
                 oCompra.Exclui oCompra.ID
             End If
-            
-            
-            'TODO (Inclui titulos)
-            'For i = 0 To lstTitulos.ListCount - 1
-            'Next i
-                
             
             If sDecisao = "Inclusão" Then
                 If lstPrincipal.ListCount < myRst.PageSize Then
@@ -552,6 +550,7 @@ Private Sub Campos(Acao As String)
         lblHdVencimento.Enabled = False
         lblHdValor.Enabled = False
         lblHdObservacao.Enabled = False
+        lblHdCategoria.Enabled = False
         Call btnTituloCancelar_Click
         btnTituloInclui.Visible = False
         btnTituloAltera.Visible = False
@@ -579,6 +578,7 @@ Private Sub Campos(Acao As String)
         lblHdVencimento.Enabled = True
         lblHdValor.Enabled = True
         lblHdObservacao.Enabled = True
+        lblHdCategoria.Enabled = True
         btnTituloInclui.Visible = True
         btnTituloAltera.Visible = True
         btnTituloExclui.Visible = True
@@ -846,6 +846,7 @@ Private Sub AcaoTitulo(Acao As String, Habilitar As Boolean)
         txbVencimento.Text = Date
         txbValor.Text = Format(0, "#,##0.00")
         txbObservacao.Text = Empty
+        cbbCategoria.ListIndex = -1
     End If
     
     If Habilitar = True Then
@@ -853,6 +854,7 @@ Private Sub AcaoTitulo(Acao As String, Habilitar As Boolean)
         txbVencimento.Enabled = Habilitar: lblVencimento.Enabled = Habilitar: btnVencimento.Enabled = Habilitar
         txbValor.Enabled = Habilitar: lblValor.Enabled = Habilitar
         txbObservacao.Enabled = Habilitar: lblObservacao.Enabled = Habilitar
+        cbbCategoria.Enabled = Habilitar: lblCategoria.Enabled = Habilitar
         
         btnTituloInclui.Visible = Not Habilitar
         btnTituloAltera.Visible = Not Habilitar
@@ -869,6 +871,7 @@ Private Sub AcaoTitulo(Acao As String, Habilitar As Boolean)
         txbVencimento.Enabled = Habilitar: lblVencimento.Enabled = Habilitar: txbVencimento.Text = Empty: btnVencimento.Enabled = Habilitar
         txbValor.Enabled = Habilitar: lblValor.Enabled = Habilitar: txbValor.Text = Empty
         txbObservacao.Enabled = Habilitar: lblObservacao.Enabled = Habilitar: txbObservacao.Text = Empty
+        cbbCategoria.Enabled = Habilitar: lblCategoria.Enabled = Habilitar: cbbCategoria.ListIndex = -1
         
         btnTituloInclui.Visible = Not Habilitar
         btnTituloAltera.Visible = Not Habilitar
@@ -906,14 +909,16 @@ Private Sub btnTituloConfirmar_Click()
         If ValidaTitulo = True Then
             
             With lstTitulos
-                .ColumnCount = 3
-                .ColumnWidths = "60pt; 60pt; 180pt;"
+                .ColumnCount = 6
+                .ColumnWidths = "60pt; 60pt; 135pt; 0pt; 0pt; 180pt;"
                 .Font = "Consolas"
                 .AddItem
                 
                 .List(.ListCount - 1, 0) = txbVencimento.Text
                 .List(.ListCount - 1, 1) = Space(9 - Len(Format(CDbl(txbValor.Text), "#,##0.00"))) & Format(CDbl(txbValor.Text), "#,##0.00")
                 .List(.ListCount - 1, 2) = txbObservacao.Text
+                .List(.ListCount - 1, 4) = cbbCategoria.List(cbbCategoria.ListIndex, 1)
+                .List(.ListCount - 1, 5) = cbbCategoria.List(cbbCategoria.ListIndex, 0)
                 
             End With
             
@@ -926,6 +931,9 @@ Private Sub btnTituloConfirmar_Click()
                 .List(.ListIndex, 0) = txbVencimento.Text
                 .List(.ListIndex, 1) = Space(9 - Len(Format(CDbl(txbValor.Text), "#,##0.00"))) & Format(CDbl(txbValor.Text), "#,##0.00")
                 .List(.ListIndex, 2) = txbObservacao.Text
+                .List(.ListIndex, 3) = .List(.ListIndex, 3)
+                .List(.ListIndex, 4) = cbbCategoria.List(cbbCategoria.ListIndex, 1)
+                .List(.ListIndex, 5) = cbbCategoria.List(cbbCategoria.ListIndex, 0)
             End With
             
             Call btnTituloCancelar_Click
@@ -951,6 +959,9 @@ Private Function ValidaTitulo() As Boolean
     ElseIf txbObservacao.Text = Empty Then
         MsgBox "Campo 'Observação' é obrigatório", vbCritical
         MultiPage1.Value = 3: txbObservacao.SetFocus: Exit Function
+    ElseIf cbbCategoria.ListIndex = -1 Then
+        MsgBox "Campo 'Categoria' é obrigatório", vbCritical
+        MultiPage1.Value = 3: cbbCategoria.SetFocus: Exit Function
     Else
         ValidaTitulo = True
     End If
@@ -969,8 +980,8 @@ Private Sub lstTitulosPopular(CompraID As Long)
     
     With lstTitulos
         .Clear
-        .ColumnCount = 4
-        .ColumnWidths = "60pt; 60pt; 60pt; 0pt;"
+        .ColumnCount = 6
+        .ColumnWidths = "60pt; 60pt; 135pt; 0pt; 0pt; 180pt;"
         .Font = "Consolas"
         
         Do Until r.EOF
@@ -980,6 +991,12 @@ Private Sub lstTitulosPopular(CompraID As Long)
             .List(.ListCount - 1, 1) = Space(9 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
             .List(.ListCount - 1, 2) = r.Fields("observacao").Value
             .List(.ListCount - 1, 3) = r.Fields("r_e_c_n_o_").Value
+            .List(.ListCount - 1, 4) = r.Fields("categoria_id").Value
+            
+            oCategoria.Carrega r.Fields("categoria_id").Value
+            
+            .List(.ListCount - 1, 5) = oCategoria.Categoria & ": " & oCategoria.Subcategoria & IIf(oCategoria.ItemSubcategoria = "", "", ": " & oCategoria.ItemSubcategoria)
+            
             
             r.MoveNext
         Loop
@@ -1003,10 +1020,22 @@ Private Sub TotalizaTitulos()
 
 End Sub
 Private Sub lstTitulos_Change()
+
+    Dim n As Integer
+
     If lstTitulos.ListIndex > -1 And btnTituloConfirmar.Caption <> "Alterar" Then
         txbVencimento.Text = lstTitulos.List(lstTitulos.ListIndex, 0)
         txbValor.Text = lstTitulos.List(lstTitulos.ListIndex, 1)
         txbObservacao.Text = lstTitulos.List(lstTitulos.ListIndex, 2)
+        
+        oTituloPagar.Carrega CLng(lstTitulos.List(lstTitulos.ListIndex, 3))
+        
+        For n = 0 To cbbCategoria.ListCount - 1
+            If CLng(cbbCategoria.List(n, 1)) = oTituloPagar.CategoriaID Then
+                cbbCategoria.ListIndex = n
+                Exit For
+            End If
+        Next n
         
         btnTituloAltera.Enabled = True
         btnTituloExclui.Enabled = True
@@ -1037,5 +1066,39 @@ Private Sub cbbUMPopular()
     Next n
     
     cbbUM.ListIndex = idx
+
+End Sub
+Private Sub cbbCategoriaPopular()
+    
+    Dim idx         As Integer
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oCategoria.Listar("categoria, subcategoria, item_subcategoria", "P")
+    
+    'idx = cbbCategoria.ListIndex
+    
+    With cbbCategoria
+        .Clear
+        .ColumnCount = 4
+        .ColumnWidths = "180pt; 0pt; 180pt; 100pt;"
+    End With
+    
+    
+    For Each n In col
+        
+        oCategoria.Carrega CLng(n)
+    
+        With cbbCategoria
+            .AddItem
+            .List(.ListCount - 1, 0) = oCategoria.Categoria & ": " & oCategoria.Subcategoria & IIf(oCategoria.ItemSubcategoria = "", "", ": " & oCategoria.ItemSubcategoria)
+            .List(.ListCount - 1, 1) = oCategoria.ID
+            .List(.ListCount - 1, 2) = oCategoria.Subcategoria
+            .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
+        End With
+        
+    Next n
+    
+    cbbCategoria.ListIndex = -1
 
 End Sub
