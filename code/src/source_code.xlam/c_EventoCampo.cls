@@ -81,8 +81,9 @@ Private Sub cGeneric_KeyPress(ByVal KeyAscii As MSForms.ReturnInteger)
                 KeyAscii = 44 'Adiciona uma vírgula
             End If
             
+            ' Para aceitar número negativo
             Case 45
-            
+
             If cGeneric.SelStart > 1 Then
                 KeyAscii = 0
             End If

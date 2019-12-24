@@ -12,7 +12,7 @@ Option Explicit
 Private Type TProduto
     ID              As Long
     Nome            As String
-    Estoque         As Double
+    UmID            As Long
     CustoMedio      As Currency
 End Type
 
@@ -26,11 +26,8 @@ Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 Public Property Get Nome() As String: Nome = This.Nome: End Property
 Public Property Let Nome(ByVal Value As String): This.Nome = Value: End Property
 
-Public Property Get Estoque() As Double: Estoque = This.Estoque: End Property
-Public Property Let Estoque(ByVal Value As Double): This.Estoque = Value: End Property
-
-Public Property Get CustoMedio() As Currency: CustoMedio = This.CustoMedio: End Property
-Public Property Let CustoMedio(ByVal Value As Currency): This.CustoMedio = Value: End Property
+Public Property Get UmID() As Long: UmID = This.UmID: End Property
+Public Property Let UmID(ByVal Value As Long): This.UmID = Value: End Property
 
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
@@ -48,6 +45,7 @@ Public Sub Carrega(ID As Long)
     With rst
         Me.ID = .Fields("id").Value
         Me.Nome = .Fields("nome").Value
+        Me.UmID = .Fields("um_id").Value
     End With
     
 End Sub
@@ -68,6 +66,7 @@ Public Sub Inclui()
         
         Me.ID = .Fields("id").Value
         .Fields("nome").Value = Me.Nome
+        .Fields("um_id").Value = Me.UmID
         
         .Update
     End With
@@ -94,6 +93,7 @@ Public Sub Altera()
         
         ' Atribui novos valores aos campos
         .Fields("nome").Value = Me.Nome
+        .Fields("um_id").Value = Me.UmID
         
         ' Grava alterações
         .Update

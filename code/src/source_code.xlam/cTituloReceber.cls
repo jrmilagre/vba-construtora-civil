@@ -59,7 +59,6 @@ Public Sub Carrega(ID As Long)
     With rst
         Me.ObraID = .Fields("obra_id").Value
         Me.ClienteID = .Fields("cliente_id").Value
-        Me.CategoriaID = .Fields("categoria_id").Value
         Me.Observacao = .Fields("observacao").Value
         Me.Vencimento = .Fields("vencimento").Value
         Me.Valor = .Fields("valor").Value
@@ -87,7 +86,6 @@ Public Sub Inclui()
         
         .Fields("obra_id").Value = Me.ObraID
         .Fields("cliente_id").Value = Me.ClienteID
-        .Fields("categoria_id").Value = Me.CategoriaID
         .Fields("observacao").Value = Me.Observacao
         .Fields("vencimento").Value = CLng(Me.Vencimento)
         .Fields("valor").Value = Me.Valor
@@ -99,17 +97,9 @@ Public Sub Inclui()
     Set rst = Nothing
        
 End Sub
-Public Sub Exclui(Recno As Long)
-
-    Dim rTmp As New ADODB.RecordSet
+Public Sub Exclui(ObraID As Long)
     
-    sSQL = "SELECT * FROM tbl_compras_itens WHERE r_e_c_n_o_ = " & Recno
-    
-    rTmp.Open sSQL, cnn
-    
-    Set rTmp = Nothing
-    
-    sSQL = "DELETE FROM tbl_compras_itens WHERE r_e_c_n_o_ = " & Recno
+    sSQL = "DELETE FROM tbl_titulos_receber WHERE obra_id = " & ObraID
     
     cnn.Execute sSQL
 
@@ -118,7 +108,7 @@ Public Function GetValorBaixado(TituloID As Long) As Currency
 
     Dim rTmp As New ADODB.RecordSet
 
-    sSQL = "SELECT sum(valor_baixado) as valor_baixado FROM tbl_pagamentos_itens WHERE titulo_id = " & TituloID
+    sSQL = "SELECT sum(valor_baixado) as valor_baixado FROM tbl_recebimentos_itens WHERE titulo_id = " & TituloID
     
     rTmp.Open sSQL, cnn
     

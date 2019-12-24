@@ -130,7 +130,11 @@ Public Function Listar(OrderBy As String, PagRec As String) As Collection
     sSQL = "SELECT id "
     sSQL = sSQL & "FROM " & sTable & " "
     sSQL = sSQL & "WHERE deletado = False "
-    sSQL = sSQL & "and pag_rec = '" & PagRec & "' "
+    
+    If PagRec <> "T" Then
+        sSQL = sSQL & "and pag_rec = '" & PagRec & "' "
+    End If
+    
     sSQL = sSQL & "ORDER BY " & OrderBy
 
     Set rst = New ADODB.RecordSet

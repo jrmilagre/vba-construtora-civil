@@ -1,43 +1,44 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fPagamentos 
-   Caption         =   ":: Cadastro de Pagamentos ::"
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fRecebimentos 
+   Caption         =   ":: Cadastro de Recebimentos ::"
    ClientHeight    =   9705
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13320
-   OleObjectBlob   =   "fPagamentos.frx":0000
+   OleObjectBlob   =   "fRecebimentos.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
-Attribute VB_Name = "fPagamentos"
+Attribute VB_Name = "fRecebimentos"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 
-Private oPagamento          As New cPagamento
-Private oFornecedor         As New cFornecedor
+Private oRecebimento        As New cRecebimento
+Private oObra               As New cObra
+Private oCliente            As New cCliente
 Private oConta              As New cConta
-Private oPagamentoItem      As New cPagamentoItem
-Private oTituloPagar        As New cTituloPagar
+Private oRecebimentoItem    As New cRecebimentoItem
+Private oTituloReceber      As New cTituloReceber
 Private oContaMovimento     As New cContaMovimento
-Private oCompra             As New cCompra
 
 Private colControles        As New Collection
 Private myRst               As ADODB.RecordSet
 Private lPagina             As Long
 
-Private Const sTable As String = "tbl_pagamentos"
+Private Const sTable As String = "tbl_recebimentos"
 Private Const sCampoOrderBy As String = "data"
 
 Private Sub UserForm_Initialize()
 
-    Call cbbFornecedorPopular
+    Call cbbObraPopular
     Call cbbContaPopular
     Call EventosCampos
     
     Set myRst = New ADODB.RecordSet
-    Set myRst = oPagamento.RecordSet
+    Set myRst = oRecebimento.RecordSet
     
     With scrPagina
         .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
@@ -60,7 +61,7 @@ End Sub
 Private Sub UserForm_Terminate()
     
     ' Destrói objeto da classe cProduto
-    Set oPagamento = Nothing
+    Set oRecebimento = Nothing
     Call Desconecta
     
 End Sub
@@ -83,11 +84,11 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
             .AddItem
 
-            oFornecedor.Carrega myRst.Fields("fornecedor_id").Value
+            'oFornecedor.Carrega myRst.Fields("fornecedor_id").Value
 
             .List(.ListCount - 1, 0) = Format(myRst.Fields("id").Value, "0000000000")
             .List(.ListCount - 1, 1) = myRst.Fields("data").Value
-            .List(.ListCount - 1, 2) = oFornecedor.Nome
+            '.List(.ListCount - 1, 2) = oFornecedor.Nome
 
             lCount = lCount + 1
             myRst.MoveNext
@@ -157,38 +158,45 @@ Private Sub btnCancelar_Click()
     lstPrincipal.ListIndex = -1: lstPrincipal.ForeColor = &H80000008: lstPrincipal.Enabled = True:
 
 End Sub
-Private Sub cbbFornecedorPopular()
+Private Sub cbbObraPopular()
     
     Dim idx         As Integer
     Dim col         As New Collection
     Dim n           As Variant
 
-    Set col = oFornecedor.Listar("nome")
+    Set col = oObra.Listar("bairro")
     
-    idx = cbbFornecedor.ListIndex
+    idx = cbbObra.ListIndex
     
-    cbbFornecedor.Clear
+    With cbbObra
+        .Clear
+        .ColumnCount = 2
+        .ColumnWidths = "180pt; 0pt;"
+    End With
+    
     
     For Each n In col
         
-        oFornecedor.Carrega CLng(n)
+        oObra.Carrega CLng(n)
+        
+        oCliente.Carrega oObra.ClienteID
     
-        With cbbFornecedor
+        With cbbObra
             .AddItem
-            .List(.ListCount - 1, 0) = oFornecedor.Nome
-            .List(.ListCount - 1, 1) = oFornecedor.ID
+            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
+            .List(.ListCount - 1, 1) = oObra.ID
         End With
         
     Next n
     
-    cbbFornecedor.ListIndex = idx
+    cbbObra.ListIndex = idx
 
 End Sub
 Private Sub Campos(Acao As String)
 
     If Acao = "Desabilitar" Then
         txbData.Enabled = False: lblData.Enabled = False: btnData.Enabled = False
-        cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
+        cbbObra.Enabled = False: lblObra.Enabled = False
         
         frmTipo.Enabled = False
         optManual.Enabled = False
@@ -215,12 +223,12 @@ Private Sub Campos(Acao As String)
         btnPgtoInclui.Visible = False
         btnPgtoAltera.Visible = False
         btnPgtoExclui.Visible = False
-        lstPgtos.Enabled = False: lstPgtos.ForeColor = &H80000010
+        lstRecebimentos.Enabled = False: lstRecebimentos.ForeColor = &H80000010
         lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
         
     ElseIf Acao = "Habilitar" Then
         txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
-        cbbFornecedor.Enabled = True: lblFornecedor.Enabled = True
+        cbbObra.Enabled = True: lblObra.Enabled = True
         
         frmTipo.Enabled = True
         optManual.Enabled = True
@@ -229,7 +237,7 @@ Private Sub Campos(Acao As String)
         frmFormaPagamento.Enabled = True
         lblHdValorPgto.Enabled = True
         lblHdConta.Enabled = True
-        lstPgtos.Enabled = True: lstPgtos.ForeColor = &H80000008
+        lstRecebimentos.Enabled = True: lstRecebimentos.ForeColor = &H80000008
         btnPgtoInclui.Visible = True
         btnPgtoAltera.Visible = True
         btnPgtoExclui.Visible = True
@@ -240,7 +248,7 @@ Private Sub Campos(Acao As String)
         lblCabID.Caption = ""
         lblCabData.Caption = ""
         txbData.Text = ""
-        cbbFornecedor.ListIndex = -1
+        cbbObra.ListIndex = -1
         optManual.Value = False
         optAutomatico.Value = False
         txbValorPgto.Text = Format(0, "#,##0.00")
@@ -248,11 +256,8 @@ Private Sub Campos(Acao As String)
         txbValorBaixar.Text = Empty
         
         lstTitulos.Clear
-        lstPgtos.Clear
+        lstRecebimentos.Clear
         lstPrincipal.ListIndex = -1
-        
-        lblTotalPagamentos.Caption = ""
-        lblTotalTitulos.Caption = ""
     End If
 
 End Sub
@@ -287,11 +292,11 @@ Private Sub PosDecisaoTomada(Decisao As String)
         If Decisao = "Inclusão" Then
             txbData.Text = Date
             If MultiPage1.Value = 1 Then
-                cbbFornecedor.SetFocus
+                cbbObra.SetFocus
             End If
         Else
             If MultiPage1.Value = 1 Then
-                cbbFornecedor.SetFocus
+                cbbObra.SetFocus
             End If
         End If
             
@@ -306,17 +311,17 @@ Private Sub PosDecisaoTomada(Decisao As String)
     btnPaginaFinal.Enabled = False
     
 End Sub
-Private Sub cbbFornecedor_AfterUpdate()
+Private Sub cbbObra_AfterUpdate()
     
-    If cbbFornecedor.ListIndex > -1 And cbbFornecedor.Text <> "" Then
+    If cbbObra.ListIndex > -1 And cbbObra.Text <> "" Then
         
-        Call lstTitulosPopular(CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1)))
+        Call lstTitulosPopular(CLng(cbbObra.List(cbbObra.ListIndex, 1)))
         
         MultiPage1.Value = 2
         
     End If
 End Sub
-Private Sub lstTitulosPopular(FornecedorID As Long)
+Private Sub lstTitulosPopular(ObraID As Long)
 
     Dim r       As New ADODB.RecordSet
     Dim cVlrPg  As Currency
@@ -326,21 +331,21 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
     If lstPrincipal.ListIndex = -1 Then
     
         sSQL = "SELECT * "
-        sSQL = sSQL & "FROM tbl_titulos_pagar "
+        sSQL = sSQL & "FROM tbl_titulos_receber "
         sSQL = sSQL & "WHERE "
-        sSQL = sSQL & "fornecedor_id = " & FornecedorID
+        sSQL = sSQL & "obra_id = " & ObraID
         
         r.Open sSQL, cnn, adOpenStatic
     
         With lstTitulos
             .Clear
             .ColumnCount = 7
-            .ColumnWidths = "60pt; 60pt; 60pt; 60pt; 60pt; 0pt; 0pt;"
+            .ColumnWidths = "60pt; 65pt; 65pt; 65pt; 60pt; 0pt; 0pt;"
             .Font = "Consolas"
             
             Do Until r.EOF
                 
-                cVlrBx = oTituloPagar.GetValorBaixado(r.Fields("r_e_c_n_o_").Value)
+                cVlrBx = oTituloReceber.GetValorBaixado(r.Fields("r_e_c_n_o_").Value)
                 cSaldo = r.Fields("valor").Value - cVlrBx
                                 
                 If cSaldo > 0 Then
@@ -348,9 +353,9 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
                     .AddItem
                     
                     .List(.ListCount - 1, 0) = r.Fields("vencimento").Value
-                    .List(.ListCount - 1, 1) = Space(9 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
-                    .List(.ListCount - 1, 2) = Space(9 - Len(Format(cVlrBx, "#,##0.00"))) & Format(cVlrBx, "#,##0.00")
-                    .List(.ListCount - 1, 3) = Space(9 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
+                    .List(.ListCount - 1, 1) = Space(12 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
+                    .List(.ListCount - 1, 2) = Space(12 - Len(Format(cVlrBx, "#,##0.00"))) & Format(cVlrBx, "#,##0.00")
+                    .List(.ListCount - 1, 3) = Space(12 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
                     .List(.ListCount - 1, 4) = r.Fields("observacao").Value
                     .List(.ListCount - 1, 5) = r.Fields("r_e_c_n_o_").Value
                     
@@ -364,29 +369,29 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
     Else
         
         sSQL = "SELECT * "
-        sSQL = sSQL & "FROM tbl_pagamentos_itens "
+        sSQL = sSQL & "FROM tbl_recebimentos_itens "
         sSQL = sSQL & "WHERE "
-        sSQL = sSQL & "pagamento_id = " & oPagamento.ID
+        sSQL = sSQL & "recebimento_id = " & oRecebimento.ID
         
         r.Open sSQL, cnn, adOpenStatic
         
         With lstTitulos
             .Clear
             .ColumnCount = 7
-            .ColumnWidths = "60pt; 60pt; 60pt; 60pt; 60pt; 0pt; 0pt;"
+            .ColumnWidths = "60pt; 65pt; 65pt; 65pt; 60pt; 0pt; 0pt;"
             .Font = "Consolas"
             
             Do Until r.EOF
             
-                oTituloPagar.Carrega r.Fields("titulo_id").Value
+                oTituloReceber.Carrega r.Fields("titulo_id").Value
                 
                 .AddItem
                 
                 .List(.ListCount - 1, 0) = r.Fields("titulo_vencimento").Value
-                .List(.ListCount - 1, 1) = Space(9 - Len(Format(r.Fields("titulo_valor").Value, "#,##0.00"))) & Format(r.Fields("titulo_valor").Value, "#,##0.00")
-                .List(.ListCount - 1, 2) = Space(9 - Len(Format(r.Fields("valor_baixado").Value, "#,##0.00"))) & Format(r.Fields("valor_baixado").Value, "#,##0.00")
-                .List(.ListCount - 1, 3) = Space(9 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
-                .List(.ListCount - 1, 4) = oTituloPagar.Observacao
+                .List(.ListCount - 1, 1) = Space(12 - Len(Format(r.Fields("titulo_valor").Value, "#,##0.00"))) & Format(r.Fields("titulo_valor").Value, "#,##0.00")
+                .List(.ListCount - 1, 2) = Space(12 - Len(Format(r.Fields("valor_baixado").Value, "#,##0.00"))) & Format(r.Fields("valor_baixado").Value, "#,##0.00")
+                .List(.ListCount - 1, 3) = Space(12 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
+                .List(.ListCount - 1, 4) = oTituloReceber.Observacao
                 .List(.ListCount - 1, 5) = r.Fields("r_e_c_n_o_").Value
                 
                 r.MoveNext
@@ -451,7 +456,7 @@ Private Sub PosDecisaoTipo()
     frmFormaPagamento.Visible = True
     lblHdValorPgto.Visible = True
     lblHdConta.Visible = True
-    lstPgtos.Visible = True
+    lstRecebimentos.Visible = True
 
 End Sub
 Private Sub btnPgtoInclui_Click()
@@ -486,13 +491,13 @@ Private Sub btnPgtoConfirmar_Click()
     
         If ValidaPgto = True Then
             
-            With lstPgtos
+            With lstRecebimentos
                 .ColumnCount = 3
-                .ColumnWidths = "60pt; 60pt; 0pt;"
+                .ColumnWidths = "65pt; 60pt; 0pt;"
                 .Font = "Consolas"
                 .AddItem
                 
-                .List(.ListCount - 1, 0) = Space(9 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
+                .List(.ListCount - 1, 0) = Space(12 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
                 .List(.ListCount - 1, 1) = cbbConta.List(cbbConta.ListIndex, 0)
                 .List(.ListCount - 1, 2) = cbbConta.List(cbbConta.ListIndex, 1)
                 
@@ -503,8 +508,8 @@ Private Sub btnPgtoConfirmar_Click()
         End If
     ElseIf sDecisaoItem = "Alterar" Then
         If ValidaPgto = True Then
-            With lstPgtos
-                .List(.ListIndex, 0) = Space(9 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
+            With lstRecebimentos
+                .List(.ListIndex, 0) = Space(12 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
                 .List(.ListIndex, 1) = cbbConta.List(cbbConta.ListIndex, 0)
                 .List(.ListIndex, 2) = cbbConta.List(cbbConta.ListIndex, 1)
             End With
@@ -512,7 +517,7 @@ Private Sub btnPgtoConfirmar_Click()
             Call btnPgtoCancelar_Click
         End If
     ElseIf sDecisaoItem = "Excluir" Then
-        lstPgtos.RemoveItem (lstPgtos.ListIndex)
+        lstRecebimentos.RemoveItem (lstRecebimentos.ListIndex)
         Call btnPgtoCancelar_Click
     End If
     
@@ -537,7 +542,7 @@ Private Sub AcaoPgto(Acao As String, Habilitar As Boolean)
     
     If Acao = "Incluir" Then
         
-        lstPgtos.ListIndex = -1
+        lstRecebimentos.ListIndex = -1
         cbbConta.ListIndex = -1
         
         If lblTotalBaixar.Caption <> "" Then
@@ -557,11 +562,11 @@ Private Sub AcaoPgto(Acao As String, Habilitar As Boolean)
         btnPgtoExclui.Visible = Not Habilitar
         btnPgtoCancelar.Visible = Habilitar
         btnPgtoConfirmar.Visible = Habilitar
-        lstPgtos.Enabled = Not Habilitar: lstPgtos.ForeColor = &H80000010
+        lstRecebimentos.Enabled = Not Habilitar: lstRecebimentos.ForeColor = &H80000010
         btnConfirmar.Enabled = Not Habilitar
         btnCancelar.Enabled = Not Habilitar
     Else
-        lstPgtos.ListIndex = -1
+        lstRecebimentos.ListIndex = -1
         txbValorPgto.Enabled = Habilitar: lblValorPgto.Enabled = Habilitar: txbValorPgto.Text = Empty
         cbbConta.Enabled = Habilitar: lblConta.Enabled = Habilitar: cbbConta.ListIndex = -1
         
@@ -570,7 +575,7 @@ Private Sub AcaoPgto(Acao As String, Habilitar As Boolean)
         btnPgtoExclui.Visible = Not Habilitar
         btnPgtoCancelar.Visible = Habilitar
         btnPgtoConfirmar.Visible = Habilitar
-        lstPgtos.Enabled = Not Habilitar: lstPgtos.ForeColor = &H80000008
+        lstRecebimentos.Enabled = Not Habilitar: lstRecebimentos.ForeColor = &H80000008
         btnConfirmar.Enabled = Not Habilitar
         btnCancelar.Enabled = Not Habilitar
     End If
@@ -609,8 +614,8 @@ Private Sub TotalizaPagamentos()
     Dim cTotal As Currency
     Dim i As Integer
     
-    For i = 0 To lstPgtos.ListCount - 1
-        cTotal = cTotal + CCur(lstPgtos.List(i, 0))
+    For i = 0 To lstRecebimentos.ListCount - 1
+        cTotal = cTotal + CCur(lstRecebimentos.List(i, 0))
     Next i
     
     lblTotalPagamentos.Caption = Format(cTotal, "#,##0.00")
@@ -632,7 +637,7 @@ Private Sub btnConfirmar_Click()
         
             ' Cabeçalho da compra
             If sDecisao = "Inclusão" Then
-                oPagamento.Inclui
+                oRecebimento.Inclui
             End If
             
             ' Itens do pagamento
@@ -640,47 +645,47 @@ Private Sub btnConfirmar_Click()
             
                 If sDecisao = "Inclusão" Then
                     
-                    With oPagamentoItem
+                    With oRecebimentoItem
                     
-                        oTituloPagar.Carrega CLng(lstTitulos.List(i, 5))
+                        oTituloReceber.Carrega CLng(lstTitulos.List(i, 5))
                         
-                        .PagamentoID = oPagamento.ID
-                        .TituloID = oTituloPagar.Recno
+                        .RecebimentoID = oRecebimento.ID
+                        .TituloID = oTituloReceber.Recno
                         .ValorBaixado = CCur(lstTitulos.List(i, 3))
-                        .DataBaixa = oPagamento.Data
-                        .FornecedorID = oTituloPagar.FornecedorID
-                        .TituloValor = oTituloPagar.Valor
-                        .TituloData = oTituloPagar.Data
-                        .TituloVencimento = oTituloPagar.Vencimento
-                        
-                            
+                        .DataBaixa = oRecebimento.Data
+                        .ObraID = oTituloReceber.ObraID
+                        .TituloValor = oTituloReceber.Valor
+                        .TituloData = oTituloReceber.Data
+                        .TituloVencimento = oTituloReceber.Vencimento
+                                                    
                         .Inclui
                     End With
                 ElseIf sDecisao = "Exclusão" Then
-                    With oPagamentoItem
+                    With oRecebimentoItem
                         .Recno = CLng(lstTitulos.List(i, 5))
                         .Exclui .Recno
                     End With
                 End If
             Next i
             
-            ' Itens da forma de pagamento
-            For i = 0 To lstPgtos.ListCount - 1
+            ' Itens da forma de recebimento
+            For i = 0 To lstRecebimentos.ListCount - 1
 
                 If sDecisao = "Inclusão" Then
                 
                     With oContaMovimento
-                        .ContaID = CLng(lstPgtos.List(i, 2))
-                        .CliForID = oPagamento.FornecedorID
-                        .Data = oPagamento.Data
-                        .PagRec = "P"
-                        .Valor = CCur(lstPgtos.List(i, 0))
-                        .TabelaOrigem = "tbl_pagamentos"
-                        .RecnoOrigem = oPagamento.ID
+                        .ContaID = CLng(lstRecebimentos.List(i, 2))
+                        .CliForID = oRecebimento.ObraID
                         
-                        oCompra.Carrega oTituloPagar.CompraID
+                        .Data = oRecebimento.Data
+                        .PagRec = "R"
+                        .Valor = CCur(lstRecebimentos.List(i, 0))
+                        .TabelaOrigem = "tbl_recebimentos"
+                        .RecnoOrigem = oRecebimento.ID
                         
-                        .CategoriaID = oCompra.CategoriaID
+                        oObra.Carrega oTituloReceber.ObraID
+                        
+                        .CategoriaID = oObra.CategoriaID
                     
                         .Inclui
                     End With
@@ -688,7 +693,7 @@ Private Sub btnConfirmar_Click()
                 ElseIf sDecisao = "Exclusão" Then
                 
                     With oContaMovimento
-                        .Recno = CLng(lstPgtos.List(i, 3))
+                        .Recno = CLng(lstRecebimentos.List(i, 3))
                         .Exclui .Recno
                     End With
                     
@@ -697,7 +702,7 @@ Private Sub btnConfirmar_Click()
             Next i
             
             If sDecisao = "Exclusão" Then
-                oPagamento.Exclui oPagamento.ID
+                oRecebimento.Exclui oRecebimento.ID
             End If
             
             If sDecisao = "Inclusão" Then
@@ -711,7 +716,7 @@ Private Sub btnConfirmar_Click()
             End If
             
             Set myRst = New ADODB.RecordSet
-            Set myRst = oPagamento.RecordSet
+            Set myRst = oRecebimento.RecordSet
         
             With scrPagina
                 .Min = 1
@@ -748,9 +753,9 @@ Private Function Valida(Decisao As String) As Boolean
         If txbData.Text = Empty Then
             MsgBox "Campo 'Data' é obrigatório", vbCritical
             MultiPage1.Value = 1: txbData.SetFocus: Exit Function
-        ElseIf cbbFornecedor.ListIndex = -1 Then
+        ElseIf cbbObra.ListIndex = -1 Then
             MsgBox "Campo 'Fornecedor' é obrigatório", vbCritical
-            MultiPage1.Value = 1: cbbFornecedor.SetFocus: Exit Function
+            MultiPage1.Value = 1: cbbObra.SetFocus: Exit Function
         ElseIf optManual.Value = False And optAutomatico.Value = False Then
             MsgBox "Escolha o tipo de pagamento", vbCritical
             MultiPage1.Value = 2: optManual.SetFocus: Exit Function
@@ -763,9 +768,9 @@ Private Function Valida(Decisao As String) As Boolean
                 MsgBox "Você precisa informar o valor que será baixado de cada título.", vbCritical
                 MultiPage1.Value = 2: lblExtrato.SetFocus: Exit Function
             Else
-                With oPagamento
+                With oRecebimento
                     .Data = CDate(txbData.Text)
-                    .FornecedorID = CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
+                    .ObraID = CLng(cbbObra.List(cbbObra.ListIndex, 1))
                     
                     If optManual.Value = True Then
                         .TipoBaixa = "M"
@@ -773,7 +778,7 @@ Private Function Valida(Decisao As String) As Boolean
                         .TipoBaixa = "A"
                     End If
                     
-                    .ValorPago = CCur(lblTotalPagamentos.Caption)
+                    .ValorRecebido = CCur(lblTotalPagamentos.Caption)
                     
                 End With
                 
@@ -785,16 +790,16 @@ Private Function Valida(Decisao As String) As Boolean
     End If
 
 End Function
-Private Sub lstPgtos_Change()
+Private Sub lstRecebimentos_Change()
 
     Dim n As Integer
 
-    If lstPgtos.ListIndex > -1 And btnPgtoConfirmar.Caption <> "Alterar" Then
+    If lstRecebimentos.ListIndex > -1 And btnPgtoConfirmar.Caption <> "Alterar" Then
         
-        txbValorPgto.Text = lstPgtos.List(lstPgtos.ListIndex, 0)
+        txbValorPgto.Text = lstRecebimentos.List(lstRecebimentos.ListIndex, 0)
         
         For n = 0 To cbbConta.ListCount - 1
-            If CInt(cbbConta.List(n, 1)) = CInt(lstPgtos.List(lstPgtos.ListIndex, 2)) Then
+            If CInt(cbbConta.List(n, 1)) = CInt(lstRecebimentos.List(lstRecebimentos.ListIndex, 2)) Then
                 cbbConta.ListIndex = n
                 Exit For
             End If
@@ -825,9 +830,9 @@ Private Sub txbValorBaixar_AfterUpdate()
         cBaixar = CCur(txbValorBaixar.Text)
         
         If cBaixar > cSaldo Then
-            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(9 - Len(Format(cSaldo, "#,##0.00"))) & Format(cSaldo, "#,##0.00")
+            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(12 - Len(Format(cSaldo, "#,##0.00"))) & Format(cSaldo, "#,##0.00")
         Else
-            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(9 - Len(Format(cBaixar, "#,##0.00"))) & Format(cBaixar, "#,##0.00")
+            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(12 - Len(Format(cBaixar, "#,##0.00"))) & Format(cBaixar, "#,##0.00")
         End If
 
         txbValorBaixar.Enabled = False: lblValorBaixar.Enabled = False: txbValorBaixar.Text = Format(0, "#,##0.00")
@@ -858,33 +863,33 @@ Private Sub lstPrincipal_Change()
     
         btnExcluir.Enabled = True
         
-        oPagamento.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
+        oRecebimento.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
         
-        lblCabID.Caption = Format(oPagamento.ID, "0000000000")
-        lblCabData.Caption = oPagamento.Data
+        lblCabID.Caption = Format(oRecebimento.ID, "0000000000")
+        lblCabData.Caption = oRecebimento.Data
         
-        txbData.Text = oPagamento.Data
+        txbData.Text = oRecebimento.Data
         
-        For n = 0 To cbbFornecedor.ListCount - 1
-            If CLng(cbbFornecedor.List(n, 1)) = oPagamento.FornecedorID Then
-                cbbFornecedor.ListIndex = n
+        For n = 0 To cbbObra.ListCount - 1
+            If CLng(cbbObra.List(n, 1)) = oRecebimento.ObraID Then
+                cbbObra.ListIndex = n
                 Exit For
             End If
         Next n
         
-        If oPagamento.TipoBaixa = "M" Then
+        If oRecebimento.TipoBaixa = "M" Then
             optManual.Value = True
         Else
             optAutomatico.Value = True
         End If
         
-        Call lstTitulosPopular(oPagamento.FornecedorID)
-        Call lstPgtosPopular(oPagamento.ID)
+        Call lstTitulosPopular(oRecebimento.ObraID)
+        Call lstRecebimentosPopular(oRecebimento.ID)
     
     End If
 
 End Sub
-Private Sub lstPgtosPopular(PagamentoID As Long)
+Private Sub lstRecebimentosPopular(RecebimentoID As Long)
 
     Dim r       As New ADODB.RecordSet
     Dim cVlrPg  As Currency
@@ -895,22 +900,22 @@ Private Sub lstPgtosPopular(PagamentoID As Long)
         sSQL = "SELECT * "
         sSQL = sSQL & "FROM tbl_contas_movimentos "
         sSQL = sSQL & "WHERE "
-        sSQL = sSQL & "tabela_origem = 'tbl_pagamentos' "
-        sSQL = sSQL & "and recno_origem = " & PagamentoID & " "
+        sSQL = sSQL & "tabela_origem = 'tbl_recebimentos' "
+        sSQL = sSQL & "and recno_origem = " & RecebimentoID & " "
         sSQL = sSQL & "ORDER BY r_e_c_n_o_"
         
         r.Open sSQL, cnn, adOpenStatic
     
-        With lstPgtos
+        With lstRecebimentos
                 .ColumnCount = 4
-                .ColumnWidths = "60pt; 60pt; 0pt; 0pt;"
+                .ColumnWidths = "65pt; 60pt; 0pt; 0pt;"
                 .Font = "Consolas"
                 
                 Do Until r.EOF
                 
                     .AddItem
                 
-                    .List(.ListCount - 1, 0) = Space(9 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
+                    .List(.ListCount - 1, 0) = Space(12 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
                     
                     oConta.Carrega r.Fields("conta_id").Value
                     
@@ -933,35 +938,5 @@ End Sub
 Private Sub btnData_Click()
     dtDate = IIf(txbData.Text = Empty, Date, txbData.Text)
     txbData.Text = GetCalendario
-End Sub
-Private Sub cbbConta_AfterUpdate()
-
-    Dim vbResposta As VbMsgBoxResult
-    Dim idx As Integer
-    Dim n As Integer
-    
-    If cbbConta.ListIndex = -1 And cbbConta.Text <> "" Then
-        
-        vbResposta = MsgBox("Esta conta não existe, deseja cadastrá-lo?", vbQuestion + vbYesNo)
-        
-        If vbResposta = vbYes Then
-            
-            oConta.Nome = RTrim(cbbConta.Text)
-            oConta.SaldoInicial = 0
-            oConta.Inclui
-            idx = oConta.ID
-            Call cbbContaPopular
-            
-            For n = 0 To cbbConta.ListCount - 1
-                If CInt(cbbConta.List(n, 1)) = idx Then
-                    cbbConta.ListIndex = n
-                    Exit For
-                End If
-            Next n
-        Else
-            cbbConta.ListIndex = -1
-        End If
-
-    End If
 End Sub
 

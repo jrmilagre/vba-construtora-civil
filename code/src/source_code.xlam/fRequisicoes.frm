@@ -78,8 +78,8 @@ Private Sub cbbObraPopular()
     
     With cbbObra
         .Clear
-        .ColumnCount = 4
-        .ColumnWidths = "100pt; 0pt; 100pt; 200pt;"
+        .ColumnCount = 2
+        .ColumnWidths = "180pt; 0pt;"
     End With
     
     
@@ -91,10 +91,8 @@ Private Sub cbbObraPopular()
     
         With cbbObra
             .AddItem
-            .List(.ListCount - 1, 0) = oObra.Bairro
+            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
             .List(.ListCount - 1, 1) = oObra.ID
-            .List(.ListCount - 1, 2) = oCliente.Nome
-            .List(.ListCount - 1, 3) = oObra.Endereco
         End With
         
     Next n
@@ -473,7 +471,7 @@ Private Sub btnRequisitar_Click()
             cVlrTotal = CCur(txbQtde.Text) * CCur(lblItemUnitario.Caption)
             
             .List(.ListCount - 1, 4) = Space(9 - Len(Format(cVlrTotal, "#,##0.00"))) & Format(cVlrTotal, "#,##0.00")
-            .List(.ListCount - 1, 5) = cbbObra.List(cbbObra.ListIndex, 0) & Space(30 - Len(cbbObra.List(cbbObra.ListIndex, 0))) & " | " & cbbObra.List(cbbObra.ListIndex, 2)
+            .List(.ListCount - 1, 5) = cbbObra.List(cbbObra.ListIndex, 0)
             .List(.ListCount - 1, 6) = cbbObra.List(cbbObra.ListIndex, 1)
             .List(.ListCount - 1, 7) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
             .List(.ListCount - 1, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 1)
@@ -582,7 +580,7 @@ Private Sub btnConfirmar_Click()
     
     sDecisao = Replace(btnConfirmar.Caption, "Confirmar ", "")
     
-    If Valida(sDecisao) = True Then
+    If Valida = True Then
     
         vbResposta = MsgBox("Deseja realmente fazer a " & sDecisao & "?", vbYesNo + vbQuestion, "Pergunta")
         
@@ -681,29 +679,27 @@ Private Sub btnConfirmar_Click()
     End If
     
 End Sub
-Private Function Valida(Decisao As String) As Boolean
+Private Function Valida() As Boolean
     
     Valida = False
     
-    If Decisao = "Inclusão" Then
-        If txbData.Text = Empty Then
-            MsgBox "Campo 'Data' é obrigatório", vbCritical
-            MultiPage1.Value = 1: txbData.SetFocus
-        Else
-            If lstRequisicoes.ListCount = 0 Then
-                MsgBox "Não há itens requisitados.", vbCritical
-                MultiPage1.Value = 2
-            Else
-                With oRequisicao
-                    .Data = CDate(txbData.Text)
-                End With
-                
-                Valida = True
-            End If
-        End If
+    If txbData.Text = Empty Then
+        MsgBox "Campo 'Data' é obrigatório", vbCritical
+        MultiPage1.Value = 1: txbData.SetFocus
     Else
-        Valida = True
+        If lstRequisicoes.ListCount = 0 Then
+            MsgBox "Não há itens requisitados.", vbCritical
+            MultiPage1.Value = 2
+        Else
+            With oRequisicao
+                .Data = CDate(txbData.Text)
+            End With
+            
+            Valida = True
+        End If
+    
     End If
+    
 
 End Function
 Private Sub lstPrincipal_Change()
@@ -790,6 +786,38 @@ Private Sub lstRequisicoesPopular(RequisicaoID As Long)
     
         Set r = Nothing
     
+    End If
+
+End Sub
+Private Sub cbbEtapa_AfterUpdate()
+
+    Dim vbResposta As VbMsgBoxResult
+    Dim idx As Integer
+    Dim n As Integer
+    
+    If cbbEtapa.ListIndex = -1 And cbbEtapa.Text <> "" Then
+        
+        vbResposta = MsgBox("Esta etapa não existe, deseja cadastrá-la?", vbQuestion + vbYesNo)
+        
+        If vbResposta = vbYes Then
+            
+            oEtapa.Nome = RTrim(cbbEtapa.Text)
+            oEtapa.Inclui
+            
+            idx = oEtapa.ID
+            
+            Call cbbEtapaPopular
+            
+            For n = 0 To cbbEtapa.ListCount - 1
+                If CInt(cbbEtapa.List(n, 1)) = idx Then
+                    cbbEtapa.ListIndex = n
+                    Exit For
+                End If
+            Next n
+        Else
+            cbbEtapa.ListIndex = -1
+        End If
+
     End If
 
 End Sub

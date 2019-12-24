@@ -59,7 +59,6 @@ Public Sub Carrega(ID As Long)
     With rst
         Me.CompraID = .Fields("compra_id").Value
         Me.FornecedorID = .Fields("fornecedor_id").Value
-        Me.CategoriaID = .Fields("categoria_id").Value
         Me.Observacao = .Fields("observacao").Value
         Me.Vencimento = .Fields("vencimento").Value
         Me.Valor = .Fields("valor").Value
@@ -87,7 +86,6 @@ Public Sub Inclui()
         
         .Fields("compra_id").Value = Me.CompraID
         .Fields("fornecedor_id").Value = Me.FornecedorID
-        .Fields("categoria_id").Value = Me.CategoriaID
         .Fields("observacao").Value = Me.Observacao
         .Fields("vencimento").Value = CLng(Me.Vencimento)
         .Fields("valor").Value = Me.Valor
@@ -99,17 +97,9 @@ Public Sub Inclui()
     Set rst = Nothing
        
 End Sub
-Public Sub Exclui(Recno As Long)
-
-    Dim rTmp As New ADODB.RecordSet
-    
-    sSQL = "SELECT * FROM tbl_compras_itens WHERE r_e_c_n_o_ = " & Recno
-    
-    rTmp.Open sSQL, cnn
-    
-    Set rTmp = Nothing
-    
-    sSQL = "DELETE FROM tbl_compras_itens WHERE r_e_c_n_o_ = " & Recno
+Public Sub Exclui(CompraID As Long)
+   
+    sSQL = "DELETE FROM tbl_titulos_pagar WHERE compra_id = " & CompraID
     
     cnn.Execute sSQL
 

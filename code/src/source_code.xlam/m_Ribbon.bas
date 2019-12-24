@@ -114,7 +114,7 @@ Sub ActionDyMenuContasReceber(control As IRibbonControl)
     If Conecta() = True Then
         Select Case control.ID
             'Case "bBairros": fBa.Show
-            'Case "bContas": fContas.Show
+            Case "bRecebimentos": fRecebimentos.Show
             'Case "bEtapas": fEtapas.Show
             'Case "bTiposObra": fTiposObra.Show
             'Case "bUnidadesMedida": fUnidadesMedida.Show

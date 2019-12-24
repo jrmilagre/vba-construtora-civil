@@ -11,11 +11,11 @@ tbl_fornecedores;id;3;0;True;True;Código;True;False
 tbl_fornecedores;nome;202;120;True;False;Nome;False;False
 tbl_fornecedores;deletado;11;0;False;False;Deletado;False;False
 tbl_unidades_medida;id;3;0;True;True;Código;True;False
+tbl_unidades_medida;abreviacao;202;2;False;False;Abreviação;False;False
 tbl_unidades_medida;nome;202;120;True;False;Nome;False;False
-tbl_unidades_medida;abreviacao;202;2;True;False;Abreviação;False;False
 tbl_produtos;id;3;0;True;True;Código;True;False
 tbl_produtos;nome;202;120;True;False;Nome;False;False
-tbl_produtos;um_id;3;0;True;False;Unidade de medida padrão;False;tbl_unidades_medida.id
+tbl_produtos;um_id;3;0;True;False;Unidade de medida padrão;False;False
 tbl_produtos;deletado;11;0;False;False;Deletado;False;False
 tbl_tipos_obra;id;3;0;True;True;Código;True;False
 tbl_tipos_obra;nome;202;120;True;False;Nome;False;False
@@ -28,6 +28,7 @@ tbl_obras;cidade;202;75;True;False;Cidade;False;False
 tbl_obras;uf;202;2;True;False;UF;False;False
 tbl_obras;cliente_id;3;0;True;False;Código do cliente;False;tbl_clientes.id
 tbl_obras;data;7;0;True;False;Data de início;False;False
+tbl_obras;categoria_id;3;0;True;False;Código da categoria;False;False
 tbl_obras;deletado;11;0;False;False;Deletado;False;False
 tbl_estados;id;3;0;True;True;Código;True;False
 tbl_estados;nome;202;75;True;False;Nome;False;False
@@ -51,6 +52,7 @@ tbl_contas;deletado;11;0;False;False;Deletado;False;False
 tbl_compras;id;3;0;True;True;Código;True;False
 tbl_compras;data;7;0;True;False;Data;False;False
 tbl_compras;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
+tbl_compras;categoria_id;3;0;True;False;Código da categoria;False;False
 tbl_compras_itens;compra_id;3;0;True;False;Código da compra;False;tbl_compras.id
 tbl_compras_itens;produto_id;3;0;True;False;Código do produto;False;tbl_produtos.id
 tbl_compras_itens;quantidade;0.5;0;True;False;Quantidade;False;False
@@ -68,7 +70,6 @@ tbl_titulos_pagar;vencimento;7;0;True;False;Vencimento;False;False
 tbl_titulos_pagar;valor;6;0;True;False;Valor do título;False;False
 tbl_titulos_pagar;data;7;0;True;False;Data;False;False
 tbl_titulos_pagar;valor_pago;6;0;True;False;Valor pago;False;False
-tbl_titulos_pagar;categoria_id;3;0;True;False;Código da categoria;False;False
 tbl_titulos_pagar;r_e_c_n_o_;3;0;False;True;Recno;False;False
 tbl_requisicoes;id;3;0;True;True;Código;True;False
 tbl_requisicoes;data;7;0;True;False;Data;False;False
@@ -127,5 +128,18 @@ tbl_titulos_receber;vencimento;7;0;True;False;Vencimento;False;False
 tbl_titulos_receber;valor;6;0;True;False;Valor do título;False;False
 tbl_titulos_receber;data;7;0;True;False;Data;False;False
 tbl_titulos_receber;valor_recebido;6;0;True;False;Valor recebido;False;False
-tbl_titulos_receber;categoria_id;3;0;True;False;Código da categoria;False;False
 tbl_titulos_receber;r_e_c_n_o_;3;0;False;True;Recno;False;False
+tbl_recebimentos;id;3;0;True;True;Código;True;False
+tbl_recebimentos;data;7;0;True;False;Data;False;False
+tbl_recebimentos;obra_id;3;0;True;False;Código da obra;False;tbl_obras.id
+tbl_recebimentos;tipo_baixa;202;1;True;False;Tipo da baixa;False;False
+tbl_recebimentos;valor_recebido;6;0;True;False;Valor recebido;False;False
+tbl_recebimentos_itens;recebimento_id;3;0;True;False;Código do recebimento;False;False
+tbl_recebimentos_itens;titulo_id;3;0;True;False;Código do título à receber;False;False
+tbl_recebimentos_itens;data_baixa;7;0;True;False;Data da baixa;False;False
+tbl_recebimentos_itens;valor_baixado;6;0;True;False;Valor pago;False;False
+tbl_recebimentos_itens;obra_id;3;0;True;False;Código da obra;False;False
+tbl_recebimentos_itens;titulo_valor;6;0;True;False;Valor do título;False;False
+tbl_recebimentos_itens;titulo_data;7;0;True;False;Data da emissão do título;False;False
+tbl_recebimentos_itens;titulo_vencimento;7;0;True;False;Data de vencimento do título;False;False
+tbl_recebimentos_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False

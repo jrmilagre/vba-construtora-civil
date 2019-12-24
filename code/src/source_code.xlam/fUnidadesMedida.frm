@@ -21,7 +21,7 @@ Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
 
 Private Const sTable        As String = "tbl_unidades_medida"
-Private Const sCampoOrderBy As String = "nome"
+Private Const sCampoOrderBy As String = "abreviacao"
 
 Private Sub UserForm_Initialize()
      
@@ -51,31 +51,34 @@ Private Sub EventosCampos()
     Dim sTag        As String
     Dim iType       As Integer
     Dim bNullable   As Boolean
-    
+    Dim sField()    As String
+
     ' Laço para percorrer todos os TextBox e atribuir eventos
     ' de acordo com o tipo de cada campo
     For Each oControle In Me.Controls
-    
+
         If Len(oControle.Tag) > 0 Then
-        
+
             If TypeName(oControle) = "TextBox" Then
-                
+
                 Set oEvento = New c_EventoCampo
-                
+
                 With oEvento
-                    
-                    oControle.ControlTipText = cat.Tables(sTable).Columns(oControle.Tag).Properties("Description").Value
-                    
-                    .FieldType = cat.Tables(sTable).Columns(oControle.Tag).Type
-                    .MaxLength = cat.Tables(sTable).Columns(oControle.Tag).DefinedSize
-                    .Nullable = cat.Tables(sTable).Columns(oControle.Tag).Properties("Nullable")
-                    
-                    Set .cGeneric = oControle
-                    
-                End With
-                    
-                colControles.Add oEvento
                 
+                    sField() = Split(oControle.Tag, ".")
+
+                    oControle.ControlTipText = cat.Tables(sField(0)).Columns(sField(1)).Properties("Description").Value
+
+                    .FieldType = cat.Tables(sField(0)).Columns(sField(1)).Type
+                    .MaxLength = cat.Tables(sField(0)).Columns(sField(1)).DefinedSize
+                    .Nullable = cat.Tables(sField(0)).Columns(sField(1)).Properties("Nullable")
+
+                    Set .cGeneric = oControle
+
+                End With
+
+                colControles.Add oEvento
+
             End If
         End If
     Next
@@ -199,7 +202,7 @@ Private Sub PosDecisaoTomada(Decisao As String)
     
     If Decisao <> "Exclusão" Then
         Call Campos("Habilitar")
-        txbNome.SetFocus
+        txbAbreviacao.SetFocus
     End If
     
     lstPrincipal.Enabled = False
@@ -221,7 +224,7 @@ Private Sub lstPrincipal_Change()
         End If
         
         lblID.Caption = Format(IIf(oUnidadeMedida.ID = 0, "", oUnidadeMedida.ID), "00000")
-        lblCabNome.Caption = oUnidadeMedida.Nome
+        lblCabNome.Caption = oUnidadeMedida.Abreviacao
         txbNome.Text = oUnidadeMedida.Nome
         txbAbreviacao.Text = oUnidadeMedida.Abreviacao
                 
@@ -306,7 +309,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
         .Clear                              ' Limpa ListBox
         .Enabled = True                     ' Habilita ListBox
         .ColumnCount = 3                    ' Determina número de colunas
-        .ColumnWidths = "170 pt; 0pt; 40pt;"      ' Configura largura das colunas
+        .ColumnWidths = "40 pt; 0pt; 170pt;"      ' Configura largura das colunas
         .Font = "Consolas"
         
         Dim n As Variant
@@ -314,9 +317,9 @@ Private Sub lstPrincipalPopular(OrderBy As String)
         For Each n In col
             .AddItem
             oUnidadeMedida.Carrega CLng(n)
-            .List(.ListCount - 1, 0) = oUnidadeMedida.Nome
+            .List(.ListCount - 1, 0) = oUnidadeMedida.Abreviacao
             .List(.ListCount - 1, 1) = oUnidadeMedida.ID
-            .List(.ListCount - 1, 2) = oUnidadeMedida.Abreviacao
+            .List(.ListCount - 1, 2) = oUnidadeMedida.Nome
         Next n
         
     End With

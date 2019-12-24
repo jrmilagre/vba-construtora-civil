@@ -16,6 +16,8 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private oProduto            As New cProduto
+Private oUM                 As New cUnidadeMedida
+
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
 Private Const sTable As String = "tbl_produtos"
@@ -23,6 +25,7 @@ Private Const sCampoOrderBy As String = "nome"
 
 Private Sub UserForm_Initialize()
      
+    Call cbbUMPopular
     Call lstPrincipalPopular(sCampoOrderBy)
     Call EventosCampos
     Call Campos("Desabilitar")
@@ -33,6 +36,12 @@ Private Sub UserForm_Initialize()
     
     MultiPage1.Value = 0
 
+End Sub
+Private Sub UserForm_Terminate()
+    
+    ' Destrói objeto da classe cProduto
+    Set oProduto = Nothing
+    Call Desconecta
 End Sub
 Private Sub lblHdNome_Click():
     Call lstPrincipalPopular(sCampoOrderBy)
@@ -209,6 +218,8 @@ End Sub
 
 Private Sub lstPrincipal_Change()
 
+    Dim n As Long
+
     If bListBoxOrdenando = False Then
     
         If btnAlterar.Enabled = False Then btnAlterar.Enabled = True
@@ -221,6 +232,13 @@ Private Sub lstPrincipal_Change()
         lblID.Caption = Format(IIf(oProduto.ID = 0, "", oProduto.ID), "00000")
         lblCabNome.Caption = oProduto.Nome
         txbNome.Text = oProduto.Nome
+        
+        For n = 0 To cbbUM.ListCount - 1
+            If CLng(cbbUM.List(n, 1)) = oProduto.UmID Then
+                cbbUM.ListIndex = n
+                Exit For
+            End If
+        Next n
                 
     End If
 
@@ -250,12 +268,16 @@ Private Sub Campos(Acao As String)
 
     If Acao = "Desabilitar" Then
         txbNome.Enabled = False: lblNome.Enabled = False
+        cbbUM.Enabled = False: lblUM.Enabled = False
     ElseIf Acao = "Habilitar" Then
         txbNome.Enabled = True: lblNome.Enabled = True
+        cbbUM.Enabled = True: lblUM.Enabled = True
     ElseIf Acao = "Limpar" Then
         lblID.Caption = ""
         lblCabNome.Caption = ""
         txbNome.Text = ""
+        cbbUM.ListIndex = -1
+        
         lstPrincipal.ListIndex = -1
     End If
 
@@ -300,7 +322,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
         .Clear                              ' Limpa ListBox
         .Enabled = True                     ' Habilita ListBox
         .ColumnCount = 3                    ' Determina número de colunas
-        .ColumnWidths = "170 pt; 0pt; 180pt;"      ' Configura largura das colunas
+        .ColumnWidths = "170 pt; 0pt; 40pt;"      ' Configura largura das colunas
         .Font = "Consolas"
         
         Dim n As Variant
@@ -310,6 +332,11 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             oProduto.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oProduto.Nome
             .List(.ListCount - 1, 1) = oProduto.ID
+            
+            oUM.Carrega oProduto.UmID
+            
+            .List(.ListCount - 1, 2) = oUM.Abreviacao
+            
         Next n
         
     End With
@@ -328,15 +355,70 @@ Private Function Valida() As Boolean
         ' Envia valores preenchidos no formulário para o objeto
         With oProduto
             .Nome = txbNome.Text
+            .UmID = CLng(cbbUM.List(cbbUM.ListIndex, 1))
         End With
         
         Valida = True
     End If
     
 End Function
-Private Sub UserForm_Terminate()
+Private Sub cbbUMPopular()
     
-    ' Destrói objeto da classe cProduto
-    Set oProduto = Nothing
-    Call Desconecta
+    Dim idx         As Integer
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oUM.Listar("abreviacao")
+    
+    idx = cbbUM.ListIndex
+    
+    cbbUM.Clear
+    
+    For Each n In col
+        
+        oUM.Carrega CLng(n)
+    
+        With cbbUM
+            .AddItem
+            .List(.ListCount - 1, 0) = oUM.Abreviacao
+            .List(.ListCount - 1, 1) = oUM.ID
+        End With
+        
+    Next n
+    
+    cbbUM.ListIndex = idx
+
+End Sub
+Private Sub cbbUM_AfterUpdate()
+
+    Dim vbResposta As VbMsgBoxResult
+    Dim idx As Integer
+    Dim n As Integer
+    
+    If cbbUM.ListIndex = -1 And cbbUM.Text <> "" Then
+        
+        vbResposta = MsgBox("Esta unidade de medida não existe. Deseja cadastrá-la?", vbQuestion + vbYesNo)
+        
+        If vbResposta = vbYes Then
+        
+            oUM.Abreviacao = RTrim(cbbUM.Text)
+            oUM.Nome = ""
+            oUM.Inclui
+            
+            idx = oUM.ID
+            
+            Call cbbUMPopular
+            
+            For n = 0 To cbbUM.ListCount - 1
+                If CInt(cbbUM.List(n, 1)) = idx Then
+                    cbbUM.ListIndex = n
+                    Exit For
+                End If
+            Next n
+        Else
+            cbbUM.ListIndex = -1
+        End If
+        
+    End If
+
 End Sub

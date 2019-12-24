@@ -13,6 +13,7 @@ Private Type TCompra
     ID              As Long
     Data            As Date
     FornecedorID    As Long
+    CategoriaID     As Long
 End Type
 
 Private This As TCompra
@@ -27,6 +28,9 @@ Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 
 Public Property Get FornecedorID() As Variant: FornecedorID = This.FornecedorID: End Property
 Public Property Let FornecedorID(ByVal Value As Variant): This.FornecedorID = Value: End Property
+
+Public Property Get CategoriaID() As Variant: CategoriaID = This.CategoriaID: End Property
+Public Property Let CategoriaID(ByVal Value As Variant): This.CategoriaID = Value: End Property
 
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
@@ -45,6 +49,7 @@ Public Sub Carrega(ID As Long)
         Me.ID = .Fields("id").Value
         Me.Data = .Fields("data").Value
         Me.FornecedorID = IIf(IsNull(.Fields("fornecedor_id").Value), Null, .Fields("fornecedor_id").Value)
+        Me.CategoriaID = .Fields("categoria_id").Value
     End With
     
 End Sub
@@ -64,6 +69,7 @@ Public Sub Inclui()
         Me.ID = .Fields("id").Value
         .Fields("data").Value = Me.Data
         .Fields("fornecedor_id").Value = Me.FornecedorID
+        .Fields("categoria_id").Value = Me.CategoriaID
         
         .Update
     End With
@@ -89,6 +95,7 @@ Public Sub Altera(ID As Long)
         ' Atribui novos valores aos campos
         .Fields("data").Value = Me.Data
         .Fields("fornecedor_id").Value = Me.FornecedorID
+        .Fields("categoria_id").Value = Me.CategoriaID
         
         ' Grava alterações
         .Update
@@ -104,7 +111,7 @@ Public Sub Exclui(ID As Long)
 End Sub
 Public Function RecordSet() As ADODB.RecordSet
 
-    sSQL = "SELECT id, data, fornecedor_id "
+    sSQL = "SELECT * "
     sSQL = sSQL & "FROM " & sTable
     
     Set RecordSet = New ADODB.RecordSet
@@ -117,4 +124,92 @@ Public Function RecordSet() As ADODB.RecordSet
         .Open sSQL, cnn
     End With
     
+End Function
+Public Function ExisteRequisicao(CompraID As Long) As Boolean
+
+    Dim rTmp    As New ADODB.RecordSet
+    Dim sMsg    As String
+    
+    ExisteRequisicao = False
+    
+    sSQL = "SELECT tbl_requisicoes_itens.requisicao_id "
+    sSQL = sSQL & "FROM tbl_requisicoes_itens "
+    sSQL = sSQL & "INNER JOIN tbl_compras_itens ON tbl_requisicoes_itens.recno_origem = tbl_compras_itens.r_e_c_n_o_ "
+    sSQL = sSQL & "GROUP BY tbl_requisicoes_itens.tabela_origem, tbl_compras_itens.compra_id, tbl_requisicoes_itens.requisicao_id "
+    sSQL = sSQL & "HAVING (((tbl_requisicoes_itens.tabela_origem)='tbl_compras_itens') AND ((tbl_compras_itens.compra_id)=" & CompraID & "));"
+    
+    rTmp.Open sSQL, cnn, adOpenStatic
+    
+    If rTmp.EOF = False Then
+    
+        sMsg = "Não posso excluir pois existem requisições vinculadas a essa compra!"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Veja o número das requisições:"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        
+        Do Until rTmp.EOF
+        
+            sMsg = sMsg & "Nº:" & Format(rTmp.Fields("requisicao_id").Value, "0000000000") & vbNewLine
+        
+            rTmp.MoveNext
+        Loop
+        
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Fim!"
+        
+        MsgBox sMsg, vbCritical, "EXISTEM REQUISIÇÕES"
+            
+        ExisteRequisicao = True
+    Else
+        ExisteRequisicao = False
+    End If
+        
+    Set rTmp = Nothing
+
+End Function
+Public Function ExisteBaixaDeTitulos(CompraID As Long) As Boolean
+
+    Dim rTmp    As New ADODB.RecordSet
+    Dim sMsg    As String
+    
+    ExisteBaixaDeTitulos = False
+    
+    sSQL = "SELECT tbl_pagamentos_itens.pagamento_id "
+    sSQL = sSQL & "FROM tbl_titulos_pagar "
+    sSQL = sSQL & "INNER JOIN tbl_pagamentos_itens ON tbl_titulos_pagar.r_e_c_n_o_ = tbl_pagamentos_itens.titulo_id "
+    sSQL = sSQL & "GROUP BY tbl_titulos_pagar.compra_id, tbl_pagamentos_itens.pagamento_id "
+    sSQL = sSQL & "HAVING (((tbl_titulos_pagar.compra_id)=" & CompraID & "))"
+    
+    rTmp.Open sSQL, cnn, adOpenStatic
+    
+    If rTmp.EOF = False Then
+    
+        sMsg = "Não posso excluir pois existem pagamentos vinculados a essa compra!"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Veja o número dos pagamentos:"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        
+        Do Until rTmp.EOF
+        
+            sMsg = sMsg & "Nº:" & Format(rTmp.Fields("pagamento_id").Value, "0000000000") & vbNewLine
+        
+            rTmp.MoveNext
+        Loop
+        
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Fim!"
+        
+        MsgBox sMsg, vbCritical, "EXISTEM PAGAMENTOS"
+            
+        ExisteBaixaDeTitulos = True
+    Else
+        ExisteBaixaDeTitulos = False
+    End If
+        
+    Set rTmp = Nothing
+
 End Function

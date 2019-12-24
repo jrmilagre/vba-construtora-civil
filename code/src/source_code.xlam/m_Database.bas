@@ -341,21 +341,21 @@ Public Sub IncluiRegistrosTeste()
         
         sSQL = "INSERT INTO tbl_clientes ([nome]) VALUES ('Acmo Administração de Bens e Participações Eireli') ": cnn.Execute sSQL
         
-        sSQL = "INSERT INTO tbl_obras ([endereco], [tipo_id], [bairro], [cidade], [uf], [cliente_id]) VALUES ('Alameda ...', 2, 'Campos Olivotti', 'Extrema', 'MG', 1) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_obras ([endereco], [tipo_id], [bairro], [cidade], [uf], [cliente_id], [data], [categoria_id]) VALUES ('Alameda ...', 2, 'Campos Olivotti', 'Extrema', 'MG', 1, " & CLng(CDate("14/12/2019")) & ", 1) ": cnn.Execute sSQL
         
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, 'Entrada', " & CLng(CDate("14/12/2019")) & ", 104386.08, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '01/09', " & CLng(CDate("14/01/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '02/09', " & CLng(CDate("14/02/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '03/09', " & CLng(CDate("14/03/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '04/09', " & CLng(CDate("14/04/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '05/09', " & CLng(CDate("14/05/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '06/09', " & CLng(CDate("14/06/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '07/09', " & CLng(CDate("14/07/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '08/09', " & CLng(CDate("14/08/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '09/09', " & CLng(CDate("14/09/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ", 1)": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, 'Entrada', " & CLng(CDate("14/12/2019")) & ", 104386.08, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '01/09', " & CLng(CDate("14/01/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '02/09', " & CLng(CDate("14/02/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '03/09', " & CLng(CDate("14/03/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '04/09', " & CLng(CDate("14/04/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '05/09', " & CLng(CDate("14/05/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '06/09', " & CLng(CDate("14/06/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '07/09', " & CLng(CDate("14/07/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '08/09', " & CLng(CDate("14/08/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '09/09', " & CLng(CDate("14/09/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
         
-        sSQL = "INSERT INTO tbl_compras ([data], [fornecedor_id]) VALUES (" & CLng(CDate("13/12/2019")) & ", 1)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_compras ([data], [fornecedor_id]) VALUES (" & CLng(CDate("14/12/2019")) & ", 2)": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_compras ([data], [fornecedor_id], [categoria_id]) VALUES (" & CLng(CDate("13/12/2019")) & ", 1, 3)": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_compras ([data], [fornecedor_id], [categoria_id]) VALUES (" & CLng(CDate("14/12/2019")) & ", 2, 3)": cnn.Execute sSQL
         
         sSQL = "INSERT INTO tbl_compras_itens ([compra_id], [produto_id], [quantidade], [um_id], [unitario], [total], [data], [fornecedor_id]) VALUES (1, 1, 2, 1, 23.5, 47, " & CLng(CDate("13/12/2019")) & ", 1)": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_compras_itens ([compra_id], [produto_id], [quantidade], [um_id], [unitario], [total], [data], [fornecedor_id]) VALUES (1, 2, 5, 1, 5, 25, " & CLng(CDate("13/12/2019")) & ", 1)": cnn.Execute sSQL
@@ -363,11 +363,11 @@ Public Sub IncluiRegistrosTeste()
         sSQL = "INSERT INTO tbl_compras_itens ([compra_id], [produto_id], [quantidade], [um_id], [unitario], [total], [data], [fornecedor_id]) VALUES (2, 1, 5, 1, 24.5, 122.5, " & CLng(CDate("14/12/2019")) & ", 2)": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_compras_itens ([compra_id], [produto_id], [quantidade], [um_id], [unitario], [total], [data], [fornecedor_id]) VALUES (2, 2, 5, 1, 4.8, 48, " & CLng(CDate("14/12/2019")) & ", 2)": cnn.Execute sSQL
         
-        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '01/02', " & CLng(CDate("13/01/2019")) & ", 36, " & CLng(CDate("13/12/2019")) & ", 3)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (1, 1, '02/02', " & CLng(CDate("13/02/2020")) & ", 36, " & CLng(CDate("13/12/2019")) & ", 3)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (2, 2, '01/03', " & CLng(CDate("14/01/2020")) & ", 48.83, " & CLng(CDate("14/12/2019")) & ", 3)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (2, 2, '02/03', " & CLng(CDate("14/02/2020")) & ", 48.83, " & CLng(CDate("14/12/2019")) & ", 3)": cnn.Execute sSQL
-        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data], [categoria_id]) VALUES (2, 2, '03/03', " & CLng(CDate("14/03/2020")) & ", 48.84, " & CLng(CDate("14/12/2019")) & ", 3)": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '01/02', " & CLng(CDate("13/01/2019")) & ", 36, " & CLng(CDate("13/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '02/02', " & CLng(CDate("13/02/2020")) & ", 36, " & CLng(CDate("13/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data]) VALUES (2, 2, '01/03', " & CLng(CDate("14/01/2020")) & ", 48.83, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data]) VALUES (2, 2, '02/03', " & CLng(CDate("14/02/2020")) & ", 48.83, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_titulos_pagar ([compra_id], [fornecedor_id], [observacao], [vencimento], [valor], [data]) VALUES (2, 2, '03/03', " & CLng(CDate("14/03/2020")) & ", 48.84, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
         
         sSQL = "INSERT INTO tbl_contas ([nome], [saldo_inicial]) VALUES ('Dinheiro em caixa', 0) ": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_contas ([nome], [saldo_inicial]) VALUES ('Santander', 0) ": cnn.Execute sSQL

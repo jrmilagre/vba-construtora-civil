@@ -18,6 +18,7 @@ Private Type TTipoObra
     TipoID          As Integer
     ClienteID       As Variant
     Data            As Date
+    CategoriaID     As Long
 End Type
 
 Private This As TTipoObra
@@ -48,6 +49,9 @@ Public Property Let ClienteID(ByVal Value As Variant): This.ClienteID = Value: E
 Public Property Get Data() As Date: Data = This.Data: End Property
 Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 
+Public Property Get CategoriaID() As Variant: CategoriaID = This.CategoriaID: End Property
+Public Property Let CategoriaID(ByVal Value As Variant): This.CategoriaID = Value: End Property
+
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
 
@@ -70,6 +74,7 @@ Public Sub Carrega(ID As Long)
         Me.TipoID = .Fields("tipo_id").Value
         Me.ClienteID = IIf(IsNull(.Fields("cliente_id").Value), Null, .Fields("cliente_id").Value)
         Me.Data = .Fields("data").Value
+        Me.CategoriaID = .Fields("categoria_id").Value
     End With
     
 End Sub
@@ -96,6 +101,7 @@ Public Sub Inclui()
         .Fields("tipo_id").Value = Me.TipoID
         .Fields("cliente_id").Value = Me.ClienteID
         .Fields("data").Value = Me.Data
+        .Fields("categoria_id").Value = Me.CategoriaID
         
         .Update
     End With
@@ -128,6 +134,7 @@ Public Sub Altera()
         .Fields("tipo_id").Value = Me.TipoID
         .Fields("cliente_id").Value = Me.ClienteID
         .Fields("data").Value = Me.Data
+        .Fields("categoria_id").Value = Me.CategoriaID
         
         ' Grava alterações
         .Update
@@ -137,9 +144,9 @@ Public Sub Altera()
 End Sub
 
 ' Rotina para Excluir registro do banco de dados
-Public Sub Exclui()
+Public Sub Exclui(ID As Long)
     
-    sSQL = "UPDATE " & sTable & " SET deletado = True WHERE id = " & Me.ID
+    sSQL = "DELETE FROM " & sTable & " WHERE id = " & ID
     
     cnn.Execute sSQL
     
@@ -169,7 +176,7 @@ Public Function Listar(OrderBy As String) As Collection
 End Function
 Public Function RecordSet() As ADODB.RecordSet
 
-    sSQL = "SELECT id, data "
+    sSQL = "SELECT * "
     sSQL = sSQL & "FROM " & sTable
     
     Set RecordSet = New ADODB.RecordSet

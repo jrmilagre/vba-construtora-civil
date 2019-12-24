@@ -238,7 +238,7 @@ Private Sub Campos(Acao As String)
         lblID.Caption = ""
         lblCabNome.Caption = ""
         txbNome.Text = Empty
-        txbSaldoInicial.Text = Empty
+        txbSaldoInicial.Text = Format(0, "#,##0.00")
         lstPrincipal.ListIndex = -1
     End If
 
@@ -293,6 +293,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             oConta.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oConta.Nome
             .List(.ListCount - 1, 1) = oConta.ID
+            .List(.ListCount - 1, 2) = Space(15 - Len(Format(oConta.SaldoInicial, "#,##0.00"))) & Format(oConta.SaldoInicial, "#,##0.00")
         Next n
         
     End With

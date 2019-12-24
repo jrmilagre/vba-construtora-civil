@@ -20,7 +20,7 @@ Private oCategoria          As New cCategoria
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
 Private Const sTable As String = "tbl_categorias"
-Private Const sCampoOrderBy As String = "pag_rec, categoria, subcategoria, item_subcategoria"
+Private Const sCampoOrderBy As String = "pag_rec DESC, categoria, subcategoria, item_subcategoria"
 
 Private Sub UserForm_Initialize()
     
@@ -180,7 +180,7 @@ Private Sub PosDecisaoTomada(Decisao As String)
     
     If Decisao <> "Exclusão" Then
         Call Campos("Habilitar")
-        txbCategoria.SetFocus
+        cbbPagRec.SetFocus
     End If
     
     lstPrincipal.Enabled = False
@@ -300,7 +300,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
 
     Dim col As New Collection
     
-    Set col = oCategoria.Listar(OrderBy)
+    Set col = oCategoria.Listar(OrderBy, "T")
     
     With lstPrincipal
         .Clear                              ' Limpa ListBox

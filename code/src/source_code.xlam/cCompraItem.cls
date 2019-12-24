@@ -129,17 +129,9 @@ Public Sub Altera(Recno As Long)
     
     Set rst = Nothing
 End Sub
-Public Sub Exclui(Recno As Long)
-
-    Dim rTmp As New ADODB.RecordSet
+Public Sub Exclui(CompraID As Long)
     
-    sSQL = "SELECT * FROM tbl_compras_itens WHERE r_e_c_n_o_ = " & Recno
-    
-    rTmp.Open sSQL, cnn
-    
-    Set rTmp = Nothing
-    
-    sSQL = "DELETE FROM tbl_compras_itens WHERE r_e_c_n_o_ = " & Recno
+    sSQL = "DELETE FROM tbl_compras_itens WHERE compra_id = " & CompraID
     
     cnn.Execute sSQL
 
