@@ -506,37 +506,53 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
 End Sub
 
-Private Function Valida() As Boolean
+Private Function Valida(Decisao As String) As Boolean
     
     Valida = False
     
-    If txbEndereco.Text = Empty Then
-        MsgBox "'Endereço' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: txbEndereco.SetFocus
-    ElseIf cbbTipo.ListIndex = -1 Then
-        MsgBox "'Tipo' é um campo obrigatório", vbInformation: cbbTipo.SetFocus
-    ElseIf txbData.Text = Empty Then
-        MsgBox "'Data' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: txbData.SetFocus
-    ElseIf cbbCategoria.ListIndex = -1 Then
-        MsgBox "'Categoria' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: cbbCategoria.SetFocus
-    Else
-        If lstTitulos.ListCount = 0 Then
-            MsgBox "Não há títulos à receber apontados na obra", vbCritical
-            MultiPage1.Value = 2: btnTituloInclui.SetFocus
+    If Decisao = "Inclusão" Or Decisao = "Alteração" Then
+    
+        If txbEndereco.Text = Empty Then
+            MsgBox "'Endereço' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: txbEndereco.SetFocus
+        ElseIf cbbTipo.ListIndex = -1 Then
+            MsgBox "'Tipo' é um campo obrigatório", vbInformation: cbbTipo.SetFocus
+        ElseIf txbData.Text = Empty Then
+            MsgBox "'Data' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: txbData.SetFocus
+        ElseIf cbbCategoria.ListIndex = -1 Then
+            MsgBox "'Categoria' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: cbbCategoria.SetFocus
         Else
-            ' Envia valores preenchidos no formulário para o objeto
-            With oObra
-                .Endereco = txbEndereco.Text
-                .Bairro = txbBairro.Text
-                .Cidade = txbCidade.Text
-                .UF = cbbUF.Text
-                .TipoID = IIf(cbbTipo.ListIndex = -1, 0, CInt(cbbTipo.List(cbbTipo.ListIndex, 1)))
-                .ClienteID = CLng(cbbCliente.List(cbbCliente.ListIndex, 1))
-                .Data = CDate(txbData.Text)
-                .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
-            End With
-            
+            If Decisao = "Inclusão" Then
+                If lstTitulos.ListCount = 0 Then
+                    MsgBox "Não há títulos à receber apontados na obra", vbCritical
+                    MultiPage1.Value = 2: btnTituloInclui.SetFocus
+                    Exit Function
+                End If
+            Else
+                    
+                With oObra
+                    .Endereco = txbEndereco.Text
+                    .Bairro = txbBairro.Text
+                    .Cidade = txbCidade.Text
+                    .UF = cbbUF.Text
+                    .TipoID = IIf(cbbTipo.ListIndex = -1, 0, CInt(cbbTipo.List(cbbTipo.ListIndex, 1)))
+                    .ClienteID = CLng(cbbCliente.List(cbbCliente.ListIndex, 1))
+                    .Data = CDate(txbData.Text)
+                    .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
+                End With
+                
+                Valida = True
+                
+            End If
+        End If
+        
+    ElseIf Decisao = "Exclusão" Then
+    
+        If oObra.ExisteRecebimento(oObra.ID) = True Then
+            Exit Function
+        Else
             Valida = True
         End If
+        
     End If
     
 End Function
@@ -758,15 +774,15 @@ Private Sub btnConfirmar_Click()
     Dim sDecisao As String
     Dim i As Integer
     
-    sDecisao = Replace(btnConfirmar.Caption, "Confirmar ", "")
+    sDecisao = Replace(btnConfirmar.Caption, "Confirmar " & vbNewLine, "")
     
-    If Valida = True Then
+    If Valida(sDecisao) = True Then
         vbResposta = MsgBox("Deseja realmente fazer a " & sDecisao & "?", vbYesNo + vbQuestion, "Pergunta")
         
         If vbResposta = vbYes Then
         
             ' Cabeçalho da compra
-            If sDecisao = vbNewLine & "Inclusão" Then
+            If sDecisao = "Inclusão" Then
                 oObra.Inclui
                 
                 ' Títulos das compras (DOING)
@@ -784,14 +800,14 @@ Private Sub btnConfirmar_Click()
                     
                 Next i
                 
-            ElseIf sDecisao = vbNewLine & "Alteração" Then
+            ElseIf sDecisao = "Alteração" Then
                 oObra.Altera
-            ElseIf sDecisao = vbNewLine & "Exclusão" Then
+            ElseIf sDecisao = "Exclusão" Then
                 oTituloReceber.Exclui oObra.ID
                 oObra.Exclui oObra.ID
             End If
             
-            If sDecisao = vbNewLine & "Inclusão" Then
+            If sDecisao = "Inclusão" Then
                 If lstPrincipal.ListCount < myRst.PageSize Then
                     lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
                 Else
@@ -823,9 +839,14 @@ Private Sub btnConfirmar_Click()
             Call btnCancelar_Click
             
         ElseIf vbResposta = vbNo Then
+        
             Call btnCancelar_Click
+            
         End If
+    Else
     
+        Call btnCancelar_Click
+        
     End If
     
 End Sub

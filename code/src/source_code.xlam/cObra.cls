@@ -190,4 +190,48 @@ Public Function RecordSet() As ADODB.RecordSet
     End With
     
 End Function
+Public Function ExisteRecebimento(ObraID As Long) As Boolean
 
+    Dim rTmp    As New ADODB.RecordSet
+    Dim sMsg    As String
+    
+    ExisteRecebimento = False
+    
+    sSQL = "SELECT tbl_recebimentos_itens.recebimento_id "
+    sSQL = sSQL & "FROM tbl_titulos_receber "
+    sSQL = sSQL & "INNER JOIN tbl_recebimentos_itens ON tbl_titulos_receber.r_e_c_n_o_ = tbl_recebimentos_itens.titulo_id "
+    sSQL = sSQL & "GROUP BY tbl_recebimentos_itens.recebimento_id, tbl_titulos_receber.obra_id "
+    sSQL = sSQL & "HAVING (((tbl_titulos_receber.obra_id)=" & ObraID & "));"
+
+    
+    rTmp.Open sSQL, cnn, adOpenStatic
+    
+    If rTmp.EOF = False Then
+    
+        sMsg = "Não posso excluir pois existem recebimentos vinculados a essa obra!"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Veja o número dos recebimentos:"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        
+        Do Until rTmp.EOF
+        
+            sMsg = sMsg & "Nº:" & Format(rTmp.Fields("recebimento_id").Value, "0000000000") & vbNewLine
+        
+            rTmp.MoveNext
+        Loop
+        
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Fim!"
+        
+        MsgBox sMsg, vbCritical, "EXISTEM RECEBIMENTOS"
+            
+        ExisteRecebimento = True
+    Else
+        ExisteRecebimento = False
+    End If
+        
+    Set rTmp = Nothing
+
+End Function

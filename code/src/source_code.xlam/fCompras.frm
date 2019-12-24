@@ -677,9 +677,9 @@ Private Function Valida(Decisao As String) As Boolean
     ElseIf Decisao = "Exclusão" Then
     
         If oCompra.ExisteRequisicao(oCompra.ID) = True Then
-            Valida = False: Exit Function
-        ElseIf oCompra.ExisteBaixaDeTitulos(oCompra.ID) = True Then
-            Valida = False: Exit Function
+            Exit Function
+        ElseIf oCompra.ExistePagamento(oCompra.ID) = True Then
+            Exit Function
         Else
             Valida = True
         End If

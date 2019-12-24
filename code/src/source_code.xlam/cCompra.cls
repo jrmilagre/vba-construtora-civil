@@ -169,7 +169,7 @@ Public Function ExisteRequisicao(CompraID As Long) As Boolean
     Set rTmp = Nothing
 
 End Function
-Public Function ExisteBaixaDeTitulos(CompraID As Long) As Boolean
+Public Function ExistePagamento(CompraID As Long) As Boolean
 
     Dim rTmp    As New ADODB.RecordSet
     Dim sMsg    As String
@@ -205,9 +205,9 @@ Public Function ExisteBaixaDeTitulos(CompraID As Long) As Boolean
         
         MsgBox sMsg, vbCritical, "EXISTEM PAGAMENTOS"
             
-        ExisteBaixaDeTitulos = True
+        ExistePagamento = True
     Else
-        ExisteBaixaDeTitulos = False
+        ExistePagamento = False
     End If
         
     Set rTmp = Nothing
