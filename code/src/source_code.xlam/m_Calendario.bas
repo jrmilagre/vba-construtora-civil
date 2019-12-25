@@ -5,9 +5,9 @@ Option Explicit
 '---Para obter uma data do calendário na Plan1 e na célula A1, basta escrever o seguinte código:
 '--- Plan1.Range("A1") = GetCalendario
 
-Public Const sMascaraData   As String = "DD/MM/YYYY"   '---formatação de datas
+Public Const sMascaraData   As String = "DD/MM/YYYY"   ' Formatação de datas
 Public dtDate               As Date
-Dim Botoes()                As New c_Calendario  '---vetor que armazena todos os Label de dia do Calendário
+Dim Botoes()                As New c_Calendario  ' Vetor que armazena todos os botões de dia do Calendário
 
 Function GetCalendario() As Date
     

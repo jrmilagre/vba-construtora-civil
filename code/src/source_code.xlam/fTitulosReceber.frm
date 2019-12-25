@@ -36,7 +36,7 @@ Private Sub UserForm_Initialize()
     
     Set myRst = oTituloReceber.RecordSet
         
-    Call lstPrincipalPopular
+    Call btnFiltrar_Click
     
     Call btnCancelar_Click
 
@@ -45,6 +45,9 @@ Private Sub UserForm_Terminate()
     
     ' Destrói objeto da classe cProduto
     Set oTituloReceber = Nothing
+    Set oObra = Nothing
+    Set oCliente = Nothing
+    
     Call Desconecta
     
 End Sub
@@ -185,6 +188,7 @@ Private Sub lstPrincipalPopular()
     Dim lCount      As Long
     Dim cVlrBxd     As Currency
     Dim cVlrSld     As Currency
+    Dim c           As control
     
     With scrPagina
         .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
@@ -229,7 +233,32 @@ Private Sub lstPrincipalPopular()
         Wend
 
     End With
+    
+    ' Colore status
+    Dim idx As Integer
+    
+    For Each c In fTitulosReceber.Controls
+        
+        If TypeName(c) = "Label" And c.Tag = "status" Then
+            'Stop
+            
+            idx = CInt(Mid(c.name, 2, 2))
+            
+            If idx <= (lstPrincipal.ListCount - 1) Then
+                If CDate(lstPrincipal.List(idx, 2)) > Date Then
+                    c.BackColor = &HC000&
+                Else
+                    c.BackColor = &HC0&
+                End If
+            Else
+                c.BackColor = &H8000000F
+            End If
+        
+        End If
+        
+    Next c
    
+    ' Numera a página posicionada
     lblPaginaAtual.Caption = "Página " & Format(scrPagina.Value, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
 
 End Sub
