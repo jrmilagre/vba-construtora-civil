@@ -237,7 +237,7 @@ Private Sub btnConfirmar_Click()
                 oLancamento.ExcluiTotal
             Else
                 If sDecisao = "Inclusão" Then
-                    oLancamento.ID = oLancamento.ProximoId
+                    oLancamento.Id = oLancamento.ProximoId
                 ElseIf sDecisao = "Alteração" Then
                     oLancamento.ExcluiTotal
                 End If
@@ -352,13 +352,14 @@ Private Function Valida() As Boolean
                     End If
                     
                     oEmpresa.Carrega2 cbbEmpresa.Text, cbbFilial.Text
-                    .EmpresaID = oEmpresa.ID
+                    .EmpresaID = oEmpresa.Id
                 End If
                                             
-                If oEmpresa.Pagamento = "T" Then
+                If oEmpresa.Pagamento <> "P" Then
                     If cbbTabelaPreco.ListIndex = -1 Then
-                        MsgBox "Campo 'Tabela' é obrigatório", vbCritical
-                        MultiPage1.Value = 1: cbbEmpresa.SetFocus: Exit Function
+                        .TabelaId = 0
+                        'MsgBox "Campo 'Tabela' é obrigatório", vbCritical
+                        'MultiPage1.Value = 1: cbbEmpresa.SetFocus: Exit Function
                     Else
                         .TabelaId = CLng(cbbTabelaPreco.List(cbbTabelaPreco.ListIndex, 1))
                     End If
@@ -532,7 +533,7 @@ Private Sub lstPrincipal_Change()
         oLancamento.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0)))
         
         ' Preenche cabeçalho
-        lblCabID.Caption = IIf(oLancamento.ID = 0, "", Format(oLancamento.ID, "0000000000"))
+        lblCabID.Caption = IIf(oLancamento.Id = 0, "", Format(oLancamento.Id, "0000000000"))
         lblCabData.Caption = oLancamento.Data
         lblCabTipoExame.Caption = oLancamento.TipoExame
         
@@ -546,8 +547,8 @@ Private Sub lstPrincipal_Change()
             cbbTabelaPreco.Text = oTabelaPreco.Tabela
         Else
             cbbTabelaPreco.ListIndex = -1
-            cbbTabelaPreco.Visible = False
-            lblTabela.Visible = False
+            'cbbTabelaPreco.Visible = False
+            'lblTabela.Visible = False
         End If
         
         lblCabFuncionario.Caption = oFuncionario.Funcionario
@@ -580,7 +581,7 @@ Private Sub lstExamesPopular()
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM tbl_lancamentos "
-    sSQL = sSQL & "WHERE id = " & oLancamento.ID
+    sSQL = sSQL & "WHERE id = " & oLancamento.Id
     
     Set rst = New ADODB.RecordSet
     
@@ -651,10 +652,16 @@ Private Sub cbbEmpresa_AfterUpdate()
         Call ComboBoxPopularFiliais
         cbbFilial.ListIndex = 0
         oEmpresa.Carrega2 cbbEmpresa.Text, cbbFilial.Text
-        If oEmpresa.Pagamento = "T" Then
+        If oEmpresa.Pagamento <> "P" Then
             cbbTabelaPreco.Visible = True: lblTabela.Visible = True
-            oTabelaPreco.Carrega oEmpresa.TabelaPrecoId
-            cbbTabelaPreco.Text = oTabelaPreco.Tabela
+            
+            If oLancamento.TabelaId = 0 Then
+                cbbTabelaPreco.ListIndex = -1
+            Else
+                oTabelaPreco.Carrega oLancamento.TabelaId
+                cbbTabelaPreco.Text = oTabelaPreco.Tabela
+            End If
+            
             cbbTipoExame.SetFocus
         Else
             cbbTabelaPreco.ListIndex = -1
@@ -705,7 +712,7 @@ Private Sub cbbFuncionario_AfterUpdate()
                 'cbbTipoExame.SetFocus
             Else
                 cbbTabelaPreco.ListIndex = -1
-                cbbTabelaPreco.Visible = False: lblTabela.Visible = False
+                'cbbTabelaPreco.Visible = False: lblTabela.Visible = False
             End If
         End If
     Else
@@ -954,13 +961,7 @@ Private Sub ListBoxPrincipalPopular(Pagina As Long)
             .AddItem
 
             oFuncionario.Carrega myRst.Fields("funcionario_id").Value
-            
-            If oFuncionario.EmpresaID > 0 Then
-                oEmpresa.Carrega oFuncionario.EmpresaID
-            Else
-                oEmpresa.Empresa = ""
-                oEmpresa.Filial = ""
-            End If
+            oEmpresa.Carrega myRst.Fields("empresa_id").Value
             
             oLancamento.TipoExame = myRst.Fields("tipo_exame").Value
 
@@ -968,7 +969,6 @@ Private Sub ListBoxPrincipalPopular(Pagina As Long)
             .List(.ListCount - 1, 1) = myRst.Fields("data").Value
             .List(.ListCount - 1, 2) = oFuncionario.Funcionario
             .List(.ListCount - 1, 3) = oLancamento.TipoExame
-            
             .List(.ListCount - 1, 4) = oEmpresa.Empresa & IIf(oEmpresa.Filial = "", "", " : " & oEmpresa.Filial)
             .List(.ListCount - 1, 5) = myRst.Fields("status").Value
             .List(.ListCount - 1, 6) = Space(2 - Len(Format(myRst.Fields("count_exames").Value, "00"))) & Format(myRst.Fields("count_exames").Value, "00")
@@ -1372,7 +1372,7 @@ Private Sub cbbFltEmpresasPopular()
     cbbFltEmpresa.ListIndex = 0
 
 End Sub
-Private Function BuscaUltimoLancamento(BuscarPor As String, ID As Long) As Long
+Private Function BuscaUltimoLancamento(BuscarPor As String, Id As Long) As Long
     
     Dim r As New ADODB.RecordSet
     
@@ -1380,7 +1380,7 @@ Private Function BuscaUltimoLancamento(BuscarPor As String, ID As Long) As Long
         sSQL = "SELECT id, data, funcionario_id, empresa_id, tabela_id, medico_id "
         sSQL = sSQL & "FROM tbl_lancamentos "
         sSQL = sSQL & "GROUP BY id, data, funcionario_id, empresa_id, tabela_id, medico_id "
-        sSQL = sSQL & "HAVING (((funcionario_id) = " & ID & "))"
+        sSQL = sSQL & "HAVING (((funcionario_id) = " & Id & "))"
         sSQL = sSQL & "ORDER BY id DESC "
     End If
 

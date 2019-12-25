@@ -92,7 +92,7 @@ Private Sub cbbObraPopular()
         With cbbObra
             .AddItem
             .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
-            .List(.ListCount - 1, 1) = oObra.ID
+            .List(.ListCount - 1, 1) = oObra.Id
         End With
         
     Next n
@@ -123,7 +123,7 @@ Private Sub cbbEtapaPopular()
         With cbbEtapa
             .AddItem
             .List(.ListCount - 1, 0) = oEtapa.Nome
-            .List(.ListCount - 1, 1) = oEtapa.ID
+            .List(.ListCount - 1, 1) = oEtapa.Id
         End With
         
     Next n
@@ -600,7 +600,7 @@ Private Sub btnConfirmar_Click()
                     
                         oCompraItem.Carrega CLng(lstRequisicoes.List(i, 0))
                         
-                        .RequisicaoID = oRequisicao.ID
+                        .RequisicaoID = oRequisicao.Id
                         .ProdutoID = oCompraItem.ProdutoID
                         .ObraID = CLng(lstRequisicoes.List(i, 6))
                         .EtapaID = CLng(lstRequisicoes.List(i, 8))
@@ -636,7 +636,7 @@ Private Sub btnConfirmar_Click()
             Next i
             
             If sDecisao = "Exclusão" Then
-                oRequisicao.Exclui oRequisicao.ID
+                oRequisicao.Exclui oRequisicao.Id
             End If
             
             If sDecisao = "Inclusão" Then
@@ -712,12 +712,12 @@ Private Sub lstPrincipal_Change()
         
         oRequisicao.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
         
-        lblCabID.Caption = Format(oRequisicao.ID, "0000000000")
+        lblCabID.Caption = Format(oRequisicao.Id, "0000000000")
         lblCabData.Caption = oRequisicao.Data
         
         txbData.Text = oRequisicao.Data
         
-        Call lstRequisicoesPopular(oRequisicao.ID)
+        Call lstRequisicoesPopular(oRequisicao.Id)
         
         lstRequisicoes.Enabled = False
         btnRequisicaoExclui.Enabled = False
@@ -804,7 +804,7 @@ Private Sub cbbEtapa_AfterUpdate()
             oEtapa.Nome = RTrim(cbbEtapa.Text)
             oEtapa.Inclui
             
-            idx = oEtapa.ID
+            idx = oEtapa.Id
             
             Call cbbEtapaPopular
             

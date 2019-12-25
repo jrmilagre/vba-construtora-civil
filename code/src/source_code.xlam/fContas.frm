@@ -197,7 +197,7 @@ Private Sub lstPrincipal_Change()
             oConta.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oConta.ID = 0, "", oConta.ID), "00000")
+        lblID.Caption = Format(IIf(oConta.Id = 0, "", oConta.Id), "00000")
         lblCabNome.Caption = oConta.Nome
         txbNome.Text = oConta.Nome
         txbSaldoInicial.Text = Format(oConta.SaldoInicial, "#,##0.00")
@@ -292,7 +292,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             .AddItem
             oConta.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oConta.Nome
-            .List(.ListCount - 1, 1) = oConta.ID
+            .List(.ListCount - 1, 1) = oConta.Id
             .List(.ListCount - 1, 2) = Space(15 - Len(Format(oConta.SaldoInicial, "#,##0.00"))) & Format(oConta.SaldoInicial, "#,##0.00")
         Next n
         

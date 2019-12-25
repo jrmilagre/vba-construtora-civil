@@ -4,7 +4,7 @@ Public Myribbon As IRibbonUI
 Sub OnActionButton(control As IRibbonControl)
 
     If Conecta() = True Then
-        Select Case control.ID
+        Select Case control.Id
             Case "btnPedreiros": fPedreiros.Show
             Case "btnClientes": fClientes.Show
             Case "btnFornecedores": fFornecedores.Show
@@ -74,7 +74,7 @@ End Sub
 Sub ActionDyMenuOutrosCadastros(control As IRibbonControl)
 '   Executed when Sheet1 is active
     If Conecta() = True Then
-        Select Case control.ID
+        Select Case control.Id
             'Case "bBairros": fBa.Show
             Case "bContas": fContas.Show
             Case "bCategorias": fCategorias.Show
@@ -112,8 +112,8 @@ End Sub
 Sub ActionDyMenuContasReceber(control As IRibbonControl)
 '   Executed when Sheet1 is active
     If Conecta() = True Then
-        Select Case control.ID
-            'Case "bBairros": fBa.Show
+        Select Case control.Id
+            Case "bContasReceber": fTitulosReceber.Show
             Case "bRecebimentos": fRecebimentos.Show
             'Case "bEtapas": fEtapas.Show
             'Case "bTiposObra": fTiposObra.Show
@@ -149,7 +149,7 @@ End Sub
 Sub ActionDyMenuContasPagar(control As IRibbonControl)
 '   Executed when Sheet1 is active
     If Conecta() = True Then
-        Select Case control.ID
+        Select Case control.Id
             'Case "bBairros": fBa.Show
             Case "bPagamentos": fPagamentos.Show
             'Case "bEtapas": fEtapas.Show

@@ -229,7 +229,7 @@ Private Sub lstPrincipal_Change()
             oProduto.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oProduto.ID = 0, "", oProduto.ID), "00000")
+        lblID.Caption = Format(IIf(oProduto.Id = 0, "", oProduto.Id), "00000")
         lblCabNome.Caption = oProduto.Nome
         txbNome.Text = oProduto.Nome
         
@@ -331,7 +331,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             .AddItem
             oProduto.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oProduto.Nome
-            .List(.ListCount - 1, 1) = oProduto.ID
+            .List(.ListCount - 1, 1) = oProduto.Id
             
             oUM.Carrega oProduto.UmID
             
@@ -381,7 +381,7 @@ Private Sub cbbUMPopular()
         With cbbUM
             .AddItem
             .List(.ListCount - 1, 0) = oUM.Abreviacao
-            .List(.ListCount - 1, 1) = oUM.ID
+            .List(.ListCount - 1, 1) = oUM.Id
         End With
         
     Next n
@@ -405,7 +405,7 @@ Private Sub cbbUM_AfterUpdate()
             oUM.Nome = ""
             oUM.Inclui
             
-            idx = oUM.ID
+            idx = oUM.Id
             
             Call cbbUMPopular
             

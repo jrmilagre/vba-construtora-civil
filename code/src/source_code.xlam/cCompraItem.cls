@@ -48,9 +48,9 @@ Public Property Let FornecedorID(ByVal Value As Variant): This.FornecedorID = Va
 Public Property Get Recno() As Long: Recno = This.Recno: End Property
 Public Property Let Recno(ByVal Value As Long): This.Recno = Value: End Property
 
-Public Sub Carrega(ID As Long)
+Public Sub Carrega(Id As Long)
 
-    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & ID
+    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & Id
     
     Set rst = New ADODB.RecordSet
     

@@ -92,7 +92,7 @@ Private Sub cbbClientePopular()
         With cbbCliente
             .AddItem
             .List(.ListCount - 1, 0) = oCliente.Nome
-            .List(.ListCount - 1, 1) = oCliente.ID
+            .List(.ListCount - 1, 1) = oCliente.Id
         End With
         
     Next n
@@ -179,7 +179,7 @@ Private Sub btnConfirmar_Click_Old()
             ElseIf sDecisao = vbNewLine & "Exclusão" Then
                         
                 ' Chama método para deletar registro do banco de dados
-                oObra.Exclui oObra.ID
+                oObra.Exclui oObra.Id
                 Call lstPrincipalPopular(sCampoOrderBy)
 
             End If
@@ -276,7 +276,7 @@ Private Sub lstPrincipal_Change()
             oObra.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0)))
         End If
         
-        lblCabID.Caption = Format(IIf(oObra.ID = 0, "", oObra.ID), "00000")
+        lblCabID.Caption = Format(IIf(oObra.Id = 0, "", oObra.Id), "00000")
         lblCabEndereco.Caption = oObra.Endereco
         
         txbBairro.Text = oObra.Bairro
@@ -520,34 +520,29 @@ Private Function Valida(Decisao As String) As Boolean
             MsgBox "'Data' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: txbData.SetFocus
         ElseIf cbbCategoria.ListIndex = -1 Then
             MsgBox "'Categoria' é um campo obrigatório", vbInformation: MultiPage1.Value = 1: cbbCategoria.SetFocus
+        ElseIf lstTitulos.ListCount = 0 Then
+            MsgBox "Não há títulos à receber apontados na obra", vbCritical
+            MultiPage1.Value = 2: btnTituloInclui.SetFocus
         Else
-            If Decisao = "Inclusão" Then
-                If lstTitulos.ListCount = 0 Then
-                    MsgBox "Não há títulos à receber apontados na obra", vbCritical
-                    MultiPage1.Value = 2: btnTituloInclui.SetFocus
-                    Exit Function
-                End If
-            Else
                     
-                With oObra
-                    .Endereco = txbEndereco.Text
-                    .Bairro = txbBairro.Text
-                    .Cidade = txbCidade.Text
-                    .UF = cbbUF.Text
-                    .TipoID = IIf(cbbTipo.ListIndex = -1, 0, CInt(cbbTipo.List(cbbTipo.ListIndex, 1)))
-                    .ClienteID = CLng(cbbCliente.List(cbbCliente.ListIndex, 1))
-                    .Data = CDate(txbData.Text)
-                    .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
-                End With
+            With oObra
+                .Endereco = txbEndereco.Text
+                .Bairro = txbBairro.Text
+                .Cidade = txbCidade.Text
+                .UF = cbbUF.Text
+                .TipoID = IIf(cbbTipo.ListIndex = -1, 0, CInt(cbbTipo.List(cbbTipo.ListIndex, 1)))
+                .ClienteID = CLng(cbbCliente.List(cbbCliente.ListIndex, 1))
+                .Data = CDate(txbData.Text)
+                .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
+            End With
+            
+            Valida = True
                 
-                Valida = True
-                
-            End If
         End If
         
     ElseIf Decisao = "Exclusão" Then
     
-        If oObra.ExisteRecebimento(oObra.ID) = True Then
+        If oObra.ExisteRecebimento(oObra.Id) = True Then
             Exit Function
         Else
             Valida = True
@@ -575,7 +570,7 @@ Private Sub cbbTipoPopular()
         With cbbTipo
             .AddItem
             .List(.ListCount - 1, 0) = oTipoObra.Nome
-            .List(.ListCount - 1, 1) = oTipoObra.ID
+            .List(.ListCount - 1, 1) = oTipoObra.Id
         End With
         
     Next n
@@ -596,7 +591,7 @@ Private Sub cbbTipo_AfterUpdate()
         If vbResposta = vbYes Then
             oTipoObra.Nome = RTrim(cbbTipo.Text)
             oTipoObra.Inclui
-            idx = oTipoObra.ID
+            idx = oTipoObra.Id
             Call cbbTipoPopular
             For n = 0 To cbbTipo.ListCount - 1
                 If CInt(cbbTipo.List(n, 1)) = idx Then
@@ -633,7 +628,7 @@ Private Sub cbbCategoriaPopular()
         With cbbCategoria
             .AddItem
             .List(.ListCount - 1, 0) = oCategoria.Categoria & ": " & oCategoria.Subcategoria & IIf(oCategoria.ItemSubcategoria = "", "", ": " & oCategoria.ItemSubcategoria)
-            .List(.ListCount - 1, 1) = oCategoria.ID
+            .List(.ListCount - 1, 1) = oCategoria.Id
         End With
         
     Next n
@@ -789,7 +784,7 @@ Private Sub btnConfirmar_Click()
                 For i = 0 To lstTitulos.ListCount - 1
                 
                     With oTituloReceber
-                        .ObraID = oObra.ID
+                        .ObraID = oObra.Id
                         .ClienteID = oObra.ClienteID
                         .Observacao = lstTitulos.List(i, 2)
                         .Vencimento = CDate(lstTitulos.List(i, 0))
@@ -803,8 +798,8 @@ Private Sub btnConfirmar_Click()
             ElseIf sDecisao = "Alteração" Then
                 oObra.Altera
             ElseIf sDecisao = "Exclusão" Then
-                oTituloReceber.Exclui oObra.ID
-                oObra.Exclui oObra.ID
+                oTituloReceber.Exclui oObra.Id
+                oObra.Exclui oObra.Id
             End If
             
             If sDecisao = "Inclusão" Then
@@ -845,7 +840,11 @@ Private Sub btnConfirmar_Click()
         End If
     Else
     
-        Call btnCancelar_Click
+        If sDecisao = "Exclusão" Then
+        
+            Call btnCancelar_Click
+            
+        End If
         
     End If
     
@@ -900,7 +899,7 @@ Private Sub cbbCliente_AfterUpdate()
             oCliente.Nome = RTrim(cbbCliente.Text)
             oCliente.Inclui
             
-            idx = oCliente.ID
+            idx = oCliente.Id
             
             Call cbbClientePopular
             

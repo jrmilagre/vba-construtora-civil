@@ -10,7 +10,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Type TRequisicao
-    ID              As Long
+    Id              As Long
     Data            As Date
 End Type
 
@@ -18,17 +18,17 @@ Private This As TRequisicao
 
 Private Const sTable As String = "tbl_requisicoes"
 
-Public Property Get ID() As Long: ID = This.ID: End Property
-Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
+Public Property Get Id() As Long: Id = This.Id: End Property
+Public Property Let Id(ByVal Value As Long): This.Id = Value: End Property
 
 Public Property Get Data() As Date: Data = This.Data: End Property
 Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 
 ' Rotina para carregar dados
-Public Sub Carrega(ID As Long)
+Public Sub Carrega(Id As Long)
 
     ' Consulta SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Id
     
     ' Cria objeto Recordset
     Set rst = New ADODB.RecordSet
@@ -38,7 +38,7 @@ Public Sub Carrega(ID As Long)
     
     '---Propriedades
     With rst
-        Me.ID = .Fields("id").Value
+        Me.Id = .Fields("id").Value
         Me.Data = .Fields("data").Value
     End With
     
@@ -56,7 +56,7 @@ Public Sub Inclui()
               Options:=adCmdTable
         .AddNew
         
-        Me.ID = .Fields("id").Value
+        Me.Id = .Fields("id").Value
         .Fields("data").Value = Me.Data
         
         .Update
@@ -66,9 +66,9 @@ Public Sub Inclui()
        
 End Sub
 
-Public Sub Exclui(ID As Long)
+Public Sub Exclui(Id As Long)
         
-    sSQL = "DELETE FROM " & sTable & " WHERE id = " & ID
+    sSQL = "DELETE FROM " & sTable & " WHERE id = " & Id
     cnn.Execute sSQL
     
 End Sub

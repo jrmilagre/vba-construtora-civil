@@ -223,7 +223,7 @@ Private Sub lstPrincipal_Change()
             oUnidadeMedida.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oUnidadeMedida.ID = 0, "", oUnidadeMedida.ID), "00000")
+        lblID.Caption = Format(IIf(oUnidadeMedida.Id = 0, "", oUnidadeMedida.Id), "00000")
         lblCabNome.Caption = oUnidadeMedida.Abreviacao
         txbNome.Text = oUnidadeMedida.Nome
         txbAbreviacao.Text = oUnidadeMedida.Abreviacao
@@ -318,7 +318,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             .AddItem
             oUnidadeMedida.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oUnidadeMedida.Abreviacao
-            .List(.ListCount - 1, 1) = oUnidadeMedida.ID
+            .List(.ListCount - 1, 1) = oUnidadeMedida.Id
             .List(.ListCount - 1, 2) = oUnidadeMedida.Nome
         Next n
         

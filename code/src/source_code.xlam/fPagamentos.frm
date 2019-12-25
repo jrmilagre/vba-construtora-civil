@@ -176,7 +176,7 @@ Private Sub cbbFornecedorPopular()
         With cbbFornecedor
             .AddItem
             .List(.ListCount - 1, 0) = oFornecedor.Nome
-            .List(.ListCount - 1, 1) = oFornecedor.ID
+            .List(.ListCount - 1, 1) = oFornecedor.Id
         End With
         
     Next n
@@ -366,7 +366,7 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
         sSQL = "SELECT * "
         sSQL = sSQL & "FROM tbl_pagamentos_itens "
         sSQL = sSQL & "WHERE "
-        sSQL = sSQL & "pagamento_id = " & oPagamento.ID
+        sSQL = sSQL & "pagamento_id = " & oPagamento.Id
         
         r.Open sSQL, cnn, adOpenStatic
         
@@ -595,7 +595,7 @@ Private Sub cbbContaPopular()
         With cbbConta
             .AddItem
             .List(.ListCount - 1, 0) = oConta.Nome
-            .List(.ListCount - 1, 1) = oConta.ID
+            .List(.ListCount - 1, 1) = oConta.Id
         End With
         
     Next n
@@ -644,7 +644,7 @@ Private Sub btnConfirmar_Click()
                     
                         oTituloPagar.Carrega CLng(lstTitulos.List(i, 5))
                         
-                        .PagamentoID = oPagamento.ID
+                        .PagamentoID = oPagamento.Id
                         .TituloID = oTituloPagar.Recno
                         .ValorBaixado = CCur(lstTitulos.List(i, 3))
                         .DataBaixa = oPagamento.Data
@@ -676,7 +676,7 @@ Private Sub btnConfirmar_Click()
                         .PagRec = "P"
                         .Valor = CCur(lstPgtos.List(i, 0))
                         .TabelaOrigem = "tbl_pagamentos"
-                        .RecnoOrigem = oPagamento.ID
+                        .RecnoOrigem = oPagamento.Id
                         
                         oCompra.Carrega oTituloPagar.CompraID
                         
@@ -697,7 +697,7 @@ Private Sub btnConfirmar_Click()
             Next i
             
             If sDecisao = "Exclusão" Then
-                oPagamento.Exclui oPagamento.ID
+                oPagamento.Exclui oPagamento.Id
             End If
             
             If sDecisao = "Inclusão" Then
@@ -860,7 +860,7 @@ Private Sub lstPrincipal_Change()
         
         oPagamento.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
         
-        lblCabID.Caption = Format(oPagamento.ID, "0000000000")
+        lblCabID.Caption = Format(oPagamento.Id, "0000000000")
         lblCabData.Caption = oPagamento.Data
         
         txbData.Text = oPagamento.Data
@@ -879,7 +879,7 @@ Private Sub lstPrincipal_Change()
         End If
         
         Call lstTitulosPopular(oPagamento.FornecedorID)
-        Call lstPgtosPopular(oPagamento.ID)
+        Call lstPgtosPopular(oPagamento.Id)
     
     End If
 
@@ -949,7 +949,7 @@ Private Sub cbbConta_AfterUpdate()
             oConta.Nome = RTrim(cbbConta.Text)
             oConta.SaldoInicial = 0
             oConta.Inclui
-            idx = oConta.ID
+            idx = oConta.Id
             Call cbbContaPopular
             
             For n = 0 To cbbConta.ListCount - 1

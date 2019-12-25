@@ -1,62 +1,42 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fCompras 
-   Caption         =   ":: Cadastro de Compras ::"
-   ClientHeight    =   9705
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fTitulosReceber 
+   Caption         =   ":: Cadastro de Títulos à Receber ::"
+   ClientHeight    =   10440
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13320
-   OleObjectBlob   =   "fCompras.frx":0000
+   OleObjectBlob   =   "fTitulosReceber.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
-Attribute VB_Name = "fCompras"
+Attribute VB_Name = "fTitulosReceber"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-Private oCompra             As New cCompra
-Private oFornecedor         As New cFornecedor
-Private oProduto            As New cProduto
-Private oCompraItem         As New cCompraItem
-Private oTituloPagar        As New cTituloPagar
-Private oUM                 As New cUnidadeMedida
-Private oCategoria          As New cCategoria
+Private oTituloReceber      As New cTituloReceber
+Private oObra               As New cObra
+Private oCliente            As New cCliente
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
-Private myRst               As ADODB.RecordSet
-Private lPagina             As Long
+Private myRst               As New ADODB.RecordSet
 
-Private Const sTable As String = "tbl_compras"
-Private Const sCampoOrderBy As String = "data"
+Private Const sTable As String = "tbl_titulos_receber"
+Private Const sCampoOrderBy As String = "vencimento"
 
 Private Sub UserForm_Initialize()
 
-    Call cbbFornecedorPopular
-    Call cbbProdutoPopular
-    Call cbbUMPopular
-    Call cbbCategoriaPopular
+    Call cbbObraPopular
+    
+    Call cbbFltObraPopular
     
     Call EventosCampos
     
-    Set myRst = New ADODB.RecordSet
-    Set myRst = oCompra.RecordSet
-    
-    With scrPagina
-        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
-        .Max = myRst.PageCount
-    End With
-    
-    lPagina = myRst.PageCount
-    
-    If myRst.PageCount > 0 Then
-        myRst.AbsolutePage = myRst.PageCount
-    End If
-    
-    scrPagina.Value = lPagina
-    
-    Call lstPrincipalPopular(lPagina)
+    Set myRst = oTituloReceber.RecordSet
+        
+    Call lstPrincipalPopular
     
     Call btnCancelar_Click
 
@@ -64,38 +44,8 @@ End Sub
 Private Sub UserForm_Terminate()
     
     ' Destrói objeto da classe cProduto
-    Set oCompra = Nothing
+    Set oTituloReceber = Nothing
     Call Desconecta
-    
-End Sub
-Private Sub cbbFornecedor_AfterUpdate()
-
-    Dim vbResposta As VbMsgBoxResult
-    Dim idx As Integer
-    Dim n As Integer
-    
-    If cbbFornecedor.ListIndex = -1 And cbbFornecedor.Text <> "" Then
-        
-        vbResposta = MsgBox("Este fornecedor não existe, deseja cadastrá-lo?", vbQuestion + vbYesNo)
-        
-        If vbResposta = vbYes Then
-            
-            oFornecedor.Nome = RTrim(cbbFornecedor.Text)
-            oFornecedor.Inclui
-            idx = oFornecedor.Id
-            Call cbbFornecedorPopular
-            
-            For n = 0 To cbbFornecedor.ListCount - 1
-                If CInt(cbbFornecedor.List(n, 1)) = idx Then
-                    cbbFornecedor.ListIndex = n
-                    Exit For
-                End If
-            Next n
-        Else
-            cbbFornecedor.ListIndex = -1
-        End If
-
-    End If
     
 End Sub
 Private Sub lstItens_Change()
@@ -138,113 +88,36 @@ Private Sub btnConfirmar_Click()
         
         If vbResposta = vbYes Then
         
-            ' Cabeçalho da compra
             If sDecisao = "Inclusão" Then
-                oCompra.Inclui
-            
-                ' Itens das compras
-                For i = 0 To lstItens.ListCount - 1
-                
-                    With oCompraItem
-                        .ProdutoID = CLng(lstItens.List(i, 1))
-                        .Quantidade = CDbl(lstItens.List(i, 2))
-                        .UmID = CLng(lstItens.List(i, 7))
-                        .Unitario = CDbl(lstItens.List(i, 3))
-                        .Data = oCompra.Data
-                        .FornecedorID = oCompra.FornecedorID
-                        .CompraID = oCompra.Id
-                        
-                        If Not IsNull(lstItens.List(i, 5)) Then
-                            .Recno = CLng(lstItens.List(i, 5))
-                        Else
-                            If sDecisao = "Inclusão" Then
-                                .Inclui
-                            ElseIf sDecisao = "Alteração" Then
-                                If IsNull(lstItens.List(i, 5)) Then
-                                    .Inclui
-                                Else
-                                    .Altera .Recno
-                                End If
-                            ElseIf sDecisao = "Exclusão" Then
-                                .Exclui .Recno
-                            End If
-                            
-                        End If
-                        
-                    End With
-                    
-                Next i
-                
-                ' Títulos das compras (DOING)
-                For i = 0 To lstTitulos.ListCount - 1
-                
-                    With oTituloPagar
-                        .CompraID = oCompra.Id
-                        .FornecedorID = oCompra.FornecedorID
-                        .Observacao = lstTitulos.List(i, 2)
-                        .Vencimento = CDate(lstTitulos.List(i, 0))
-                        .Valor = CCur(lstTitulos.List(i, 1))
-                        .Data = oCompra.Data
-                        
-                        If Not IsNull(lstItens.List(i, 5)) Then
-                            .Recno = CLng(lstItens.List(i, 5))
-                        Else
-                            If sDecisao = "Inclusão" Then
-                                .Inclui
-                            ElseIf sDecisao = "Alteração" Then
-                                '.Altera .Recno
-                            ElseIf sDecisao = "Exclusão" Then
-                                .Exclui .Recno
-                            End If
-                            
-                        End If
-                        
-                    End With
-                    
-                Next i
-            
+                oTituloReceber.Inclui
+            ElseIf sDecisao = "Alteração" Then
+                oTituloReceber.AlteraTitulo oTituloReceber.Recno
             ElseIf sDecisao = "Exclusão" Then
-                oCompraItem.Exclui oCompra.Id
-                oTituloPagar.Exclui oCompra.Id
-                oCompra.Exclui oCompra.Id
+                oTituloReceber.ExcluiTitulo oTituloReceber.Recno
             End If
             
-            If sDecisao = "Inclusão" Then
-                If lstPrincipal.ListCount < myRst.PageSize Then
-                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
-                Else
-                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption))) + 1
-                End If
-            Else
-                lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
-            End If
-            
-            Set myRst = New ADODB.RecordSet
-            Set myRst = oCompra.RecordSet
-        
-            With scrPagina
-                .Min = 1
-                .Max = myRst.PageCount
-            End With
-            
-            On Error Resume Next
-            myRst.AbsolutePage = myRst.PageCount
-            scrPagina.Value = IIf(lPagina = 0, 1, lPagina)
-            
-            Call lstPrincipalPopular(lPagina)
+            ' Clica no botão filtrar para chamar a rotina de popular lstPrincipal
+            Call btnFiltrar_Click
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
             MsgBox sDecisao & " realizada com sucesso.", vbInformation, sDecisao & " de registro"
             
-            MultiPage1.Value = 0
-            
             Call btnCancelar_Click
             
         ElseIf vbResposta = vbNo Then
+        
             Call btnCancelar_Click
+            
         End If
+        
     Else
-        Call btnCancelar_Click
+    
+        If sDecisao = "Exclusão" Then
+            
+            Call btnCancelar_Click
+            
+        End If
+
     End If
     
 End Sub
@@ -264,7 +137,7 @@ Private Sub PosDecisaoTomada(Decisao As String)
     btnConfirmar.Caption = "Confirmar " & Decisao
     btnCancelar.Caption = "Cancelar " & Decisao
     
-    btnIncluir.Visible = False: btnExcluir.Visible = False
+    btnIncluir.Visible = False: btnAlterar.Visible = False: btnExcluir.Visible = False
     
     If Decisao = "Inclusão" Then
         Call Campos("Limpar")
@@ -279,12 +152,18 @@ Private Sub PosDecisaoTomada(Decisao As String)
         
         If Decisao = "Inclusão" Then
             txbData.Text = Date
+            txbVencimento.Text = Date + 30
             If MultiPage1.Value = 1 Then
-                cbbFornecedor.SetFocus
+                txbValor.Text = Format(0, "#,##0.00")
+                txbValor.SelStart = 0
+                txbValor.SelLength = Len(txbValor.Text)
+                txbValor.SetFocus
+                txbBaixado.Text = Format(0, "#,##0.00")
+                txbSaldo.Text = Format(0, "#,##0.00")
             End If
         Else
             If MultiPage1.Value = 1 Then
-                cbbFornecedor.SetFocus
+                txbValor.SetFocus
             End If
         End If
             
@@ -293,25 +172,35 @@ Private Sub PosDecisaoTomada(Decisao As String)
     lstPrincipal.Enabled = False
     lstPrincipal.ForeColor = &H80000010
     
-'    cbbFltEmpresa.Enabled = False: lblFltEmpresa.Enabled = False
-'    cbbFltFuncionario.Enabled = False: lblFltFuncionario.Enabled = False
-'    cbbFltStatus.Enabled = False: lblFltStatus.Enabled = False
-'    btnFiltrar.Enabled = False
+    Call Filtros("Desabilitar")
+
     btnPaginaInicial.Enabled = False
     btnPaginaAnterior.Enabled = False
     btnPaginaSeguinte.Enabled = False
     btnPaginaFinal.Enabled = False
     
 End Sub
-Private Sub lstPrincipalPopular(Pagina As Long)
+Private Sub lstPrincipalPopular()
 
-    Dim lPosicao    As Long
     Dim lCount      As Long
+    Dim cVlrBxd     As Currency
+    Dim cVlrSld     As Currency
+    
+    With scrPagina
+        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
+        .Max = myRst.PageCount
+    End With
+    
+    If myRst.PageCount > 0 Then
+        myRst.AbsolutePage = myRst.PageCount
+    End If
+    
+    scrPagina.Value = myRst.PageCount
     
     With lstPrincipal
         .Clear
-        .ColumnCount = 8 ' Funcionário, ID, Empresa, Filial
-        .ColumnWidths = "55pt; 55pt; 160pt;"
+        .ColumnCount = 7
+        .ColumnWidths = "55pt; 55pt; 55pt; 65pt; 65pt; 65pt; 100pt;"
         .Enabled = True
         .Font = "Consolas"
         
@@ -321,18 +210,20 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
             .AddItem
 
-            oFornecedor.Carrega myRst.Fields("fornecedor_id").Value
-
-            .List(.ListCount - 1, 0) = Format(myRst.Fields("id").Value, "0000000000")
+            .List(.ListCount - 1, 0) = Format(myRst.Fields("r_e_c_n_o_").Value, "0000000000")
             .List(.ListCount - 1, 1) = myRst.Fields("data").Value
-            .List(.ListCount - 1, 2) = oFornecedor.Nome
+            .List(.ListCount - 1, 2) = myRst.Fields("vencimento").Value
+            .List(.ListCount - 1, 3) = Space(12 - Len(Format(myRst.Fields("valor").Value, "#,##0.00"))) & Format(myRst.Fields("valor").Value, "#,##0.00")
             
-'            .List(.ListCount - 1, 4) = oEmpresa.Empresa & IIf(oEmpresa.Filial = "", "", " : " & oEmpresa.Filial)
-'            .List(.ListCount - 1, 5) = myRst.Fields("status").Value
-'            .List(.ListCount - 1, 6) = Space(2 - Len(Format(myRst.Fields("count_exames").Value, "00"))) & Format(myRst.Fields("count_exames").Value, "00")
-'            .List(.ListCount - 1, 7) = Space(6 - Len(Format(myRst.Fields("sum_preco").Value, "#,##0.00"))) & Format(myRst.Fields("sum_preco").Value, "#,##0.00")
+            cVlrBxd = oTituloReceber.GetValorBaixado(myRst.Fields("r_e_c_n_o_").Value)
+            cVlrSld = myRst.Fields("valor").Value - cVlrBxd
+            
+            .List(.ListCount - 1, 4) = Space(12 - Len(Format(cVlrBxd, "#,##0.00"))) & Format(cVlrBxd, "#,##0.00")
+            .List(.ListCount - 1, 5) = Space(12 - Len(Format(cVlrSld, "#,##0.00"))) & Format(cVlrSld, "#,##0.00")
+            .List(.ListCount - 1, 6) = myRst.Fields("observacao").Value
 
             lCount = lCount + 1
+            
             myRst.MoveNext
             
         Wend
@@ -346,37 +237,7 @@ Private Sub btnData_Click()
     dtDate = IIf(txbData.Text = Empty, Date, txbData.Text)
     txbData.Text = GetCalendario
 End Sub
-Private Sub cbbFornecedorPopular()
-    
-    Dim idx         As Integer
-    Dim col         As New Collection
-    Dim n           As Variant
 
-    Set col = oFornecedor.Listar("nome")
-    
-    idx = cbbFornecedor.ListIndex
-    
-    cbbFornecedor.Clear
-    
-    For Each n In col
-        
-        oFornecedor.Carrega CLng(n)
-    
-        With cbbFornecedor
-            .AddItem
-            .List(.ListCount - 1, 0) = oFornecedor.Nome
-            .List(.ListCount - 1, 1) = oFornecedor.Id
-        End With
-        
-    Next n
-    
-    cbbFornecedor.ListIndex = idx
-
-End Sub
-'Private Sub lblHdNome_Click():
-'    Call lstPrincipalPopular(sCampoOrderBy)
-'End Sub
-'
 Private Sub lstPrincipal_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     MultiPage1.Value = 1
 End Sub
@@ -427,39 +288,37 @@ Private Sub lstPrincipal_Change()
     Dim n As Long
 
     If lstPrincipal.ListIndex > -1 Then
-    
+
+        btnAlterar.Enabled = True
         btnExcluir.Enabled = True
         
+
         ' Carrega informações do lançamento
-        oCompra.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0)))
-        
+        oTituloReceber.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
+
         ' Preenche cabeçalho
-        lblCabID.Caption = IIf(oCompra.Id = 0, "", Format(oCompra.Id, "0000000000"))
-        lblCabData.Caption = oCompra.Data
-        
-        oFornecedor.Carrega oCompra.FornecedorID
-        
-        'lblCabFuncionario.Caption = oFuncionario.Funcionario
-        
+        lblCabID.Caption = IIf(oTituloReceber.Recno = 0, "", Format(oTituloReceber.Recno, "0000000000"))
+        lblCabData.Caption = oTituloReceber.Data
+'
+'        oFornecedor.Carrega oCompra.FornecedorID
+'
+'        'lblCabFuncionario.Caption = oFuncionario.Funcionario
+'
         ' Preenche campos
-        txbData.Text = oCompra.Data
-                
-        For n = 0 To cbbFornecedor.ListCount - 1
-            If CLng(cbbFornecedor.List(n, 1)) = oCompra.FornecedorID Then
-                cbbFornecedor.ListIndex = n
+        txbData.Text = oTituloReceber.Data
+        txbVencimento.Text = oTituloReceber.Vencimento
+        txbValor.Text = Format(oTituloReceber.Valor, "#,##0.00")
+        txbBaixado.Text = lstPrincipal.List(lstPrincipal.ListIndex, 4)
+        txbSaldo.Text = lstPrincipal.List(lstPrincipal.ListIndex, 5)
+        txbObservacao.Text = oTituloReceber.Observacao
+        
+        For n = 0 To cbbObra.ListCount - 1
+            If CLng(cbbObra.List(n, 1)) = oTituloReceber.ObraID Then
+                cbbObra.ListIndex = n
                 Exit For
             End If
         Next n
-        
-        For n = 0 To cbbCategoria.ListCount - 1
-            If CLng(cbbCategoria.List(n, 1)) = oCompra.CategoriaID Then
-                cbbCategoria.ListIndex = n
-                Exit For
-            End If
-        Next n
-        
-        Call lstItensPopular(CLng(lblCabID.Caption))
-        Call lstTitulosPopular(CLng(lblCabID.Caption))
+
     End If
 
 End Sub
@@ -521,12 +380,13 @@ Private Sub TotalizaItens()
 End Sub
 Private Sub btnCancelar_Click()
 
-    btnIncluir.Visible = True: btnExcluir.Visible = True
+    btnIncluir.Visible = True: btnAlterar.Visible = True: btnExcluir.Visible = True
     btnConfirmar.Visible = False: btnCancelar.Visible = False
 
     Call Campos("Limpar")
     Call Campos("Desabilitar")
 
+    btnAlterar.Enabled = False
     btnExcluir.Enabled = False
     btnIncluir.SetFocus
     
@@ -538,147 +398,116 @@ Private Sub btnCancelar_Click()
 End Sub
 Private Sub Campos(Acao As String)
 
-    If Acao = "Desabilitar" Then
-        txbData.Enabled = False: lblData.Enabled = False: btnData.Enabled = False
-        cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
-        cbbCategoria.Enabled = False: lblCategoria.Enabled = False
-        
-        frmItem.Enabled = False
-        lblHdProduto.Enabled = False
-        lblHdQuant.Enabled = False
-        lblHdUnitario.Enabled = False
-        lblHdTotal.Enabled = False
-        lblHdUM.Enabled = False
-        Call btnItemCancelar_Click
-        btnItemInclui.Visible = False
-        btnItemAltera.Visible = False
-        btnItemExclui.Visible = False
-        lstItens.Enabled = False: lstItens.ForeColor = &H80000010
-        
-        frmTitulo.Enabled = False
-        lblHdVencimento.Enabled = False
-        lblHdValor.Enabled = False
-        lblHdObservacao.Enabled = False
+    Dim sDecisao As String
+    
+    sDecisao = Replace(btnConfirmar.Caption, "Confirmar ", "")
 
-        Call btnTituloCancelar_Click
+    If Acao = "Desabilitar" Then
         
-        btnTituloInclui.Visible = False
-        btnTituloAltera.Visible = False
-        btnTituloExclui.Visible = False
-        lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
+        txbData.Enabled = False: lblData.Enabled = False: btnData.Enabled = False
+        txbVencimento.Enabled = False: lblVencimento.Enabled = False: btnVencimento.Enabled = False
+        txbValor.Enabled = False: lblValor.Enabled = False
+        txbObservacao.Enabled = False: lblObservacao.Enabled = False
+        cbbObra.Enabled = False: lblObra.Enabled = False
+'        cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
+'        cbbCategoria.Enabled = False: lblCategoria.Enabled = False
+'
+'        frmItem.Enabled = False
+'        lblHdProduto.Enabled = False
+'        lblHdQuant.Enabled = False
+'        lblHdUnitario.Enabled = False
+'        lblHdTotal.Enabled = False
+'        lblHdUM.Enabled = False
+'        Call btnItemCancelar_Click
+'        btnItemInclui.Visible = False
+'        btnItemAltera.Visible = False
+'        btnItemExclui.Visible = False
+'        lstItens.Enabled = False: lstItens.ForeColor = &H80000010
+'
+'        frmTitulo.Enabled = False
+'        lblHdVencimento.Enabled = False
+'        lblHdValor.Enabled = False
+'        lblHdObservacao.Enabled = False
+'
+'        Call btnTituloCancelar_Click
+'
+'        btnTituloInclui.Visible = False
+'        btnTituloAltera.Visible = False
+'        btnTituloExclui.Visible = False
+'        lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
         
     ElseIf Acao = "Habilitar" Then
-        txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
-        cbbFornecedor.Enabled = True: lblFornecedor.Enabled = True
-        cbbCategoria.Enabled = True: lblCategoria.Enabled = True
-        frmItem.Enabled = True
         
-        lstItens.Enabled = True: lstItens.ForeColor = &H80000008
-        lblHdProduto.Enabled = True
-        lblHdProduto.Enabled = True
-        lblHdQuant.Enabled = True
-        lblHdUnitario.Enabled = True
-        lblHdTotal.Enabled = True
-        lblHdUM.Enabled = True
-        btnItemInclui.Visible = True
-        btnItemAltera.Visible = True
-        btnItemExclui.Visible = True
+        If sDecisao = "Inclusão" Then
+            txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
+            cbbObra.Enabled = True: lblObra.Enabled = True
+        End If
         
-        frmTitulo.Enabled = True
-        lstTitulos.Enabled = True: lstTitulos.ForeColor = &H80000008
-        lblHdVencimento.Enabled = True
-        lblHdValor.Enabled = True
-        lblHdObservacao.Enabled = True
-
-        btnTituloInclui.Visible = True
-        btnTituloAltera.Visible = True
-        btnTituloExclui.Visible = True
+        txbVencimento.Enabled = True: lblVencimento.Enabled = True: btnVencimento.Enabled = True
+        txbValor.Enabled = True: lblValor.Enabled = True
+        txbObservacao.Enabled = True: lblObservacao.Enabled = True
+        
         
     ElseIf Acao = "Limpar" Then
         lblCabID.Caption = ""
         lblCabData.Caption = ""
-        txbData.Text = ""
-        cbbFornecedor.ListIndex = -1
-        cbbCategoria.ListIndex = -1
-        
-        lblTotalItens.Caption = ""
-        lblTotalTitulos.Caption = ""
-        
-        lstItens.Clear
-        lstTitulos.Clear
-        
-        lstPrincipal.ListIndex = -1
+        txbData.Text = Empty
+        txbVencimento.Text = Empty
+        txbValor.Text = Empty
+        txbBaixado.Text = Empty
+        txbSaldo.Text = Empty
+        txbObservacao.Text = Empty
+        cbbObra.ListIndex = -1
     End If
+    
+    Call Filtros("Habilitar")
 
 End Sub
-'Private Sub ListBoxOrdenar()
-'
-'    Dim ini, fim, i, j  As Long
-'    Dim sCol01          As String
-'    Dim sCol02          As String
-'
-'    bListBoxOrdenando = True
-'
-'    With lstPrincipal
-'
-'        ini = 0
-'        fim = .ListCount - 1 '4 itens(0 - 3)
-'
-'        For i = ini To fim - 1  ' Laço para comparar cada item com todos os outros itens
-'            For j = i + 1 To fim    ' Laço para comparar item com o próximo item
-'                If .List(i) > .List(j) Then
-'                    sCol01 = .List(j, 0)
-'                    sCol02 = .List(j, 1)
-'                    .List(j, 0) = .List(i, 0)
-'                    .List(j, 1) = .List(i, 1)
-'                    .List(i, 0) = sCol01
-'                    .List(i, 1) = sCol02
-'                End If
-'            Next j
-'        Next i
-'    End With
-'
-'    bListBoxOrdenando = False
-'
-'End Sub
-
 Private Function Valida(Decisao As String) As Boolean
     
     Valida = False
     
-    If Decisao = "Inclusão" Then
+    If Decisao = "Inclusão" Or Decisao = "Alteração" Then
     
+        
         If txbData.Text = Empty Then
             MsgBox "Campo 'Data' é obrigatório", vbCritical
             MultiPage1.Value = 1: txbData.SetFocus
-        ElseIf cbbFornecedor.ListIndex = -1 Then
-            MsgBox "Campo 'Fornecedor' é obrigatório", vbCritical
-            MultiPage1.Value = 1: cbbFornecedor.SetFocus
-        ElseIf cbbCategoria.ListIndex = -1 Then
-            MsgBox "Campo 'Categoria' é obrigatório", vbCritical
-            MultiPage1.Value = 1: cbbCategoria.SetFocus
+        ElseIf txbVencimento.Text = Empty Then
+            MsgBox "Campo 'Vencimento' é obrigatório", vbCritical
+            MultiPage1.Value = 1: txbVencimento.SetFocus
+        ElseIf txbValor.Text = Empty Or CCur(txbValor.Text) = 0 Then
+            MsgBox "Campo 'Valor' é obrigatório", vbCritical
+            MultiPage1.Value = 1: txbValor.SetFocus
+        ElseIf txbObservacao.Text = Empty Then
+            MsgBox "Preencha o campo 'Observação', pode ser importante no futuro!", vbCritical
+            MultiPage1.Value = 1: txbObservacao.SetFocus
+        ElseIf cbbObra.ListIndex = -1 Then
+            MsgBox "Campo 'Obra' é obrigatório", vbCritical
+            MultiPage1.Value = 1: cbbObra.SetFocus
+        ElseIf CCur(txbValor.Text) < CCur(txbBaixado.Text) Then
+            MsgBox "O campo 'Valor' não pode ser menor que o campo 'Baixado'", vbCritical
+            MultiPage1.Value = 1: txbValor.SetFocus
         Else
-            If lstItens.ListCount = 0 Then
-                MsgBox "Não há itens apontados na compra", vbCritical
-                MultiPage1.Value = 2: btnItemInclui.SetFocus
-            ElseIf lstTitulos.ListCount = 0 Then
-                MsgBox "Não há títulos apontados na compra", vbCritical
-                MultiPage1.Value = 3: btnTituloInclui.SetFocus
-            Else
-                With oCompra
-                    .Data = CDate(txbData.Text)
-                    .FornecedorID = CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
-                    .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
-                End With
+
+            With oTituloReceber
+                .Data = CDate(txbData.Text)
+                .Vencimento = CDate(txbVencimento.Text)
+                .Valor = CCur(txbValor.Text)
+                .ObraID = CLng(cbbObra.List(cbbObra.ListIndex, 1))
                 
-                Valida = True
-            End If
+                oObra.Carrega CLng(cbbObra.List(cbbObra.ListIndex, 1))
+                
+                .ClienteID = oObra.ClienteID
+                .Observacao = RTrim(txbObservacao.Text)
+            End With
+            
+            Valida = True
+
         End If
     ElseIf Decisao = "Exclusão" Then
     
-        If oCompra.ExisteRequisicao(oCompra.Id) = True Then
-            Exit Function
-        ElseIf oCompra.ExistePagamento(oCompra.Id) = True Then
+        If oTituloReceber.ExisteRecebimento(oTituloReceber.ObraID, oTituloReceber.Recno) = True Then
             Exit Function
         Else
             Valida = True
@@ -755,33 +584,7 @@ Private Sub AcaoItem(Acao As String, Habilitar As Boolean)
     End If
     
 End Sub
-Private Sub cbbProdutoPopular()
-    
-    Dim idx         As Integer
-    Dim col         As New Collection
-    Dim n           As Variant
 
-    Set col = oProduto.Listar("nome")
-    
-    idx = cbbProduto.ListIndex
-    
-    cbbProduto.Clear
-    
-    For Each n In col
-        
-        oProduto.Carrega CLng(n)
-    
-        With cbbProduto
-            .AddItem
-            .List(.ListCount - 1, 0) = oProduto.Nome
-            .List(.ListCount - 1, 1) = oProduto.Id
-        End With
-        
-    Next n
-    
-    cbbProduto.ListIndex = idx
-
-End Sub
 Private Sub btnItemConfirmar_Click()
 
     Dim sDecisaoLancamento  As String
@@ -1058,67 +861,7 @@ Private Sub lstTitulos_Change()
         btnTituloExclui.Enabled = True
     End If
 End Sub
-Private Sub cbbUMPopular()
-    
-    Dim idx         As Integer
-    Dim col         As New Collection
-    Dim n           As Variant
 
-    Set col = oUM.Listar("abreviacao")
-    
-    idx = cbbUM.ListIndex
-    
-    cbbUM.Clear
-    
-    For Each n In col
-        
-        oUM.Carrega CLng(n)
-    
-        With cbbUM
-            .AddItem
-            .List(.ListCount - 1, 0) = oUM.Abreviacao
-            .List(.ListCount - 1, 1) = oUM.Id
-        End With
-        
-    Next n
-    
-    cbbUM.ListIndex = idx
-
-End Sub
-Private Sub cbbCategoriaPopular()
-    
-    Dim idx         As Integer
-    Dim col         As New Collection
-    Dim n           As Variant
-
-    Set col = oCategoria.Listar("categoria, subcategoria, item_subcategoria", "P")
-    
-    'idx = cbbCategoria.ListIndex
-    
-    With cbbCategoria
-        .Clear
-        .ColumnCount = 4
-        .ColumnWidths = "180pt; 0pt; 180pt; 100pt;"
-    End With
-    
-    
-    For Each n In col
-        
-        oCategoria.Carrega CLng(n)
-    
-        With cbbCategoria
-            .AddItem
-            .List(.ListCount - 1, 0) = oCategoria.Categoria & ": " & oCategoria.Subcategoria & IIf(oCategoria.ItemSubcategoria = "", "", ": " & oCategoria.ItemSubcategoria)
-            .List(.ListCount - 1, 1) = oCategoria.Id
-            .List(.ListCount - 1, 2) = oCategoria.Subcategoria
-            .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
-        End With
-        
-    Next n
-    
-    cbbCategoria.ListIndex = -1
-
-End Sub
 Private Sub cbbProduto_AfterUpdate()
 
     Dim vbResposta As VbMsgBoxResult
@@ -1181,4 +924,107 @@ Private Sub cbbUM_AfterUpdate()
         
     End If
     
+End Sub
+Private Sub cbbObraPopular()
+    
+    Dim idx         As Long
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oObra.Listar("bairro")
+    
+    idx = cbbObra.ListIndex
+    
+    With cbbObra
+        .Clear
+        .ColumnCount = 2
+        .ColumnWidths = "180pt; 0pt;"
+    End With
+    
+    For Each n In col
+        
+        oObra.Carrega CLng(n)
+        
+        oCliente.Carrega oObra.ClienteID
+    
+        With cbbObra
+            .AddItem
+            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
+            .List(.ListCount - 1, 1) = oObra.Id
+        End With
+        
+    Next n
+    
+    cbbObra.ListIndex = idx
+
+End Sub
+Private Sub cbbFltObraPopular()
+    
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oObra.Listar("bairro")
+    
+    With cbbFltObra
+        .Clear
+        .ColumnCount = 2
+        .ColumnWidths = "180pt; 0pt;"
+        .AddItem
+        .List(.ListCount - 1, 0) = "***TODOS***"
+        .List(.ListCount - 1, 1) = 0
+    End With
+    
+    For Each n In col
+        
+        oObra.Carrega CLng(n)
+        
+        oCliente.Carrega oObra.ClienteID
+    
+        With cbbFltObra
+            .AddItem
+            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
+            .List(.ListCount - 1, 1) = oObra.Id
+        End With
+        
+    Next n
+    
+    cbbFltObra.ListIndex = 0
+
+End Sub
+Private Sub Filtros(Acao As String)
+
+    Dim b As Boolean
+    
+    b = IIf(Acao = "Habilitar", True, False)
+
+    cbbFltObra.Enabled = b: lblFltObra.Enabled = b
+    btnFiltrar.Enabled = b
+    frmFiltro.Enabled = b
+
+End Sub
+Private Sub btnFiltrar_Click()
+
+    Dim lObraID As Long
+    
+    If cbbFltObra.ListIndex = -1 Then
+        lObraID = 0
+    Else
+        lObraID = CLng(cbbFltObra.List(cbbFltObra.ListIndex, 1))
+    End If
+
+    Set myRst = oTituloReceber.RecordSet(lObraID)
+    
+    Call lstPrincipalPopular
+
+End Sub
+Private Sub txbValor_AfterUpdate()
+
+    Dim sDecisao As String
+    
+    sDecisao = Replace(btnConfirmar.Caption, "Confirmar ", "")
+    
+    If sDecisao = "Inclusão" Then
+        txbSaldo.Text = Format(txbValor.Text, "#,##0.00")
+    End If
+
 End Sub

@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Type TTituloPagar
+Private Type TTituloReceber
     ObraID        As Long
     ClienteID    As Long
     CategoriaID     As Long
@@ -20,7 +20,7 @@ Private Type TTituloPagar
     Recno           As Long
 End Type
 
-Private This As TTituloPagar
+Private This As TTituloReceber
 
 Private Const sTable As String = "tbl_titulos_receber"
 
@@ -48,9 +48,9 @@ Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 Public Property Get Recno() As Long: Recno = This.Recno: End Property
 Public Property Let Recno(ByVal Value As Long): This.Recno = Value: End Property
 
-Public Sub Carrega(ID As Long)
+Public Sub Carrega(Id As Long)
 
-    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & ID
+    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & Id
     
     Set rst = New ADODB.RecordSet
     
@@ -69,8 +69,6 @@ Public Sub Carrega(ID As Long)
 End Sub
 
 Public Sub Inclui()
-
-    'Set oProduto = New cProduto
 
     Set rst = New ADODB.RecordSet
 
@@ -97,9 +95,46 @@ Public Sub Inclui()
     Set rst = Nothing
        
 End Sub
+Public Sub AlteraTitulo(TituloID As Long)
+    
+    Set rst = New ADODB.RecordSet
+    
+    ' Comando SQL
+    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & TituloID
+
+    'Armazena na variável o comando que fará a consulta SQL no BD Access
+    With rst
+        .Open Source:=sSQL, _
+              ActiveConnection:=cnn, _
+              CursorType:=adOpenDynamic, _
+              LockType:=adLockOptimistic
+        
+        ' Atribui novos valores aos campos
+        .Fields("obra_id").Value = Me.ObraID
+        .Fields("cliente_id").Value = Me.ClienteID
+        .Fields("observacao").Value = Me.Observacao
+        .Fields("vencimento").Value = CLng(Me.Vencimento)
+        .Fields("valor").Value = Me.Valor
+        .Fields("data").Value = CLng(Me.Data)
+        
+        .Update
+        
+        ' Grava alterações
+        .Update
+    End With
+    
+    Set rst = Nothing
+End Sub
 Public Sub Exclui(ObraID As Long)
     
     sSQL = "DELETE FROM tbl_titulos_receber WHERE obra_id = " & ObraID
+    
+    cnn.Execute sSQL
+
+End Sub
+Public Sub ExcluiTitulo(TituloID As Long)
+    
+    sSQL = "DELETE FROM tbl_titulos_receber WHERE r_e_c_n_o_ = " & TituloID
     
     cnn.Execute sSQL
 
@@ -121,4 +156,70 @@ Public Function GetValorBaixado(TituloID As Long) As Currency
     Set rTmp = Nothing
     
 End Function
+Public Function RecordSet(Optional ObraID As Long) As ADODB.RecordSet
 
+    sSQL = "SELECT * "
+    sSQL = sSQL & "FROM " & sTable & " "
+    sSQL = sSQL & "WHERE "
+    
+    
+    If ObraID > 0 Then
+        sSQL = sSQL & "obra_id = " & ObraID & " "
+    Else
+        sSQL = sSQL & "obra_id > 0 "
+    End If
+    
+    Set RecordSet = New ADODB.RecordSet
+    
+    With RecordSet
+        .CursorLocation = adUseServer
+        .CursorType = adOpenStatic
+        .LockType = adLockReadOnly
+        .PageSize = 24
+        .Open sSQL, cnn
+    End With
+    
+End Function
+Public Function ExisteRecebimento(ObraID As Long, TituloID As Long) As Boolean
+
+    Dim rTmp    As New ADODB.RecordSet
+    Dim sMsg    As String
+    
+    ExisteRecebimento = False
+    
+    sSQL = "SELECT tbl_recebimentos_itens.recebimento_id, tbl_titulos_receber.r_e_c_n_o_ "
+    sSQL = sSQL & "FROM tbl_titulos_receber INNER JOIN tbl_recebimentos_itens ON tbl_titulos_receber.r_e_c_n_o_ = tbl_recebimentos_itens.titulo_id "
+    sSQL = sSQL & "GROUP BY tbl_recebimentos_itens.recebimento_id, tbl_titulos_receber.obra_id, tbl_titulos_receber.r_e_c_n_o_ "
+    sSQL = sSQL & "HAVING (((tbl_titulos_receber.obra_id)=" & ObraID & ") AND ((tbl_titulos_receber.r_e_c_n_o_)=" & TituloID & "));"
+     
+    rTmp.Open sSQL, cnn, adOpenStatic
+    
+    If rTmp.EOF = False Then
+    
+        sMsg = "Não posso excluir pois existem recebimentos vinculados a essa obra!"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Veja o número dos recebimentos:"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        
+        Do Until rTmp.EOF
+        
+            sMsg = sMsg & "Nº:" & Format(rTmp.Fields("recebimento_id").Value, "0000000000") & vbNewLine
+        
+            rTmp.MoveNext
+        Loop
+        
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Fim!"
+        
+        MsgBox sMsg, vbCritical, "EXISTEM RECEBIMENTOS"
+            
+        ExisteRecebimento = True
+    Else
+        ExisteRecebimento = False
+    End If
+        
+    Set rTmp = Nothing
+
+End Function
