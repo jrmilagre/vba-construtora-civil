@@ -52,9 +52,9 @@ Public Property Let RecnoOrigem(ByVal Value As Long): This.RecnoOrigem = Value: 
 Public Property Get Recno() As Long: Recno = This.Recno: End Property
 Public Property Let Recno(ByVal Value As Long): This.Recno = Value: End Property
 
-Public Sub Carrega(Id As Long)
+Public Sub Carrega(ID As Long)
 
-    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & ID
     
     Set rst = New ADODB.RecordSet
     

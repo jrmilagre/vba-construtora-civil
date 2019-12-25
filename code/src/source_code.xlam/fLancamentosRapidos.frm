@@ -102,7 +102,7 @@ Private Sub cbbContaPopular()
         With cbbConta
             .AddItem
             .List(.ListCount - 1, 0) = oConta.Nome
-            .List(.ListCount - 1, 1) = oConta.Id
+            .List(.ListCount - 1, 1) = oConta.ID
         End With
         
     Next n
@@ -145,7 +145,7 @@ Private Sub cbbFornecedorPopular()
         With cbbFornecedor
             .AddItem
             .List(.ListCount - 1, 0) = oFornecedor.Nome
-            .List(.ListCount - 1, 1) = oFornecedor.Id
+            .List(.ListCount - 1, 1) = oFornecedor.ID
         End With
         
     Next n
@@ -234,7 +234,7 @@ Private Sub cbbObraPopular()
         With cbbObra
             .AddItem
             .List(.ListCount - 1, 0) = oObra.Bairro
-            .List(.ListCount - 1, 1) = oObra.Id
+            .List(.ListCount - 1, 1) = oObra.ID
             .List(.ListCount - 1, 2) = oCliente.Nome
             .List(.ListCount - 1, 3) = oObra.Endereco
         End With
@@ -267,7 +267,7 @@ Private Sub cbbEtapaPopular()
         With cbbEtapa
             .AddItem
             .List(.ListCount - 1, 0) = oEtapa.Nome
-            .List(.ListCount - 1, 1) = oEtapa.Id
+            .List(.ListCount - 1, 1) = oEtapa.ID
         End With
         
     Next n
@@ -294,7 +294,7 @@ Private Sub cbbProdutoPopular()
         With cbbProduto
             .AddItem
             .List(.ListCount - 1, 0) = oProduto.Nome
-            .List(.ListCount - 1, 1) = oProduto.Id
+            .List(.ListCount - 1, 1) = oProduto.ID
         End With
         
     Next n
@@ -321,7 +321,7 @@ Private Sub cbbUMPopular()
         With cbbUM
             .AddItem
             .List(.ListCount - 1, 0) = oUM.Abreviacao
-            .List(.ListCount - 1, 1) = oUM.Id
+            .List(.ListCount - 1, 1) = oUM.ID
         End With
         
     Next n
@@ -468,7 +468,7 @@ Private Sub cbbFornecedor_AfterUpdate()
             
             oFornecedor.Nome = RTrim(cbbFornecedor.Text)
             oFornecedor.Inclui
-            idx = oFornecedor.Id
+            idx = oFornecedor.ID
             Call cbbFornecedorPopular
             
             For n = 0 To cbbFornecedor.ListCount - 1
@@ -561,7 +561,7 @@ Private Sub cbbObra2Popular()
         With cbbObra2
             .AddItem
             .List(.ListCount - 1, 0) = oObra.Bairro
-            .List(.ListCount - 1, 1) = oObra.Id
+            .List(.ListCount - 1, 1) = oObra.ID
             .List(.ListCount - 1, 2) = oCliente.Nome
             .List(.ListCount - 1, 3) = oObra.Endereco
         End With
@@ -621,7 +621,7 @@ Private Sub btnConfirmar_Click()
                     .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
                     .Valor = CCur(txbValor.Text)
                     .TabelaOrigem = "tbl_lancamentos_rapidos"
-                    .RecnoOrigem = oLancamentoRapido.Id
+                    .RecnoOrigem = oLancamentoRapido.ID
                     .Inclui
                 End With
                 
@@ -630,7 +630,7 @@ Private Sub btnConfirmar_Click()
                     oRequisicao.Data = CDate(txbData.Text)
                     oRequisicao.Inclui
                     
-                    oLancamentoRapido.AtualizaCampoRequisicaoID oLancamentoRapido.Id, oRequisicao.Id
+                    oLancamentoRapido.AtualizaCampoRequisicaoID oLancamentoRapido.ID, oRequisicao.ID
                     
                     For i = 0 To lstRequisicoes.ListCount - 1
                     
@@ -642,7 +642,7 @@ Private Sub btnConfirmar_Click()
                         idxEtapa = CLng(arr(3))
                         
                         With oRequisicaoItem
-                            .RequisicaoID = oRequisicao.Id
+                            .RequisicaoID = oRequisicao.ID
                             .ProdutoID = idxProduto
                             .ObraID = idxObra
                             .EtapaID = idxEtapa
@@ -652,7 +652,7 @@ Private Sub btnConfirmar_Click()
                             .Total = CCur(lstRequisicoes.List(i, 6))
                             .Data = CDate(txbData.Text)
                             .TabelaOrigem = "tbl_lancamentos_rapidos"
-                            .RecnoOrigem = oLancamentoRapido.Id
+                            .RecnoOrigem = oLancamentoRapido.ID
                             .Inclui
                         End With
     
@@ -662,7 +662,7 @@ Private Sub btnConfirmar_Click()
             
             ElseIf sDecisao = "Exclusão" Then
             
-                oLancamentoRapido.ExcluiMovimentacaoContaVinculada oLancamentoRapido.Id
+                oLancamentoRapido.ExcluiMovimentacaoContaVinculada oLancamentoRapido.ID
                 
                 If chbRequisita.Value = True Then
                 
@@ -670,7 +670,7 @@ Private Sub btnConfirmar_Click()
                     
                 End If
                 
-                oLancamentoRapido.Exclui oLancamentoRapido.Id
+                oLancamentoRapido.Exclui oLancamentoRapido.ID
                 
             End If
             
@@ -810,7 +810,7 @@ Private Sub lstPrincipal_Change()
         oLancamentoRapido.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0)))
         
         ' Preenche cabeçalho
-        lblCabID.Caption = IIf(oLancamentoRapido.Id = 0, "", Format(oLancamentoRapido.Id, "0000000000"))
+        lblCabID.Caption = IIf(oLancamentoRapido.ID = 0, "", Format(oLancamentoRapido.ID, "0000000000"))
         lblCabData.Caption = oLancamentoRapido.Data
         
         'oFornecedor.Carrega oCompra.FornecedorID
@@ -1157,7 +1157,7 @@ Private Sub cbbCategoriaPopular(PagRec As String)
         With cbbCategoria
             .AddItem
             .List(.ListCount - 1, 0) = oCategoria.Categoria
-            .List(.ListCount - 1, 1) = oCategoria.Id
+            .List(.ListCount - 1, 1) = oCategoria.ID
             .List(.ListCount - 1, 2) = oCategoria.Subcategoria
             .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
         End With

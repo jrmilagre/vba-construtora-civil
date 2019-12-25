@@ -876,7 +876,7 @@ Private Sub cbbProduto_AfterUpdate()
             
             oProduto.Nome = RTrim(cbbProduto.Text)
             oProduto.Inclui
-            idx = oProduto.Id
+            idx = oProduto.ID
             Call cbbProdutoPopular
             
             For n = 0 To cbbProduto.ListCount - 1
@@ -908,7 +908,7 @@ Private Sub cbbUM_AfterUpdate()
             oUM.Nome = ""
             oUM.Inclui
             
-            idx = oUM.Id
+            idx = oUM.ID
             
             Call cbbUMPopular
             
@@ -950,7 +950,7 @@ Private Sub cbbObraPopular()
         With cbbObra
             .AddItem
             .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
-            .List(.ListCount - 1, 1) = oObra.Id
+            .List(.ListCount - 1, 1) = oObra.ID
         End With
         
     Next n
@@ -983,7 +983,7 @@ Private Sub cbbFltObraPopular()
         With cbbFltObra
             .AddItem
             .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
-            .List(.ListCount - 1, 1) = oObra.Id
+            .List(.ListCount - 1, 1) = oObra.ID
         End With
         
     Next n

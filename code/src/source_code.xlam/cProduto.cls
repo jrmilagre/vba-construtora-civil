@@ -10,7 +10,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Type TProduto
-    Id              As Long
+    ID              As Long
     Nome            As String
     UmID            As Long
     CustoMedio      As Currency
@@ -20,8 +20,8 @@ Private This As TProduto
 
 Private Const sTable As String = "tbl_produtos"
 
-Public Property Get Id() As Long: Id = This.Id: End Property
-Public Property Let Id(ByVal Value As Long): This.Id = Value: End Property
+Public Property Get ID() As Long: ID = This.ID: End Property
+Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 
 Public Property Get Nome() As String: Nome = This.Nome: End Property
 Public Property Let Nome(ByVal Value As String): This.Nome = Value: End Property
@@ -30,10 +30,10 @@ Public Property Get UmID() As Long: UmID = This.UmID: End Property
 Public Property Let UmID(ByVal Value As Long): This.UmID = Value: End Property
 
 ' Rotina para carregar dados
-Public Sub Carrega(Id As Long)
+Public Sub Carrega(ID As Long)
 
     ' Consulta SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
     Set rst = New ADODB.RecordSet
@@ -43,7 +43,7 @@ Public Sub Carrega(Id As Long)
     
     ' Propriedades
     With rst
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         Me.Nome = .Fields("nome").Value
         Me.UmID = .Fields("um_id").Value
     End With
@@ -64,7 +64,7 @@ Public Sub Inclui()
               Options:=adCmdTable
         .AddNew
         
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         .Fields("nome").Value = Me.Nome
         .Fields("um_id").Value = Me.UmID
         
@@ -82,7 +82,7 @@ Public Sub Altera()
     Set rst = New ADODB.RecordSet
     
     ' Comando SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.ID
 
     'Armazena na variável o comando que fará a consulta SQL no BD Access
     With rst
@@ -105,7 +105,7 @@ End Sub
 ' Rotina para Excluir registro do banco de dados
 Public Sub Exclui()
     
-    sSQL = "UPDATE " & sTable & " SET deletado = True WHERE id = " & Me.Id
+    sSQL = "UPDATE " & sTable & " SET deletado = True WHERE id = " & Me.ID
     
     cnn.Execute sSQL
     
@@ -144,7 +144,7 @@ Public Function Existe(Nome As String) As Boolean
     Set rst = cnn.Execute(sSQL)
     
     If rst.EOF = False Then
-        Me.Id = rst.Fields("id").Value
+        Me.ID = rst.Fields("id").Value
         Existe = True
     End If
     

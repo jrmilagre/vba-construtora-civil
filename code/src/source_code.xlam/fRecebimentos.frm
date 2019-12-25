@@ -184,7 +184,7 @@ Private Sub cbbObraPopular()
         With cbbObra
             .AddItem
             .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
-            .List(.ListCount - 1, 1) = oObra.Id
+            .List(.ListCount - 1, 1) = oObra.ID
         End With
         
     Next n
@@ -371,7 +371,7 @@ Private Sub lstTitulosPopular(ObraID As Long)
         sSQL = "SELECT * "
         sSQL = sSQL & "FROM tbl_recebimentos_itens "
         sSQL = sSQL & "WHERE "
-        sSQL = sSQL & "recebimento_id = " & oRecebimento.Id
+        sSQL = sSQL & "recebimento_id = " & oRecebimento.ID
         
         r.Open sSQL, cnn, adOpenStatic
         
@@ -600,7 +600,7 @@ Private Sub cbbContaPopular()
         With cbbConta
             .AddItem
             .List(.ListCount - 1, 0) = oConta.Nome
-            .List(.ListCount - 1, 1) = oConta.Id
+            .List(.ListCount - 1, 1) = oConta.ID
         End With
         
     Next n
@@ -650,7 +650,7 @@ Private Sub btnConfirmar_Click()
                         
                             oTituloReceber.Carrega CLng(lstTitulos.List(i, 5))
                             
-                            .RecebimentoID = oRecebimento.Id
+                            .RecebimentoID = oRecebimento.ID
                             .TituloID = oTituloReceber.Recno
                             .ValorBaixado = CCur(lstTitulos.List(i, 3))
                             .DataBaixa = oRecebimento.Data
@@ -683,7 +683,7 @@ Private Sub btnConfirmar_Click()
                         .PagRec = "R"
                         .Valor = CCur(lstRecebimentos.List(i, 0))
                         .TabelaOrigem = "tbl_recebimentos"
-                        .RecnoOrigem = oRecebimento.Id
+                        .RecnoOrigem = oRecebimento.ID
                         
                         oObra.Carrega oTituloReceber.ObraID
                         
@@ -704,7 +704,7 @@ Private Sub btnConfirmar_Click()
             Next i
             
             If sDecisao = "Exclusão" Then
-                oRecebimento.Exclui oRecebimento.Id
+                oRecebimento.Exclui oRecebimento.ID
             End If
             
             If sDecisao = "Inclusão" Then
@@ -867,7 +867,7 @@ Private Sub lstPrincipal_Change()
         
         oRecebimento.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
         
-        lblCabID.Caption = Format(oRecebimento.Id, "0000000000")
+        lblCabID.Caption = Format(oRecebimento.ID, "0000000000")
         lblCabData.Caption = oRecebimento.Data
         
         txbData.Text = oRecebimento.Data
@@ -886,7 +886,7 @@ Private Sub lstPrincipal_Change()
         End If
         
         Call lstTitulosPopular(oRecebimento.ObraID)
-        Call lstRecebimentosPopular(oRecebimento.Id)
+        Call lstRecebimentosPopular(oRecebimento.ID)
     
     End If
 

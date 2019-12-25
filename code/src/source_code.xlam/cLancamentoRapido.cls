@@ -10,7 +10,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Type TLancamentoRapido
-    Id              As Long
+    ID              As Long
     Data            As Date
     ContaID         As Long
     CliForID        As Long
@@ -25,8 +25,8 @@ Private This As TLancamentoRapido
 
 Private Const sTable As String = "tbl_lancamentos_rapidos"
 
-Public Property Get Id() As Long: Id = This.Id: End Property
-Public Property Let Id(ByVal Value As Long): This.Id = Value: End Property
+Public Property Get ID() As Long: ID = This.ID: End Property
+Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 
 Public Property Get Data() As Date: Data = This.Data: End Property
 Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
@@ -54,10 +54,10 @@ Public Property Let RequisicaoID(ByVal Value As Variant): This.RequisicaoID = Va
 
 
 ' Rotina para carregar dados
-Public Sub Carrega(Id As Long)
+Public Sub Carrega(ID As Long)
 
     ' Consulta SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
     Set rst = New ADODB.RecordSet
@@ -67,7 +67,7 @@ Public Sub Carrega(Id As Long)
     
     '---Propriedades
     With rst
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         Me.Data = .Fields("data").Value
         Me.ContaID = .Fields("conta_id").Value
         Me.CliForID = .Fields("clifor_id").Value
@@ -97,7 +97,7 @@ Public Sub Inclui()
               Options:=adCmdTable
         .AddNew
         
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         .Fields("data").Value = Me.Data
         .Fields("conta_id").Value = Me.ContaID
         .Fields("clifor_id").Value = Me.CliForID
@@ -113,9 +113,9 @@ Public Sub Inclui()
        
 End Sub
 
-Public Sub Exclui(Id As Long)
+Public Sub Exclui(ID As Long)
         
-    sSQL = "DELETE FROM " & sTable & " WHERE id = " & Id
+    sSQL = "DELETE FROM " & sTable & " WHERE id = " & ID
     cnn.Execute sSQL
     
 End Sub

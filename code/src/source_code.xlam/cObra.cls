@@ -10,7 +10,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Type TTipoObra
-    Id              As Long
+    ID              As Long
     Endereco        As String
     Bairro          As String
     Cidade          As String
@@ -25,8 +25,8 @@ Private This As TTipoObra
 
 Private Const sTable As String = "tbl_obras"
 
-Public Property Get Id() As Long: Id = This.Id: End Property
-Public Property Let Id(ByVal Value As Long): This.Id = Value: End Property
+Public Property Get ID() As Long: ID = This.ID: End Property
+Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 
 Public Property Get Endereco() As String: Endereco = This.Endereco: End Property
 Public Property Let Endereco(ByVal Value As String): This.Endereco = Value: End Property
@@ -53,10 +53,10 @@ Public Property Get CategoriaID() As Variant: CategoriaID = This.CategoriaID: En
 Public Property Let CategoriaID(ByVal Value As Variant): This.CategoriaID = Value: End Property
 
 ' Rotina para carregar dados
-Public Sub Carrega(Id As Long)
+Public Sub Carrega(ID As Long)
 
     ' Consulta SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
     Set rst = New ADODB.RecordSet
@@ -66,7 +66,7 @@ Public Sub Carrega(Id As Long)
     
     '---Propriedades
     With rst
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         Me.Endereco = .Fields("endereco").Value
         Me.Bairro = .Fields("bairro").Value
         Me.Cidade = .Fields("cidade").Value
@@ -93,7 +93,7 @@ Public Sub Inclui()
               Options:=adCmdTable
         .AddNew
         
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         .Fields("endereco").Value = Me.Endereco
         .Fields("bairro").Value = Me.Bairro
         .Fields("cidade").Value = Me.Cidade
@@ -117,7 +117,7 @@ Public Sub Altera()
     Set rst = New ADODB.RecordSet
     
     ' Comando SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.ID
 
     'Armazena na variável o comando que fará a consulta SQL no BD Access
     With rst
@@ -144,9 +144,9 @@ Public Sub Altera()
 End Sub
 
 ' Rotina para Excluir registro do banco de dados
-Public Sub Exclui(Id As Long)
+Public Sub Exclui(ID As Long)
     
-    sSQL = "DELETE FROM " & sTable & " WHERE id = " & Id
+    sSQL = "DELETE FROM " & sTable & " WHERE id = " & ID
     
     cnn.Execute sSQL
     

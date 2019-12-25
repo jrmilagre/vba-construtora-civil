@@ -203,7 +203,7 @@ Private Sub lstPrincipal_Change()
             oCategoria.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oCategoria.Id = 0, "", oCategoria.Id), "00000")
+        lblID.Caption = Format(IIf(oCategoria.ID = 0, "", oCategoria.ID), "00000")
         lblCabNome.Caption = oCategoria.Categoria
         txbCategoria.Text = oCategoria.Categoria
         txbSubcategoria.Text = oCategoria.Subcategoria
@@ -315,7 +315,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             .AddItem
             oCategoria.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oCategoria.Categoria
-            .List(.ListCount - 1, 1) = oCategoria.Id
+            .List(.ListCount - 1, 1) = oCategoria.ID
             .List(.ListCount - 1, 2) = oCategoria.Subcategoria
             .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
         Next n

@@ -221,7 +221,7 @@ Private Sub lstPrincipal_Change()
             oEtapa.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oEtapa.Id = 0, "", oEtapa.Id), "00000")
+        lblID.Caption = Format(IIf(oEtapa.ID = 0, "", oEtapa.ID), "00000")
         lblCabNome.Caption = oEtapa.Nome
         txbNome.Text = oEtapa.Nome
                 
@@ -312,7 +312,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             .AddItem
             oEtapa.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oEtapa.Nome
-            .List(.ListCount - 1, 1) = oEtapa.Id
+            .List(.ListCount - 1, 1) = oEtapa.ID
         Next n
         
     End With

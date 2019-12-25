@@ -219,7 +219,7 @@ Private Sub lstPrincipal_Change()
             oTipoObra.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oTipoObra.Id = 0, "", oTipoObra.Id), "00000")
+        lblID.Caption = Format(IIf(oTipoObra.ID = 0, "", oTipoObra.ID), "00000")
         lblCabNome.Caption = oTipoObra.Nome
         txbNome.Text = oTipoObra.Nome
                 
@@ -310,7 +310,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             .AddItem
             oTipoObra.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oTipoObra.Nome
-            .List(.ListCount - 1, 1) = oTipoObra.Id
+            .List(.ListCount - 1, 1) = oTipoObra.ID
         Next n
         
     End With

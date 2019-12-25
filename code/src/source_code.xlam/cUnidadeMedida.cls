@@ -10,7 +10,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Type TUnidadeMedida
-    Id              As Long
+    ID              As Long
     Nome            As String
     Abreviacao      As String
 End Type
@@ -19,8 +19,8 @@ Private This As TUnidadeMedida
 
 Private Const sTable As String = "tbl_unidades_medida"
 
-Public Property Get Id() As Long: Id = This.Id: End Property
-Public Property Let Id(ByVal Value As Long): This.Id = Value: End Property
+Public Property Get ID() As Long: ID = This.ID: End Property
+Public Property Let ID(ByVal Value As Long): This.ID = Value: End Property
 
 Public Property Get Nome() As String: Nome = This.Nome: End Property
 Public Property Let Nome(ByVal Value As String): This.Nome = Value: End Property
@@ -29,10 +29,10 @@ Public Property Get Abreviacao() As String: Abreviacao = This.Abreviacao: End Pr
 Public Property Let Abreviacao(ByVal Value As String): This.Abreviacao = Value: End Property
 
 ' Rotina para carregar dados
-Public Sub Carrega(Id As Long)
+Public Sub Carrega(ID As Long)
 
     ' Consulta SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
     Set rst = New ADODB.RecordSet
@@ -42,7 +42,7 @@ Public Sub Carrega(Id As Long)
     
     '---Propriedades
     With rst
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         Me.Nome = .Fields("nome").Value
         Me.Abreviacao = .Fields("abreviacao").Value
     End With
@@ -63,7 +63,7 @@ Public Sub Inclui()
               Options:=adCmdTable
         .AddNew
         
-        Me.Id = .Fields("id").Value
+        Me.ID = .Fields("id").Value
         .Fields("nome").Value = Me.Nome
         .Fields("abreviacao").Value = Me.Abreviacao
         
@@ -81,7 +81,7 @@ Public Sub Altera()
     Set rst = New ADODB.RecordSet
     
     ' Comando SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.Id
+    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.ID
 
     'Armazena na variável o comando que fará a consulta SQL no BD Access
     With rst
@@ -104,7 +104,7 @@ End Sub
 ' Rotina para Excluir registro do banco de dados
 Public Sub Exclui()
     
-    sSQL = "UPDATE " & sTable & " SET deletado = True WHERE id = " & Me.Id
+    sSQL = "UPDATE " & sTable & " SET deletado = True WHERE id = " & Me.ID
     
     cnn.Execute sSQL
     
@@ -142,7 +142,7 @@ Public Function Existe(Nome As String) As Boolean
     Set rst = cnn.Execute(sSQL)
     
     If rst.EOF = False Then
-        Me.Id = rst.Fields("id").Value
+        Me.ID = rst.Fields("id").Value
         Existe = True
     End If
     

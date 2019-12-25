@@ -221,7 +221,7 @@ Private Sub lstPrincipal_Change()
             oPedreiro.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         End If
         
-        lblID.Caption = Format(IIf(oPedreiro.Id = 0, "", oPedreiro.Id), "00000")
+        lblID.Caption = Format(IIf(oPedreiro.ID = 0, "", oPedreiro.ID), "00000")
         lblCabNome.Caption = oPedreiro.Nome
         txbNome.Text = oPedreiro.Nome
         txbApelido.Text = oPedreiro.Apelido
@@ -319,7 +319,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
             .AddItem
             oPedreiro.Carrega CLng(n)
             .List(.ListCount - 1, 0) = oPedreiro.Nome
-            .List(.ListCount - 1, 1) = oPedreiro.Id
+            .List(.ListCount - 1, 1) = oPedreiro.ID
             .List(.ListCount - 1, 2) = oPedreiro.Apelido
         Next n
         

@@ -82,7 +82,7 @@ Private Sub cbbFornecedor_AfterUpdate()
             
             oFornecedor.Nome = RTrim(cbbFornecedor.Text)
             oFornecedor.Inclui
-            idx = oFornecedor.Id
+            idx = oFornecedor.ID
             Call cbbFornecedorPopular
             
             For n = 0 To cbbFornecedor.ListCount - 1
@@ -152,7 +152,7 @@ Private Sub btnConfirmar_Click()
                         .Unitario = CDbl(lstItens.List(i, 3))
                         .Data = oCompra.Data
                         .FornecedorID = oCompra.FornecedorID
-                        .CompraID = oCompra.Id
+                        .CompraID = oCompra.ID
                         
                         If Not IsNull(lstItens.List(i, 5)) Then
                             .Recno = CLng(lstItens.List(i, 5))
@@ -179,7 +179,7 @@ Private Sub btnConfirmar_Click()
                 For i = 0 To lstTitulos.ListCount - 1
                 
                     With oTituloPagar
-                        .CompraID = oCompra.Id
+                        .CompraID = oCompra.ID
                         .FornecedorID = oCompra.FornecedorID
                         .Observacao = lstTitulos.List(i, 2)
                         .Vencimento = CDate(lstTitulos.List(i, 0))
@@ -204,9 +204,9 @@ Private Sub btnConfirmar_Click()
                 Next i
             
             ElseIf sDecisao = "Exclusão" Then
-                oCompraItem.Exclui oCompra.Id
-                oTituloPagar.Exclui oCompra.Id
-                oCompra.Exclui oCompra.Id
+                oCompraItem.Exclui oCompra.ID
+                oTituloPagar.Exclui oCompra.ID
+                oCompra.Exclui oCompra.ID
             End If
             
             If sDecisao = "Inclusão" Then
@@ -365,7 +365,7 @@ Private Sub cbbFornecedorPopular()
         With cbbFornecedor
             .AddItem
             .List(.ListCount - 1, 0) = oFornecedor.Nome
-            .List(.ListCount - 1, 1) = oFornecedor.Id
+            .List(.ListCount - 1, 1) = oFornecedor.ID
         End With
         
     Next n
@@ -434,7 +434,7 @@ Private Sub lstPrincipal_Change()
         oCompra.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0)))
         
         ' Preenche cabeçalho
-        lblCabID.Caption = IIf(oCompra.Id = 0, "", Format(oCompra.Id, "0000000000"))
+        lblCabID.Caption = IIf(oCompra.ID = 0, "", Format(oCompra.ID, "0000000000"))
         lblCabData.Caption = oCompra.Data
         
         oFornecedor.Carrega oCompra.FornecedorID
@@ -676,9 +676,9 @@ Private Function Valida(Decisao As String) As Boolean
         End If
     ElseIf Decisao = "Exclusão" Then
     
-        If oCompra.ExisteRequisicao(oCompra.Id) = True Then
+        If oCompra.ExisteRequisicao(oCompra.ID) = True Then
             Exit Function
-        ElseIf oCompra.ExistePagamento(oCompra.Id) = True Then
+        ElseIf oCompra.ExistePagamento(oCompra.ID) = True Then
             Exit Function
         Else
             Valida = True
@@ -774,7 +774,7 @@ Private Sub cbbProdutoPopular()
         With cbbProduto
             .AddItem
             .List(.ListCount - 1, 0) = oProduto.Nome
-            .List(.ListCount - 1, 1) = oProduto.Id
+            .List(.ListCount - 1, 1) = oProduto.ID
         End With
         
     Next n
@@ -1077,7 +1077,7 @@ Private Sub cbbUMPopular()
         With cbbUM
             .AddItem
             .List(.ListCount - 1, 0) = oUM.Abreviacao
-            .List(.ListCount - 1, 1) = oUM.Id
+            .List(.ListCount - 1, 1) = oUM.ID
         End With
         
     Next n
@@ -1109,7 +1109,7 @@ Private Sub cbbCategoriaPopular()
         With cbbCategoria
             .AddItem
             .List(.ListCount - 1, 0) = oCategoria.Categoria & ": " & oCategoria.Subcategoria & IIf(oCategoria.ItemSubcategoria = "", "", ": " & oCategoria.ItemSubcategoria)
-            .List(.ListCount - 1, 1) = oCategoria.Id
+            .List(.ListCount - 1, 1) = oCategoria.ID
             .List(.ListCount - 1, 2) = oCategoria.Subcategoria
             .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
         End With
@@ -1133,7 +1133,7 @@ Private Sub cbbProduto_AfterUpdate()
             
             oProduto.Nome = RTrim(cbbProduto.Text)
             oProduto.Inclui
-            idx = oProduto.Id
+            idx = oProduto.ID
             Call cbbProdutoPopular
             
             For n = 0 To cbbProduto.ListCount - 1
@@ -1165,7 +1165,7 @@ Private Sub cbbUM_AfterUpdate()
             oUM.Nome = ""
             oUM.Inclui
             
-            idx = oUM.Id
+            idx = oUM.ID
             
             Call cbbUMPopular
             
