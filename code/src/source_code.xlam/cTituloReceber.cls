@@ -160,14 +160,12 @@ Public Function RecordSet(Optional ObraID As Long) As ADODB.RecordSet
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM " & sTable & " "
-    sSQL = sSQL & "WHERE "
-    
     
     If ObraID > 0 Then
-        sSQL = sSQL & "obra_id = " & ObraID & " "
-    Else
-        sSQL = sSQL & "obra_id > 0 "
+        sSQL = sSQL & "WHERE obra_id = " & ObraID & " "
     End If
+    
+    sSQL = sSQL & "ORDER BY vencimento"
     
     Set RecordSet = New ADODB.RecordSet
     

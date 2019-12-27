@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fTitulosReceber 
    Caption         =   ":: Cadastro de Títulos à Receber ::"
-   ClientHeight    =   10440
+   ClientHeight    =   10560
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13320
@@ -33,8 +33,6 @@ Private Sub UserForm_Initialize()
     Call cbbFltObraPopular
     
     Call EventosCampos
-    
-    Set myRst = oTituloReceber.RecordSet
         
     Call btnFiltrar_Click
     
@@ -190,16 +188,12 @@ Private Sub lstPrincipalPopular()
     Dim cVlrSld     As Currency
     Dim c           As control
     
-    With scrPagina
-        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
-        .Max = myRst.PageCount
-    End With
-    
-    If myRst.PageCount > 0 Then
-        myRst.AbsolutePage = myRst.PageCount
+    ' Numera a página posicionada
+    If myRst.AbsolutePage = adPosEOF Then
+        lblPaginaAtual.Caption = "Página " & Format(myRst.PageCount, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+    Else
+        lblPaginaAtual.Caption = "Página " & Format(myRst.AbsolutePage, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
     End If
-    
-    scrPagina.Value = myRst.PageCount
     
     With lstPrincipal
         .Clear
@@ -245,10 +239,12 @@ Private Sub lstPrincipalPopular()
             idx = CInt(Mid(c.name, 2, 2))
             
             If idx <= (lstPrincipal.ListCount - 1) Then
-                If CDate(lstPrincipal.List(idx, 2)) > Date Then
-                    c.BackColor = &HC000&
+                If CDate(lstPrincipal.List(idx, 2)) > (Date + 3) Then
+                    c.BackColor = &HC000& ' Verde
+                ElseIf CDate(lstPrincipal.List(idx, 2)) < Date Then
+                    c.BackColor = &HC0& ' Vermelho
                 Else
-                    c.BackColor = &HC0&
+                    c.BackColor = &HFFFF&         ' Amarelo
                 End If
             Else
                 c.BackColor = &H8000000F
@@ -258,9 +254,6 @@ Private Sub lstPrincipalPopular()
         
     Next c
    
-    ' Numera a página posicionada
-    lblPaginaAtual.Caption = "Página " & Format(scrPagina.Value, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
-
 End Sub
 Private Sub btnData_Click()
     dtDate = IIf(txbData.Text = Empty, Date, txbData.Text)
@@ -320,7 +313,6 @@ Private Sub lstPrincipal_Change()
 
         btnAlterar.Enabled = True
         btnExcluir.Enabled = True
-        
 
         ' Carrega informações do lançamento
         oTituloReceber.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
@@ -438,32 +430,7 @@ Private Sub Campos(Acao As String)
         txbValor.Enabled = False: lblValor.Enabled = False
         txbObservacao.Enabled = False: lblObservacao.Enabled = False
         cbbObra.Enabled = False: lblObra.Enabled = False
-'        cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
-'        cbbCategoria.Enabled = False: lblCategoria.Enabled = False
-'
-'        frmItem.Enabled = False
-'        lblHdProduto.Enabled = False
-'        lblHdQuant.Enabled = False
-'        lblHdUnitario.Enabled = False
-'        lblHdTotal.Enabled = False
-'        lblHdUM.Enabled = False
-'        Call btnItemCancelar_Click
-'        btnItemInclui.Visible = False
-'        btnItemAltera.Visible = False
-'        btnItemExclui.Visible = False
-'        lstItens.Enabled = False: lstItens.ForeColor = &H80000010
-'
-'        frmTitulo.Enabled = False
-'        lblHdVencimento.Enabled = False
-'        lblHdValor.Enabled = False
-'        lblHdObservacao.Enabled = False
-'
-'        Call btnTituloCancelar_Click
-'
-'        btnTituloInclui.Visible = False
-'        btnTituloAltera.Visible = False
-'        btnTituloExclui.Visible = False
-'        lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
+
         
     ElseIf Acao = "Habilitar" Then
         
@@ -1043,7 +1010,18 @@ Private Sub btnFiltrar_Click()
 
     Set myRst = oTituloReceber.RecordSet(lObraID)
     
-    Call lstPrincipalPopular
+    If myRst.PageCount > 0 Then
+    
+        myRst.AbsolutePage = myRst.PageCount
+        
+        With scrPagina
+            .Max = myRst.PageCount
+            .Value = myRst.PageCount
+        End With
+        
+        Call scrPagina_Change
+        
+    End If
 
 End Sub
 Private Sub txbValor_AfterUpdate()
@@ -1055,5 +1033,54 @@ Private Sub txbValor_AfterUpdate()
     If sDecisao = "Inclusão" Then
         txbSaldo.Text = Format(txbValor.Text, "#,##0.00")
     End If
+
+End Sub
+Private Sub btnPaginaSeguinte_Click()
+    scrPagina.Value = scrPagina.Value + 1
+End Sub
+Private Sub btnPaginaAnterior_Click()
+    scrPagina.Value = scrPagina.Value - 1
+End Sub
+Private Sub btnPaginaInicial_Click()
+    scrPagina.Value = 1
+End Sub
+Private Sub btnPaginaFinal_Click()
+    scrPagina.Value = myRst.PageCount
+End Sub
+Private Sub scrPagina_Change()
+
+    ' Trata botões de navegação
+    If scrPagina.Value = myRst.PageCount And scrPagina.Value > 1 Then
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaSeguinte.Enabled = False
+        btnPaginaFinal.Enabled = False
+        scrPagina.Enabled = True
+    ElseIf scrPagina.Value = 1 And myRst.PageCount = 1 Then
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+        btnPaginaFinal.Enabled = False
+        scrPagina.Enabled = False
+    ElseIf scrPagina.Value > 1 And scrPagina.Value < myRst.PageCount Then
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        btnPaginaFinal.Enabled = True
+        scrPagina.Enabled = True
+    ElseIf scrPagina.Value = 1 And myRst.PageCount > 1 Then
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaSeguinte.Enabled = True
+        btnPaginaFinal.Enabled = True
+        scrPagina.Enabled = True
+    End If
+
+    Call Campos("Limpar")
+    
+    On Error Resume Next
+    myRst.AbsolutePage = scrPagina.Value
+    
+    Call lstPrincipalPopular
 
 End Sub

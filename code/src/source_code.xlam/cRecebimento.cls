@@ -90,10 +90,16 @@ Public Sub Exclui(ID As Long)
     cnn.Execute sSQL
     
 End Sub
-Public Function RecordSet() As ADODB.RecordSet
+Public Function RecordSet(Optional ObraID As Long) As ADODB.RecordSet
 
+    Dim lObraID As Long
+    
     sSQL = "SELECT id, data, obra_id, tipo_baixa, valor_recebido "
-    sSQL = sSQL & "FROM " & sTable
+    sSQL = sSQL & "FROM " & sTable & " "
+    
+    If ObraID > 0 Then
+        sSQL = sSQL & "WHERE obra_id = " & ObraID & " "
+    End If
     
     Set RecordSet = New ADODB.RecordSet
     

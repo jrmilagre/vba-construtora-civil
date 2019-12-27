@@ -341,7 +341,7 @@ Public Sub IncluiRegistrosTeste()
         
         sSQL = "INSERT INTO tbl_clientes ([nome]) VALUES ('Acmo Administração de Bens e Participações Eireli') ": cnn.Execute sSQL
         
-        sSQL = "INSERT INTO tbl_obras ([endereco], [tipo_id], [bairro], [cidade], [uf], [cliente_id], [data], [categoria_id]) VALUES ('Alameda ...', 2, 'Campos Olivotti', 'Extrema', 'MG', 1, " & CLng(CDate("14/12/2019")) & ", 1) ": cnn.Execute sSQL
+        sSQL = "INSERT INTO tbl_obras ([endereco], [tipo_id], [bairro], [cidade], [uf], [cliente_id], [data], [categoria_id]) VALUES ('Alameda Joaquim Marcondes da Silveira, 171', 2, 'Campos Olivotti', 'Extrema', 'MG', 1, " & CLng(CDate("14/12/2019")) & ", 1) ": cnn.Execute sSQL
         
         sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, 'Entrada', " & CLng(CDate("14/12/2019")) & ", 104386.08, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL
         sSQL = "INSERT INTO tbl_titulos_receber ([obra_id], [cliente_id], [observacao], [vencimento], [valor], [data]) VALUES (1, 1, '01/09', " & CLng(CDate("14/01/2020")) & ", 27063.05, " & CLng(CDate("14/12/2019")) & ")": cnn.Execute sSQL

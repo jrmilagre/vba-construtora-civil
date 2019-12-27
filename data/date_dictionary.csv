@@ -73,11 +73,6 @@ tbl_titulos_pagar;valor_pago;6;0;True;False;Valor pago;False;False
 tbl_titulos_pagar;r_e_c_n_o_;3;0;False;True;Recno;False;False
 tbl_requisicoes;id;3;0;True;True;Código;True;False
 tbl_requisicoes;data;7;0;True;False;Data;False;False
-tbl_pagamentos;id;3;0;True;True;Código;True;False
-tbl_pagamentos;data;7;0;True;False;Data;False;False
-tbl_pagamentos;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
-tbl_pagamentos;tipo_baixa;202;1;True;False;Tipo da baixa;False;False
-tbl_pagamentos;valor_pago;6;0;True;False;Valor pago;False;False
 tbl_contas_movimentos;conta_id;3;0;True;False;Código da conta;False;tbl_contas.id
 tbl_contas_movimentos;data;7;0;True;False;Data;False;False
 tbl_contas_movimentos;pag_rec;202;1;True;False;Pagamento ou recebimento;False;False
@@ -87,14 +82,18 @@ tbl_contas_movimentos;categoria_id;3;0;True;False;Código da categoria;False;tbl_
 tbl_contas_movimentos;tabela_origem;202;50;True;False;Tabela de origem;False;False
 tbl_contas_movimentos;recno_origem;3;0;True;False;Recno de origem;False;False
 tbl_contas_movimentos;r_e_c_n_o_;3;0;False;True;Recno;False;False
+tbl_pagamentos;id;3;0;True;True;Código;True;False
+tbl_pagamentos;data;7;0;True;False;Data;False;False
+tbl_pagamentos;fornecedor_id;3;0;True;False;Código do fornecedor;False;tbl_fornecedores.id
+tbl_pagamentos;tipo_baixa;202;1;True;False;Tipo da baixa;False;False
+tbl_pagamentos;valor_pago;6;0;True;False;Valor pago;False;False
 tbl_pagamentos_itens;pagamento_id;3;0;True;False;Código do pagamento;False;False
 tbl_pagamentos_itens;titulo_id;3;0;True;False;Código do título à pagar;False;False
 tbl_pagamentos_itens;data_baixa;7;0;True;False;Data da baixa;False;False
 tbl_pagamentos_itens;valor_baixado;6;0;True;False;Valor pago;False;False
+tbl_pagamentos_itens;valor_desconto;6;0;True;False;Valor de desconto;False;False
+tbl_pagamentos_itens;valor_acrescimo;6;0;True;False;Valor de acréscimo;False;False
 tbl_pagamentos_itens;fornecedor_id;3;0;True;False;Código do fornecedor;False;False
-tbl_pagamentos_itens;titulo_valor;6;0;True;False;Valor do título;False;False
-tbl_pagamentos_itens;titulo_data;7;0;True;False;Data da emissão do título;False;False
-tbl_pagamentos_itens;titulo_vencimento;7;0;True;False;Data de vencimento do título;False;False
 tbl_pagamentos_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False
 tbl_requisicoes_itens;requisicao_id;3;0;True;False;Código da requisição;False;tbl_requisicoes.id
 tbl_requisicoes_itens;produto_id;3;0;True;False;Código do produto;False;False
@@ -138,8 +137,7 @@ tbl_recebimentos_itens;recebimento_id;3;0;True;False;Código do recebimento;False
 tbl_recebimentos_itens;titulo_id;3;0;True;False;Código do título à receber;False;False
 tbl_recebimentos_itens;data_baixa;7;0;True;False;Data da baixa;False;False
 tbl_recebimentos_itens;valor_baixado;6;0;True;False;Valor pago;False;False
+tbl_recebimentos_itens;valor_desconto;6;0;True;False;Valor de desconto;False;False
+tbl_recebimentos_itens;valor_acrescimo;6;0;True;False;Valor de acréscimo;False;False
 tbl_recebimentos_itens;obra_id;3;0;True;False;Código da obra;False;False
-tbl_recebimentos_itens;titulo_valor;6;0;True;False;Valor do título;False;False
-tbl_recebimentos_itens;titulo_data;7;0;True;False;Data da emissão do título;False;False
-tbl_recebimentos_itens;titulo_vencimento;7;0;True;False;Data de vencimento do título;False;False
 tbl_recebimentos_itens;r_e_c_n_o_;3;0;False;True;Recno;False;False

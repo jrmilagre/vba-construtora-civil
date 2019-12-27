@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fLancamentosRapidos 
    Caption         =   ":: Lancamentos rápidos ::"
-   ClientHeight    =   8430
+   ClientHeight    =   9075
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   12885
@@ -48,23 +48,7 @@ Private Sub UserForm_Initialize()
     
     Call EventosCampos
     
-    Set myRst = New ADODB.RecordSet
-    Set myRst = oLancamentoRapido.RecordSet
-    
-    With scrPagina
-        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
-        .Max = myRst.PageCount
-    End With
-    
-    lPagina = myRst.PageCount
-    
-    If myRst.PageCount > 0 Then
-        myRst.AbsolutePage = myRst.PageCount
-    End If
-    
-    scrPagina.Value = lPagina
-    
-    Call lstPrincipalPopular(lPagina)
+    Call scrPagina_Change
     
     Call btnCancelar_Click
 
@@ -329,15 +313,14 @@ Private Sub cbbUMPopular()
     cbbUM.ListIndex = idx
 
 End Sub
-Private Sub lstPrincipalPopular(Pagina As Long)
+Private Sub lstPrincipalPopular()
 
-    Dim lPosicao    As Long
     Dim lCount      As Long
     
     With lstPrincipal
         .Clear
-        .ColumnCount = 8 ' Funcionário, ID, Empresa, Filial
-        .ColumnWidths = "55pt; 55pt; 160pt;"
+        .ColumnCount = 2 ' Funcionário, ID, Empresa, Filial
+        .ColumnWidths = "55pt; 55pt;"
         .Enabled = True
         .Font = "Consolas"
         
@@ -349,12 +332,6 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
             .List(.ListCount - 1, 0) = Format(myRst.Fields("id").Value, "0000000000")
             .List(.ListCount - 1, 1) = myRst.Fields("data").Value
-'            .List(.ListCount - 1, 2) = oFornecedor.Nome
-            
-'            .List(.ListCount - 1, 4) = oEmpresa.Empresa & IIf(oEmpresa.Filial = "", "", " : " & oEmpresa.Filial)
-'            .List(.ListCount - 1, 5) = myRst.Fields("status").Value
-'            .List(.ListCount - 1, 6) = Space(2 - Len(Format(myRst.Fields("count_exames").Value, "00"))) & Format(myRst.Fields("count_exames").Value, "00")
-'            .List(.ListCount - 1, 7) = Space(6 - Len(Format(myRst.Fields("sum_preco").Value, "#,##0.00"))) & Format(myRst.Fields("sum_preco").Value, "#,##0.00")
 
             lCount = lCount + 1
             myRst.MoveNext
@@ -362,8 +339,7 @@ Private Sub lstPrincipalPopular(Pagina As Long)
         Wend
 
     End With
-   
-    lblPaginaAtual.Caption = "Página " & Format(scrPagina.Value, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+        
 
 End Sub
 Private Sub btnCancelar_Click()
@@ -674,39 +650,20 @@ Private Sub btnConfirmar_Click()
                 
             End If
             
-            If sDecisao = "Inclusão" Then
-                If lstPrincipal.ListCount < myRst.PageSize Then
-                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
-                Else
-                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption))) + 1
-                End If
-            Else
-                lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
-            End If
-            
-            Set myRst = New ADODB.RecordSet
-            Set myRst = oLancamentoRapido.RecordSet
-        
-            With scrPagina
-                .Min = 1
-                .Max = myRst.PageCount
-            End With
-            
-            myRst.AbsolutePage = myRst.PageCount
-            scrPagina.Value = lPagina
-            
-            Call lstPrincipalPopular(lPagina)
+            Call scrPagina_Change
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
             MsgBox sDecisao & " realizada com sucesso.", vbInformation, sDecisao & " de registro"
-            
-            MultiPage1.Value = 0
             
             Call btnCancelar_Click
             
         ElseIf vbResposta = vbNo Then
         
-            Call btnCancelar_Click
+            If sDecisao = "Exclusão" Then
+                
+                Call btnCancelar_Click
+                
+            End If
             
         End If
     
@@ -1165,5 +1122,168 @@ Private Sub cbbCategoriaPopular(PagRec As String)
     Next n
     
     cbbCategoria.ListIndex = -1
+
+End Sub
+Private Sub cbbConta_AfterUpdate()
+
+    Dim vbResposta As VbMsgBoxResult
+    Dim idx As Integer
+    Dim n As Integer
+    
+    If cbbConta.ListIndex = -1 And cbbConta.Text <> "" Then
+        
+        vbResposta = MsgBox("Esta conta não existe, deseja cadastrá-lo?", vbQuestion + vbYesNo)
+        
+        If vbResposta = vbYes Then
+            
+            oConta.Nome = RTrim(cbbConta.Text)
+            oConta.SaldoInicial = 0
+            oConta.Inclui
+            idx = oConta.ID
+            Call cbbContaPopular
+            
+            For n = 0 To cbbConta.ListCount - 1
+                If CInt(cbbConta.List(n, 1)) = idx Then
+                    cbbConta.ListIndex = n
+                    Exit For
+                End If
+            Next n
+        Else
+            cbbConta.ListIndex = -1
+        End If
+
+    End If
+End Sub
+Private Sub cbbProduto_AfterUpdate()
+
+    Dim vbResposta As VbMsgBoxResult
+    Dim idx As Integer
+    Dim n As Integer
+    
+    If cbbProduto.ListIndex = -1 And cbbProduto.Text <> "" Then
+        
+        vbResposta = MsgBox("Este produto não existe, deseja cadastrá-lo?", vbQuestion + vbYesNo)
+        
+        If vbResposta = vbYes Then
+            
+            oProduto.Nome = RTrim(cbbProduto.Text)
+            oProduto.Inclui
+            idx = oProduto.ID
+            Call cbbProdutoPopular
+            
+            For n = 0 To cbbProduto.ListCount - 1
+                If CInt(cbbProduto.List(n, 1)) = idx Then
+                    cbbProduto.ListIndex = n
+                    Exit For
+                End If
+            Next n
+        Else
+            cbbProduto.ListIndex = -1
+        End If
+
+    End If
+
+End Sub
+Private Sub cbbUM_AfterUpdate()
+
+    Dim vbResposta As VbMsgBoxResult
+    Dim idx As Integer
+    Dim n As Integer
+    
+    If cbbUM.ListIndex = -1 And cbbUM.Text <> "" Then
+        
+        vbResposta = MsgBox("Esta unidade de medida não existe. Deseja cadastrá-la?", vbQuestion + vbYesNo)
+        
+        If vbResposta = vbYes Then
+        
+            oUM.Abreviacao = RTrim(cbbUM.Text)
+            oUM.Nome = ""
+            oUM.Inclui
+            
+            idx = oUM.ID
+            
+            Call cbbUMPopular
+            
+            For n = 0 To cbbUM.ListCount - 1
+                If CInt(cbbUM.List(n, 1)) = idx Then
+                    cbbUM.ListIndex = n
+                    Exit For
+                End If
+            Next n
+        Else
+            cbbUM.ListIndex = -1
+        End If
+        
+    End If
+    
+End Sub
+Private Sub btnPaginaSeguinte_Click()
+    scrPagina.Value = scrPagina.Value + 1
+End Sub
+Private Sub btnPaginaAnterior_Click()
+    scrPagina.Value = scrPagina.Value - 1
+End Sub
+Private Sub btnPaginaInicial_Click()
+    scrPagina.Value = 1
+End Sub
+Private Sub btnPaginaFinal_Click()
+    scrPagina.Value = myRst.PageCount
+End Sub
+
+Private Sub scrPagina_Change()
+
+    Set myRst = oLancamentoRapido.RecordSet
+    
+    If myRst.PageCount > 0 Then
+    
+        myRst.AbsolutePage = myRst.PageCount
+        
+        Application.EnableEvents = False
+        
+        With scrPagina
+            .Max = myRst.PageCount
+            .Value = myRst.PageCount
+        End With
+        
+        Application.EnableEvents = True
+        
+        If myRst.AbsolutePage = adPosEOF Then
+            lblPaginaAtual.Caption = "Página " & Format(myRst.PageCount, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+        Else
+            lblPaginaAtual.Caption = "Página " & Format(myRst.AbsolutePage, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+        End If
+    
+        ' Trata botões de navegação
+        If scrPagina.Value = myRst.PageCount And scrPagina.Value > 1 Then
+            btnPaginaInicial.Enabled = True
+            btnPaginaAnterior.Enabled = True
+            btnPaginaSeguinte.Enabled = False
+            btnPaginaFinal.Enabled = False
+            scrPagina.Enabled = True
+        ElseIf scrPagina.Value = 1 And myRst.PageCount = 1 Then
+            btnPaginaInicial.Enabled = False
+            btnPaginaAnterior.Enabled = False
+            btnPaginaSeguinte.Enabled = False
+            btnPaginaFinal.Enabled = False
+            scrPagina.Enabled = False
+        ElseIf scrPagina.Value > 1 And scrPagina.Value < myRst.PageCount Then
+            btnPaginaInicial.Enabled = True
+            btnPaginaAnterior.Enabled = True
+            btnPaginaSeguinte.Enabled = True
+            btnPaginaFinal.Enabled = True
+            scrPagina.Enabled = True
+        ElseIf scrPagina.Value = 1 And myRst.PageCount > 1 Then
+            btnPaginaInicial.Enabled = False
+            btnPaginaAnterior.Enabled = False
+            btnPaginaSeguinte.Enabled = True
+            btnPaginaFinal.Enabled = True
+            scrPagina.Enabled = True
+        End If
+    
+        Call Campos("Limpar")
+    
+        Call lstPrincipalPopular
+        
+    End If
 
 End Sub

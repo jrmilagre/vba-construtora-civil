@@ -244,7 +244,9 @@ Private Sub btnConfirmar_Click()
             Call btnCancelar_Click
         End If
     Else
-        Call btnCancelar_Click
+        If sDecisao = "Exclusão" Then
+            Call btnCancelar_Click
+        End If
     End If
     
 End Sub
