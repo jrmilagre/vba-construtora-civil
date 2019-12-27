@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fLancamentosRapidos 
-   Caption         =   ":: Lancamentos rápidos ::"
+   Caption         =   ":: Lancamentos à vista ::"
    ClientHeight    =   9075
    ClientLeft      =   120
    ClientTop       =   465
@@ -30,7 +30,6 @@ Private oCategoria          As New cCategoria
 
 Private colControles        As New Collection
 Private myRst               As ADODB.RecordSet
-Private lPagina             As Long
 
 Private Const sTable As String = "tbl_compras"
 Private Const sCampoOrderBy As String = "data"
@@ -48,7 +47,9 @@ Private Sub UserForm_Initialize()
     
     Call EventosCampos
     
-    Call scrPagina_Change
+    Set myRst = oLancamentoRapido.RecordSet
+    
+    Call scrPaginaAtualiza(False, Null)
     
     Call btnCancelar_Click
 
@@ -313,32 +314,54 @@ Private Sub cbbUMPopular()
     cbbUM.ListIndex = idx
 
 End Sub
-Private Sub lstPrincipalPopular()
+Private Sub lstPrincipalPopular(Pagina As Variant)
 
     Dim lCount      As Long
     
-    With lstPrincipal
-        .Clear
-        .ColumnCount = 2 ' Funcionário, ID, Empresa, Filial
-        .ColumnWidths = "55pt; 55pt;"
-        .Enabled = True
-        .Font = "Consolas"
+    If myRst.PageCount > 0 Then
+    
+        'If IsNull(Pagina) Then
+            'myRst.AbsolutePage = myRst.PageCount
+        'Else
+            myRst.AbsolutePage = Pagina
+        'End If
         
-        lCount = 1
-        
-        While Not myRst.EOF = True And lCount <= myRst.PageSize
-
-            .AddItem
-
-            .List(.ListCount - 1, 0) = Format(myRst.Fields("id").Value, "0000000000")
-            .List(.ListCount - 1, 1) = myRst.Fields("data").Value
-
-            lCount = lCount + 1
-            myRst.MoveNext
+        If myRst.AbsolutePage = adPosEOF Then
+            lblPaginaAtual.Caption = "Página " & Format(myRst.PageCount, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+        Else
+            lblPaginaAtual.Caption = "Página " & Format(myRst.AbsolutePage, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+        End If
+    
+        With lstPrincipal
+            .Clear
+            .ColumnCount = 2 ' Funcionário, ID, Empresa, Filial
+            .ColumnWidths = "55pt; 55pt;"
+            .Enabled = True
+            .Font = "Consolas"
             
-        Wend
-
-    End With
+            lCount = 1
+            
+            While Not myRst.EOF = True And lCount <= myRst.PageSize
+    
+                .AddItem
+    
+                .List(.ListCount - 1, 0) = Format(myRst.Fields("id").Value, "0000000000")
+                .List(.ListCount - 1, 1) = myRst.Fields("data").Value
+    
+                lCount = lCount + 1
+                myRst.MoveNext
+                
+            Wend
+    
+        End With
+        
+'        With scrPagina
+'            .Max = myRst.PageCount:
+'            .Value = myRst.PageCount
+'        End With
+    Else
+        lstPrincipal.Clear
+    End If
         
 
 End Sub
@@ -650,7 +673,9 @@ Private Sub btnConfirmar_Click()
                 
             End If
             
-            Call scrPagina_Change
+            Set myRst = oLancamentoRapido.RecordSet
+            
+            Call scrPaginaAtualiza(True, sDecisao)
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
             MsgBox sDecisao & " realizada com sucesso.", vbInformation, sDecisao & " de registro"
@@ -1231,59 +1256,67 @@ Private Sub btnPaginaFinal_Click()
 End Sub
 
 Private Sub scrPagina_Change()
+    
+    ' Trata botões de navegação
+    If scrPagina.Value = myRst.PageCount And scrPagina.Value > 1 Then
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaSeguinte.Enabled = False
+        btnPaginaFinal.Enabled = False
+        scrPagina.Enabled = True
+    ElseIf scrPagina.Value = 1 And myRst.PageCount = 1 Then
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+        btnPaginaFinal.Enabled = False
+        scrPagina.Enabled = False
+    ElseIf scrPagina.Value > 1 And scrPagina.Value < myRst.PageCount Then
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        btnPaginaFinal.Enabled = True
+        scrPagina.Enabled = True
+    ElseIf scrPagina.Value = 1 And myRst.PageCount > 1 Then
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaSeguinte.Enabled = True
+        btnPaginaFinal.Enabled = True
+        scrPagina.Enabled = True
+    End If
 
-    Set myRst = oLancamentoRapido.RecordSet
+    Call Campos("Limpar")
     
-    If myRst.PageCount > 0 Then
-    
-        myRst.AbsolutePage = myRst.PageCount
-        
-        Application.EnableEvents = False
-        
+    Call lstPrincipalPopular(scrPagina.Value)
+
+End Sub
+Private Sub scrPaginaAtualiza(AfetouBanco As Boolean, Optional Decisao As Variant)
+
+    If Not IsNull(Decisao) Then
+        If Decisao = "Inclusão" Then
+            With scrPagina
+                .Max = myRst.PageCount
+                .Value = myRst.PageCount
+            End With
+            Call scrPagina_Change
+        ElseIf Decisao = "Exclusão" Then
+            If scrPagina.Max = myRst.PageCount Then
+                Call scrPagina_Change
+            ElseIf myRst.PageCount = 0 Then
+                Call scrPagina_Change
+            Else
+                With scrPagina
+                    .Value = myRst.PageCount
+                    .Max = myRst.PageCount
+                End With
+            End If
+            
+        End If
+    Else
         With scrPagina
             .Max = myRst.PageCount
             .Value = myRst.PageCount
         End With
-        
-        Application.EnableEvents = True
-        
-        If myRst.AbsolutePage = adPosEOF Then
-            lblPaginaAtual.Caption = "Página " & Format(myRst.PageCount, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
-        Else
-            lblPaginaAtual.Caption = "Página " & Format(myRst.AbsolutePage, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
-        End If
-    
-        ' Trata botões de navegação
-        If scrPagina.Value = myRst.PageCount And scrPagina.Value > 1 Then
-            btnPaginaInicial.Enabled = True
-            btnPaginaAnterior.Enabled = True
-            btnPaginaSeguinte.Enabled = False
-            btnPaginaFinal.Enabled = False
-            scrPagina.Enabled = True
-        ElseIf scrPagina.Value = 1 And myRst.PageCount = 1 Then
-            btnPaginaInicial.Enabled = False
-            btnPaginaAnterior.Enabled = False
-            btnPaginaSeguinte.Enabled = False
-            btnPaginaFinal.Enabled = False
-            scrPagina.Enabled = False
-        ElseIf scrPagina.Value > 1 And scrPagina.Value < myRst.PageCount Then
-            btnPaginaInicial.Enabled = True
-            btnPaginaAnterior.Enabled = True
-            btnPaginaSeguinte.Enabled = True
-            btnPaginaFinal.Enabled = True
-            scrPagina.Enabled = True
-        ElseIf scrPagina.Value = 1 And myRst.PageCount > 1 Then
-            btnPaginaInicial.Enabled = False
-            btnPaginaAnterior.Enabled = False
-            btnPaginaSeguinte.Enabled = True
-            btnPaginaFinal.Enabled = True
-            scrPagina.Enabled = True
-        End If
-    
-        Call Campos("Limpar")
-    
-        Call lstPrincipalPopular
-        
+        Call scrPagina_Change
     End If
-
+    
 End Sub

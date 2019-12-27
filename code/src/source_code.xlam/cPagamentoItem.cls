@@ -15,9 +15,9 @@ Private Type TPagamentoItem
     ValorBaixado        As Currency
     DataBaixa           As Date
     FornecedorID        As Long
-    TituloValor         As Currency
-    TituloData          As Date
-    TituloVencimento    As Date
+    ValorDesconto       As Currency
+    ValorAcrescimo      As Currency
+    
     Recno               As Long
 End Type
 
@@ -40,14 +40,11 @@ Public Property Let DataBaixa(ByVal Value As Date): This.DataBaixa = Value: End 
 Public Property Get FornecedorID() As Long: FornecedorID = This.FornecedorID: End Property
 Public Property Let FornecedorID(ByVal Value As Long): This.FornecedorID = Value: End Property
 
-Public Property Get TituloValor() As Currency: TituloValor = This.TituloValor: End Property
-Public Property Let TituloValor(ByVal Value As Currency): This.TituloValor = Value: End Property
+Public Property Get ValorDesconto() As Currency: ValorDesconto = This.ValorDesconto: End Property
+Public Property Let ValorDesconto(ByVal Value As Currency): This.ValorDesconto = Value: End Property
 
-Public Property Get TituloData() As Date: TituloData = This.TituloData: End Property
-Public Property Let TituloData(ByVal Value As Date): This.TituloData = Value: End Property
-
-Public Property Get TituloVencimento() As Date: TituloVencimento = This.TituloVencimento: End Property
-Public Property Let TituloVencimento(ByVal Value As Date): This.TituloVencimento = Value: End Property
+Public Property Get ValorAcrescimo() As Currency: ValorAcrescimo = This.ValorAcrescimo: End Property
+Public Property Let ValorAcrescimo(ByVal Value As Currency): This.ValorAcrescimo = Value: End Property
 
 Public Property Get Recno() As Long: Recno = This.Recno: End Property
 Public Property Let Recno(ByVal Value As Long): This.Recno = Value: End Property
@@ -65,6 +62,8 @@ Public Sub Carrega(ID As Long)
         Me.TituloID = .Fields("titulo_id").Value
         Me.ValorBaixado = .Fields("valor_baixado").Value
         Me.DataBaixa = .Fields("data_baixa").Value
+        Me.ValorDesconto = .Fields("valor_desconto").Value
+        Me.ValorAcrescimo = .Fields("valor_acrescimo").Value
         Me.Recno = .Fields("r_e_c_n_o_").Value
     End With
     
@@ -90,9 +89,8 @@ Public Sub Inclui()
         .Fields("valor_baixado").Value = Me.ValorBaixado
         .Fields("data_baixa").Value = Me.DataBaixa
         .Fields("fornecedor_id").Value = Me.FornecedorID
-        .Fields("titulo_valor").Value = Me.TituloValor
-        .Fields("titulo_data").Value = Me.TituloData
-        .Fields("titulo_vencimento").Value = Me.TituloVencimento
+        .Fields("valor_desconto").Value = Me.ValorDesconto
+        .Fields("valor_acrescimo").Value = Me.ValorAcrescimo
         
         .Update
     End With
@@ -100,39 +98,17 @@ Public Sub Inclui()
     Set rst = Nothing
        
 End Sub
-Public Sub Altera(Recno As Long)
+Public Sub Exclui(PagamentoID As Long)
     
-    Set rst = New ADODB.RecordSet
+    sSQL = "DELETE FROM " & sTable & " WHERE pagamento_id = " & PagamentoID
     
-    ' Comando SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & Recno
-
-    'Armazena na variável o comando que fará a consulta SQL no BD Access
-    With rst
-        .Open Source:=sSQL, _
-              ActiveConnection:=cnn, _
-              CursorType:=adOpenDynamic, _
-              LockType:=adLockOptimistic
-        
-        .Fields("pagamento_id").Value = Me.PagamentoID
-        .Fields("titulo_id").Value = Me.TituloID
-        .Fields("valor_baixado").Value = Me.ValorBaixado
-        .Fields("data_baixa").Value = Me.DataBaixa
-        .Fields("fornecedor_id").Value = Me.FornecedorID
-        .Fields("titulo_valor").Value = Me.TituloValor
-        .Fields("titulo_data").Value = Me.TituloData
-        .Fields("titulo_vencimento").Value = Me.TituloVencimento
-        
-        ' Grava alterações
-        .Update
-    End With
+    cnn.Execute sSQL
     
-    Set rst = Nothing
-End Sub
-Public Sub Exclui(Recno As Long)
-    
-    sSQL = "DELETE FROM " & sTable & " WHERE r_e_c_n_o_ = " & Recno
+    sSQL = "DELETE FROM tbl_contas_movimentos "
+    sSQL = sSQL & "WHERE tabela_origem = 'tbl_pagamentos' "
+    sSQL = sSQL & "and recno_origem = " & PagamentoID
     
     cnn.Execute sSQL
 
 End Sub
+

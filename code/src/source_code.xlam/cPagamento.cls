@@ -90,10 +90,14 @@ Public Sub Exclui(ID As Long)
     cnn.Execute sSQL
     
 End Sub
-Public Function RecordSet() As ADODB.RecordSet
-
+Public Function RecordSet(Optional FornecedorID As Long) As ADODB.RecordSet
+    
     sSQL = "SELECT id, data, fornecedor_id, tipo_baixa, valor_pago "
-    sSQL = sSQL & "FROM " & sTable
+    sSQL = sSQL & "FROM " & sTable & " "
+    
+    If FornecedorID > 0 Then
+        sSQL = sSQL & "WHERE fornecedor_id = " & FornecedorID & " "
+    End If
     
     Set RecordSet = New ADODB.RecordSet
     

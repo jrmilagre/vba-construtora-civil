@@ -174,7 +174,7 @@ Public Function ExistePagamento(CompraID As Long) As Boolean
     Dim rTmp    As New ADODB.RecordSet
     Dim sMsg    As String
     
-    ExisteBaixaDeTitulos = False
+    ExistePagamento = False
     
     sSQL = "SELECT tbl_pagamentos_itens.pagamento_id "
     sSQL = sSQL & "FROM tbl_titulos_pagar "

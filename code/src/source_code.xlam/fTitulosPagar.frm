@@ -1,36 +1,36 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fTitulosReceber 
-   Caption         =   ":: Cadastro de Títulos à Receber ::"
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fTitulosPagar 
+   Caption         =   ":: Cadastro de Títulos à Pagar ::"
    ClientHeight    =   10560
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13320
-   OleObjectBlob   =   "fTitulosReceber.frx":0000
+   OleObjectBlob   =   "fTitulosPagar.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
-Attribute VB_Name = "fTitulosReceber"
+Attribute VB_Name = "fTitulosPagar"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 
-Private oTituloReceber      As New cTituloReceber
-Private oObra               As New cObra
-Private oCliente            As New cCliente
+Private oTituloPagar        As New cTituloPagar
+Private oFornecedor         As New cFornecedor
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
 Private myRst               As New ADODB.RecordSet
 
-Private Const sTable As String = "tbl_titulos_receber"
+Private Const sTable As String = "tbl_titulos_pagar"
 Private Const sCampoOrderBy As String = "vencimento"
 
 Private Sub UserForm_Initialize()
 
-    Call cbbObraPopular
+    Call cbbFornecedorPopular
     
-    Call cbbFltObraPopular
+    Call cbbFltFornecedorPopular
     
     Call EventosCampos
         
@@ -42,9 +42,8 @@ End Sub
 Private Sub UserForm_Terminate()
     
     ' Destrói objeto da classe cProduto
-    Set oTituloReceber = Nothing
-    Set oObra = Nothing
-    Set oCliente = Nothing
+    Set oTituloPagar = Nothing
+    Set oFornecedor = Nothing
     
     Call Desconecta
     
@@ -65,11 +64,11 @@ Private Sub btnConfirmar_Click()
         If vbResposta = vbYes Then
         
             If sDecisao = "Inclusão" Then
-                oTituloReceber.Inclui
+                oTituloPagar.Inclui
             ElseIf sDecisao = "Alteração" Then
-                oTituloReceber.AlteraTitulo oTituloReceber.Recno
+                oTituloPagar.AlteraTitulo oTituloPagar.Recno
             ElseIf sDecisao = "Exclusão" Then
-                oTituloReceber.ExcluiTitulo oTituloReceber.Recno
+                oTituloPagar.ExcluiTitulo oTituloPagar.Recno
             End If
             
             ' Clica no botão filtrar para chamar a rotina de popular lstPrincipal
@@ -188,7 +187,7 @@ Private Sub lstPrincipalPopular()
             .List(.ListCount - 1, 2) = myRst.Fields("vencimento").Value
             .List(.ListCount - 1, 3) = Space(12 - Len(Format(myRst.Fields("valor").Value, "#,##0.00"))) & Format(myRst.Fields("valor").Value, "#,##0.00")
             
-            cVlrBxd = oTituloReceber.GetValorBaixado(myRst.Fields("r_e_c_n_o_").Value)
+            cVlrBxd = oTituloPagar.GetValorBaixado(myRst.Fields("r_e_c_n_o_").Value)
             cVlrSld = myRst.Fields("valor").Value - cVlrBxd
             
             .List(.ListCount - 1, 4) = Space(12 - Len(Format(cVlrBxd, "#,##0.00"))) & Format(cVlrBxd, "#,##0.00")
@@ -290,27 +289,27 @@ Private Sub lstPrincipal_Change()
         btnExcluir.Enabled = True
 
         ' Carrega informações do lançamento
-        oTituloReceber.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
+        oTituloPagar.Carrega CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0))
 
         ' Preenche cabeçalho
-        lblCabID.Caption = IIf(oTituloReceber.Recno = 0, "", Format(oTituloReceber.Recno, "0000000000"))
-        lblCabData.Caption = oTituloReceber.Data
+        lblCabID.Caption = IIf(oTituloPagar.Recno = 0, "", Format(oTituloPagar.Recno, "0000000000"))
+        lblCabData.Caption = oTituloPagar.Data
 '
 '        oFornecedor.Carrega oCompra.FornecedorID
 '
 '        'lblCabFuncionario.Caption = oFuncionario.Funcionario
 '
         ' Preenche campos
-        txbData.Text = oTituloReceber.Data
-        txbVencimento.Text = oTituloReceber.Vencimento
-        txbValor.Text = Format(oTituloReceber.Valor, "#,##0.00")
+        txbData.Text = oTituloPagar.Data
+        txbVencimento.Text = oTituloPagar.Vencimento
+        txbValor.Text = Format(oTituloPagar.Valor, "#,##0.00")
         txbBaixado.Text = lstPrincipal.List(lstPrincipal.ListIndex, 4)
         txbSaldo.Text = lstPrincipal.List(lstPrincipal.ListIndex, 5)
-        txbObservacao.Text = oTituloReceber.Observacao
+        txbObservacao.Text = oTituloPagar.Observacao
         
-        For n = 0 To cbbObra.ListCount - 1
-            If CLng(cbbObra.List(n, 1)) = oTituloReceber.ObraID Then
-                cbbObra.ListIndex = n
+        For n = 0 To cbbFornecedor.ListCount - 1
+            If CLng(cbbFornecedor.List(n, 1)) = oTituloPagar.FornecedorID Then
+                cbbFornecedor.ListIndex = n
                 Exit For
             End If
         Next n
@@ -349,14 +348,14 @@ Private Sub Campos(Acao As String)
         txbVencimento.Enabled = False: lblVencimento.Enabled = False: btnVencimento.Enabled = False
         txbValor.Enabled = False: lblValor.Enabled = False
         txbObservacao.Enabled = False: lblObservacao.Enabled = False
-        cbbObra.Enabled = False: lblObra.Enabled = False
+        cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
 
         
     ElseIf Acao = "Habilitar" Then
         
         If sDecisao = "Inclusão" Then
             txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
-            cbbObra.Enabled = True: lblObra.Enabled = True
+            cbbFornecedor.Enabled = True: lblFornecedor.Enabled = True
         End If
         
         txbVencimento.Enabled = True: lblVencimento.Enabled = True: btnVencimento.Enabled = True
@@ -373,7 +372,7 @@ Private Sub Campos(Acao As String)
         txbBaixado.Text = Empty
         txbSaldo.Text = Empty
         txbObservacao.Text = Empty
-        cbbObra.ListIndex = -1
+        cbbFornecedor.ListIndex = -1
     End If
     
     Call Filtros("Habilitar")
@@ -398,23 +397,23 @@ Private Function Valida(Decisao As String) As Boolean
         ElseIf txbObservacao.Text = Empty Then
             MsgBox "Preencha o campo 'Observação', pode ser importante no futuro!", vbCritical
             MultiPage1.Value = 1: txbObservacao.SetFocus
-        ElseIf cbbObra.ListIndex = -1 Then
-            MsgBox "Campo 'Obra' é obrigatório", vbCritical
-            MultiPage1.Value = 1: cbbObra.SetFocus
+        ElseIf cbbFornecedor.ListIndex = -1 Then
+            MsgBox "Campo 'Fornecedor' é obrigatório", vbCritical
+            MultiPage1.Value = 1: cbbFornecedor.SetFocus
         ElseIf CCur(txbValor.Text) < CCur(txbBaixado.Text) Then
             MsgBox "O campo 'Valor' não pode ser menor que o campo 'Baixado'", vbCritical
             MultiPage1.Value = 1: txbValor.SetFocus
         Else
 
-            With oTituloReceber
+            With oTituloPagar
                 .Data = CDate(txbData.Text)
                 .Vencimento = CDate(txbVencimento.Text)
                 .Valor = CCur(txbValor.Text)
-                .ObraID = CLng(cbbObra.List(cbbObra.ListIndex, 1))
+                .FornecedorID = CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
                 
-                oObra.Carrega CLng(cbbObra.List(cbbObra.ListIndex, 1))
+                oFornecedor.Carrega CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
                 
-                .ClienteID = oObra.ClienteID
+                .CompraID = Null
                 .Observacao = RTrim(txbObservacao.Text)
             End With
             
@@ -423,7 +422,7 @@ Private Function Valida(Decisao As String) As Boolean
         End If
     ElseIf Decisao = "Exclusão" Then
     
-        If oTituloReceber.ExisteRecebimento(oTituloReceber.ObraID, oTituloReceber.Recno) = True Then
+        If oTituloPagar.ExistePagamento(oTituloPagar.FornecedorID, oTituloPagar.Recno) = True Then
             Exit Function
         Else
             Valida = True
@@ -438,36 +437,14 @@ Private Sub btnVencimento_Click()
     txbVencimento.Text = GetCalendario
 End Sub
 
-Private Function ValidaTitulo() As Boolean
-
-    ValidaTitulo = False
+Private Sub cbbFornecedorPopular()
     
-    If txbVencimento.Text = Empty Then
-        MsgBox "Campo 'Vencimento' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbVencimento.SetFocus: Exit Function
-    ElseIf txbValor.Text = Empty Then
-        MsgBox "Campo 'Valor' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbValor.SetFocus: Exit Function
-    ElseIf txbObservacao.Text = Empty Then
-        MsgBox "Campo 'Observação' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbObservacao.SetFocus: Exit Function
-    Else
-        ValidaTitulo = True
-    End If
-    
-End Function
-
-Private Sub cbbObraPopular()
-    
-    Dim idx         As Long
     Dim col         As New Collection
     Dim n           As Variant
 
-    Set col = oObra.Listar("bairro")
+    Set col = oFornecedor.Listar("nome")
     
-    idx = cbbObra.ListIndex
-    
-    With cbbObra
+    With cbbFltFornecedor
         .Clear
         .ColumnCount = 2
         .ColumnWidths = "180pt; 0pt;"
@@ -475,29 +452,27 @@ Private Sub cbbObraPopular()
     
     For Each n In col
         
-        oObra.Carrega CLng(n)
-        
-        oCliente.Carrega oObra.ClienteID
+        oFornecedor.Carrega CLng(n)
     
-        With cbbObra
+        With cbbFltFornecedor
             .AddItem
-            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
-            .List(.ListCount - 1, 1) = oObra.ID
+            .List(.ListCount - 1, 0) = oFornecedor.Nome
+            .List(.ListCount - 1, 1) = oFornecedor.ID
         End With
         
     Next n
     
-    cbbObra.ListIndex = idx
+    cbbFltFornecedor.ListIndex = -1
 
 End Sub
-Private Sub cbbFltObraPopular()
+Private Sub cbbFltFornecedorPopular()
     
     Dim col         As New Collection
     Dim n           As Variant
 
-    Set col = oObra.Listar("bairro")
+    Set col = oFornecedor.Listar("nome")
     
-    With cbbFltObra
+    With cbbFltFornecedor
         .Clear
         .ColumnCount = 2
         .ColumnWidths = "180pt; 0pt;"
@@ -508,19 +483,17 @@ Private Sub cbbFltObraPopular()
     
     For Each n In col
         
-        oObra.Carrega CLng(n)
-        
-        oCliente.Carrega oObra.ClienteID
+        oFornecedor.Carrega CLng(n)
     
-        With cbbFltObra
+        With cbbFltFornecedor
             .AddItem
-            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
-            .List(.ListCount - 1, 1) = oObra.ID
+            .List(.ListCount - 1, 0) = oFornecedor.Nome
+            .List(.ListCount - 1, 1) = oFornecedor.ID
         End With
         
     Next n
     
-    cbbFltObra.ListIndex = 0
+    cbbFltFornecedor.ListIndex = 0
 
 End Sub
 Private Sub Filtros(Acao As String)
@@ -529,22 +502,22 @@ Private Sub Filtros(Acao As String)
     
     b = IIf(Acao = "Habilitar", True, False)
 
-    cbbFltObra.Enabled = b: lblFltObra.Enabled = b
+    cbbFltFornecedor.Enabled = b: lblFltFornecedor.Enabled = b
     btnFiltrar.Enabled = b
     frmFiltro.Enabled = b
 
 End Sub
 Private Sub btnFiltrar_Click()
 
-    Dim lObraID As Long
+    Dim lFornecedorID As Long
     
-    If cbbFltObra.ListIndex = -1 Then
-        lObraID = 0
+    If cbbFltFornecedor.ListIndex = -1 Then
+        lFornecedorID = 0
     Else
-        lObraID = CLng(cbbFltObra.List(cbbFltObra.ListIndex, 1))
+        lFornecedorID = CLng(cbbFltFornecedor.List(cbbFltFornecedor.ListIndex, 1))
     End If
 
-    Set myRst = oTituloReceber.RecordSet(lObraID)
+    Set myRst = oTituloPagar.RecordSet(lFornecedorID)
     
     If myRst.PageCount > 0 Then
     

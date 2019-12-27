@@ -150,7 +150,7 @@ Sub ActionDyMenuContasPagar(control As IRibbonControl)
 '   Executed when Sheet1 is active
     If Conecta() = True Then
         Select Case control.ID
-            'Case "bBairros": fBa.Show
+            Case "bContasPagar": fTitulosPagar.Show
             Case "bPagamentos": fPagamentos.Show
             'Case "bEtapas": fEtapas.Show
             'Case "bTiposObra": fTiposObra.Show

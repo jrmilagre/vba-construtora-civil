@@ -1,19 +1,18 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fPagamentos 
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fPagamentosOld 
    Caption         =   ":: Cadastro de Pagamentos ::"
    ClientHeight    =   9705
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13320
-   OleObjectBlob   =   "fPagamentos.frx":0000
+   OleObjectBlob   =   "fPagamentosOld.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
-Attribute VB_Name = "fPagamentos"
+Attribute VB_Name = "fPagamentosOld"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 
 Private oPagamento          As New cPagamento
@@ -25,21 +24,35 @@ Private oContaMovimento     As New cContaMovimento
 Private oCompra             As New cCompra
 
 Private colControles        As New Collection
-Private myRst               As New ADODB.RecordSet
+Private myRst               As ADODB.RecordSet
+Private lPagina             As Long
 
-Private Const sTable As String = "tbl_recebimentos"
+Private Const sTable As String = "tbl_pagamentos"
 Private Const sCampoOrderBy As String = "data"
 
 Private Sub UserForm_Initialize()
 
     Call cbbFornecedorPopular
     Call cbbContaPopular
-    
-    Call cbbFltFornecedorPopular
-    
     Call EventosCampos
     
-    Call btnFiltrar_Click
+    Set myRst = New ADODB.RecordSet
+    Set myRst = oPagamento.RecordSet
+    
+    With scrPagina
+        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
+        .Max = myRst.PageCount
+    End With
+    
+    lPagina = myRst.PageCount
+    
+    If myRst.PageCount > 0 Then
+        myRst.AbsolutePage = myRst.PageCount
+    End If
+    
+    scrPagina.Value = lPagina
+    
+    Call lstPrincipalPopular(lPagina)
     
     Call btnCancelar_Click
 
@@ -48,38 +61,19 @@ Private Sub UserForm_Terminate()
     
     ' Destrói objeto da classe cProduto
     Set oPagamento = Nothing
-    Set oFornecedor = Nothing
-    Set oConta = Nothing
-    Set oPagamentoItem = Nothing
-    Set oTituloPagar = Nothing
-    Set oContaMovimento = Nothing
-    
     Call Desconecta
     
 End Sub
 
-Private Sub lstPrincipalPopular()
+Private Sub lstPrincipalPopular(Pagina As Long)
 
     Dim lPosicao    As Long
     Dim lCount      As Long
     
-    Set myRst = oPagamento.RecordSet
-    
-    With scrPagina
-        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
-        .Max = myRst.PageCount
-    End With
-    
-    If myRst.PageCount > 0 Then
-        myRst.AbsolutePage = myRst.PageCount
-    End If
-    
-    scrPagina.Value = myRst.PageCount
-    
     With lstPrincipal
         .Clear
-        .ColumnCount = 3 ' Funcionário, ID, Empresa, Filial
-        .ColumnWidths = "55pt; 55pt;"
+        .ColumnCount = 8 ' Funcionário, ID, Empresa, Filial
+        .ColumnWidths = "55pt; 55pt; 160pt;"
         .Enabled = True
         .Font = "Consolas"
         
@@ -173,12 +167,7 @@ Private Sub cbbFornecedorPopular()
     
     idx = cbbFornecedor.ListIndex
     
-    With cbbFornecedor
-        .Clear
-        .ColumnCount = 2
-        .ColumnWidths = "180pt; 0pt;"
-    End With
-    
+    cbbFornecedor.Clear
     
     For Each n In col
         
@@ -205,7 +194,9 @@ Private Sub Campos(Acao As String)
         optManual.Enabled = False
         optAutomatico.Enabled = False
         
-        frmFormaPagamento.Visible = False
+        frmFormaPagamento.Enabled = False
+        txbValorPgto.Enabled = False: lblValorPgto.Enabled = False
+        cbbConta.Enabled = False: lblConta.Enabled = False
         
         lblHdValorPgto.Enabled = False
         lblHdConta.Enabled = False
@@ -213,21 +204,18 @@ Private Sub Campos(Acao As String)
         frmTitulo.Enabled = False
         txbValorBaixar.Enabled = False: lblValorBaixar.Enabled = False
         
-        frmTitulosAbertos.Enabled = False
+        lblExtrato.Enabled = False
         lblHdVencimento.Enabled = False
         lblHdValorTitulo.Enabled = False
         lblHdValorBaixado.Enabled = False
         lblHdValorBaixar.Enabled = False
-        lblHdDesconto.Enabled = False
-        lblHdAcrescimo.Enabled = False
         lblHdObservacao.Enabled = False
 
         Call btnPgtoCancelar_Click
-        
         btnPgtoInclui.Visible = False
         btnPgtoAltera.Visible = False
         btnPgtoExclui.Visible = False
-        lstPagamentos.Enabled = False: lstPagamentos.ForeColor = &H80000010
+        lstPgtos.Enabled = False: lstPgtos.ForeColor = &H80000010
         lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
         
     ElseIf Acao = "Habilitar" Then
@@ -238,6 +226,15 @@ Private Sub Campos(Acao As String)
         optManual.Enabled = True
         'optAutomatico.Enabled = True
 
+        frmFormaPagamento.Enabled = True
+        lblHdValorPgto.Enabled = True
+        lblHdConta.Enabled = True
+        lstPgtos.Enabled = True: lstPgtos.ForeColor = &H80000008
+        btnPgtoInclui.Visible = True
+        btnPgtoAltera.Visible = True
+        btnPgtoExclui.Visible = True
+
+        lblExtrato.Enabled = True
         
     ElseIf Acao = "Limpar" Then
         lblCabID.Caption = ""
@@ -251,16 +248,12 @@ Private Sub Campos(Acao As String)
         txbValorBaixar.Text = Empty
         
         lstTitulos.Clear
-        lstPagamentos.Clear
+        lstPgtos.Clear
         lstPrincipal.ListIndex = -1
         
-        lblTotalBaixar.Caption = Format(0, "#,##0.00")
-        lblTotalPagamentos.Caption = Format(0, "#,##0.00")
-        lblTotalTitulos.Caption = Format(0, "#,##0.00")
-        
+        lblTotalPagamentos.Caption = ""
+        lblTotalTitulos.Caption = ""
     End If
-    
-    Call Filtros("Habilitar")
 
 End Sub
 
@@ -287,7 +280,6 @@ Private Sub PosDecisaoTomada(Decisao As String)
     End If
     
     If Decisao <> "Exclusão" Then
-    
         Call Campos("Habilitar")
         
         MultiPage1.Value = 1
@@ -302,16 +294,11 @@ Private Sub PosDecisaoTomada(Decisao As String)
                 cbbFornecedor.SetFocus
             End If
         End If
-        
-    Else
-        MultiPage1.Value = 0
+            
     End If
     
     lstPrincipal.Enabled = False
     lstPrincipal.ForeColor = &H80000010
-    frmFormaPagamento.Visible = False
-    
-    Call Filtros("Desabilitar")
     
     btnPaginaInicial.Enabled = False
     btnPaginaAnterior.Enabled = False
@@ -347,8 +334,8 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
     
         With lstTitulos
             .Clear
-            .ColumnCount = 8
-            .ColumnWidths = "60pt; 65pt; 65pt; 65pt; 62pt; 62pt; 60pt; 0pt;"
+            .ColumnCount = 7
+            .ColumnWidths = "60pt; 60pt; 60pt; 60pt; 60pt; 0pt; 0pt;"
             .Font = "Consolas"
             
             Do Until r.EOF
@@ -361,13 +348,11 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
                     .AddItem
                     
                     .List(.ListCount - 1, 0) = r.Fields("vencimento").Value
-                    .List(.ListCount - 1, 1) = Space(12 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
-                    .List(.ListCount - 1, 2) = Space(12 - Len(Format(cVlrBx, "#,##0.00"))) & Format(cVlrBx, "#,##0.00")
-                    .List(.ListCount - 1, 3) = Space(12 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
-                    .List(.ListCount - 1, 4) = Space(12 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
-                    .List(.ListCount - 1, 5) = Space(12 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
-                    .List(.ListCount - 1, 6) = r.Fields("observacao").Value
-                    .List(.ListCount - 1, 7) = r.Fields("r_e_c_n_o_").Value
+                    .List(.ListCount - 1, 1) = Space(9 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
+                    .List(.ListCount - 1, 2) = Space(9 - Len(Format(cVlrBx, "#,##0.00"))) & Format(cVlrBx, "#,##0.00")
+                    .List(.ListCount - 1, 3) = Space(9 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
+                    .List(.ListCount - 1, 4) = r.Fields("observacao").Value
+                    .List(.ListCount - 1, 5) = r.Fields("r_e_c_n_o_").Value
                     
                 End If
                 
@@ -387,8 +372,8 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
         
         With lstTitulos
             .Clear
-            .ColumnCount = 8
-            .ColumnWidths = "60pt; 65pt; 65pt; 65pt; 62pt; 62pt; 60pt; 0pt;"
+            .ColumnCount = 7
+            .ColumnWidths = "60pt; 60pt; 60pt; 60pt; 60pt; 0pt; 0pt;"
             .Font = "Consolas"
             
             Do Until r.EOF
@@ -397,14 +382,12 @@ Private Sub lstTitulosPopular(FornecedorID As Long)
                 
                 .AddItem
                 
-                .List(.ListCount - 1, 0) = oTituloPagar.Vencimento
-                .List(.ListCount - 1, 1) = Space(12 - Len(Format(oTituloPagar.Valor, "#,##0.00"))) & Format(oTituloPagar.Valor, "#,##0.00")
-                .List(.ListCount - 1, 2) = Space(12 - Len(Format(r.Fields("valor_baixado").Value, "#,##0.00"))) & Format(r.Fields("valor_baixado").Value, "#,##0.00")
-                .List(.ListCount - 1, 3) = Space(12 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
-                .List(.ListCount - 1, 4) = Space(12 - Len(Format(r.Fields("valor_desconto").Value, "#,##0.00"))) & Format(r.Fields("valor_desconto").Value, "#,##0.00")
-                .List(.ListCount - 1, 5) = Space(12 - Len(Format(r.Fields("valor_acrescimo").Value, "#,##0.00"))) & Format(r.Fields("valor_acrescimo").Value, "#,##0.00")
-                .List(.ListCount - 1, 6) = oTituloPagar.Observacao
-                .List(.ListCount - 1, 7) = r.Fields("r_e_c_n_o_").Value
+                .List(.ListCount - 1, 0) = r.Fields("titulo_vencimento").Value
+                .List(.ListCount - 1, 1) = Space(9 - Len(Format(r.Fields("titulo_valor").Value, "#,##0.00"))) & Format(r.Fields("titulo_valor").Value, "#,##0.00")
+                .List(.ListCount - 1, 2) = Space(9 - Len(Format(r.Fields("valor_baixado").Value, "#,##0.00"))) & Format(r.Fields("valor_baixado").Value, "#,##0.00")
+                .List(.ListCount - 1, 3) = Space(9 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
+                .List(.ListCount - 1, 4) = oTituloPagar.Observacao
+                .List(.ListCount - 1, 5) = r.Fields("r_e_c_n_o_").Value
                 
                 r.MoveNext
             Loop
@@ -441,13 +424,11 @@ Private Sub PosDecisaoTipo()
     Dim i As Integer
 
     If optManual.Value = True And lstPrincipal.ListIndex = -1 Then
-        frmTitulosAbertos.Enabled = True
+        frmTitulo.Enabled = True
         lblHdVencimento.Enabled = True
         lblHdValorTitulo.Enabled = True
         lblHdValorBaixado.Enabled = True
         lblHdValorBaixar.Enabled = True
-        lblHdDesconto.Enabled = True
-        lblHdAcrescimo.Enabled = True
         lblHdObservacao.Enabled = True
         lstTitulos.Enabled = True: lstTitulos.ForeColor = &H80000008
         frmTotalBaixar.Visible = True
@@ -457,8 +438,6 @@ Private Sub PosDecisaoTipo()
         lblHdValorTitulo.Enabled = False
         lblHdValorBaixado.Enabled = False
         lblHdValorBaixar.Enabled = False
-        lblHdDesconto.Enabled = False
-        lblHdAcrescimo.Enabled = False
         lblHdObservacao.Enabled = False
         
         For i = 0 To lstTitulos.ListCount - 1
@@ -468,6 +447,11 @@ Private Sub PosDecisaoTipo()
         lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
         frmTotalBaixar.Visible = False
     End If
+
+    frmFormaPagamento.Visible = True
+    lblHdValorPgto.Visible = True
+    lblHdConta.Visible = True
+    lstPgtos.Visible = True
 
 End Sub
 Private Sub btnPgtoInclui_Click()
@@ -502,13 +486,13 @@ Private Sub btnPgtoConfirmar_Click()
     
         If ValidaPgto = True Then
             
-            With lstPagamentos
+            With lstPgtos
                 .ColumnCount = 3
-                .ColumnWidths = "65pt; 60pt; 0pt;"
+                .ColumnWidths = "60pt; 60pt; 0pt;"
                 .Font = "Consolas"
                 .AddItem
                 
-                .List(.ListCount - 1, 0) = Space(12 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
+                .List(.ListCount - 1, 0) = Space(9 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
                 .List(.ListCount - 1, 1) = cbbConta.List(cbbConta.ListIndex, 0)
                 .List(.ListCount - 1, 2) = cbbConta.List(cbbConta.ListIndex, 1)
                 
@@ -519,8 +503,8 @@ Private Sub btnPgtoConfirmar_Click()
         End If
     ElseIf sDecisaoItem = "Alterar" Then
         If ValidaPgto = True Then
-            With lstPagamentos
-                .List(.ListIndex, 0) = Space(12 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
+            With lstPgtos
+                .List(.ListIndex, 0) = Space(9 - Len(Format(CDbl(txbValorPgto.Text), "#,##0.00"))) & Format(CDbl(txbValorPgto.Text), "#,##0.00")
                 .List(.ListIndex, 1) = cbbConta.List(cbbConta.ListIndex, 0)
                 .List(.ListIndex, 2) = cbbConta.List(cbbConta.ListIndex, 1)
             End With
@@ -528,7 +512,7 @@ Private Sub btnPgtoConfirmar_Click()
             Call btnPgtoCancelar_Click
         End If
     ElseIf sDecisaoItem = "Excluir" Then
-        lstPagamentos.RemoveItem (lstPagamentos.ListIndex)
+        lstPgtos.RemoveItem (lstPgtos.ListIndex)
         Call btnPgtoCancelar_Click
     End If
     
@@ -537,17 +521,15 @@ Private Sub btnPgtoConfirmar_Click()
 End Sub
 Private Function ValidaPgto() As Boolean
     ValidaPgto = False
-    
     If cbbConta.ListIndex = -1 Then
         MsgBox "Campo 'Conta' é obrigatório", vbCritical
-        MultiPage1.Value = 2: cbbConta.SetFocus
+        MultiPage1.Value = 2: cbbConta.SetFocus: Exit Function
     ElseIf txbValorPgto.Text = Empty Then
         MsgBox "Campo 'Valor pgto.' é obrigatório", vbCritical
-        MultiPage1.Value = 2: txbValorPgto.SetFocus
+        MultiPage1.Value = 2: txbValorPgto.SetFocus: Exit Function
     Else
         ValidaPgto = True
     End If
-    
 End Function
 Private Sub AcaoPgto(Acao As String, Habilitar As Boolean)
     
@@ -555,9 +537,14 @@ Private Sub AcaoPgto(Acao As String, Habilitar As Boolean)
     
     If Acao = "Incluir" Then
         
-        lstPagamentos.ListIndex = -1
+        lstPgtos.ListIndex = -1
         cbbConta.ListIndex = -1
-        txbValorPgto.Text = Format(CCur(lblTotalBaixar.Caption) - CCur(lblTotalPagamentos.Caption), "#,##0.00")
+        
+        If lblTotalBaixar.Caption <> "" Then
+            txbValorPgto.Text = Format(lblTotalBaixar.Caption, "#,##0.00")
+        Else
+            txbValorPgto.Text = Format(0, "#,##0.00")
+        End If
         
     End If
     
@@ -570,11 +557,11 @@ Private Sub AcaoPgto(Acao As String, Habilitar As Boolean)
         btnPgtoExclui.Visible = Not Habilitar
         btnPgtoCancelar.Visible = Habilitar
         btnPgtoConfirmar.Visible = Habilitar
-        lstPagamentos.Enabled = Not Habilitar: lstPagamentos.ForeColor = &H80000010
+        lstPgtos.Enabled = Not Habilitar: lstPgtos.ForeColor = &H80000010
         btnConfirmar.Enabled = Not Habilitar
         btnCancelar.Enabled = Not Habilitar
     Else
-        lstPagamentos.ListIndex = -1
+        lstPgtos.ListIndex = -1
         txbValorPgto.Enabled = Habilitar: lblValorPgto.Enabled = Habilitar: txbValorPgto.Text = Empty
         cbbConta.Enabled = Habilitar: lblConta.Enabled = Habilitar: cbbConta.ListIndex = -1
         
@@ -583,7 +570,7 @@ Private Sub AcaoPgto(Acao As String, Habilitar As Boolean)
         btnPgtoExclui.Visible = Not Habilitar
         btnPgtoCancelar.Visible = Habilitar
         btnPgtoConfirmar.Visible = Habilitar
-        lstPagamentos.Enabled = Not Habilitar: lstPagamentos.ForeColor = &H80000008
+        lstPgtos.Enabled = Not Habilitar: lstPgtos.ForeColor = &H80000008
         btnConfirmar.Enabled = Not Habilitar
         btnCancelar.Enabled = Not Habilitar
     End If
@@ -622,8 +609,8 @@ Private Sub TotalizaPagamentos()
     Dim cTotal As Currency
     Dim i As Integer
     
-    For i = 0 To lstPagamentos.ListCount - 1
-        cTotal = cTotal + CCur(lstPagamentos.List(i, 0))
+    For i = 0 To lstPgtos.ListCount - 1
+        cTotal = cTotal + CCur(lstPgtos.List(i, 0))
     Next i
     
     lblTotalPagamentos.Caption = Format(cTotal, "#,##0.00")
@@ -643,41 +630,51 @@ Private Sub btnConfirmar_Click()
         
         If vbResposta = vbYes Then
         
-            ' Cabeçalho do recebimento
+            ' Cabeçalho da compra
             If sDecisao = "Inclusão" Then
-                
                 oPagamento.Inclui
-                
-                ' Itens do pagamento
-                For i = 0 To lstTitulos.ListCount - 1
-                        
-                    If CCur(lstTitulos.List(i, 3)) > 0 Then
-                        With oPagamentoItem
-                        
-                            oTituloPagar.Carrega CLng(lstTitulos.List(i, 7))
-                            
-                            .PagamentoID = oPagamento.ID
-                            .TituloID = oTituloPagar.Recno
-                            .ValorBaixado = CCur(lstTitulos.List(i, 3))
-                            .DataBaixa = oPagamento.Data
-                            .FornecedorID = oTituloPagar.FornecedorID
-                            .ValorDesconto = CCur(lstTitulos.List(i, 4))
-                            .ValorAcrescimo = CCur(lstTitulos.List(i, 5))
-                                                        
-                            .Inclui
-                        End With
-                    End If
-                Next i
-                
-                ' Itens da forma de pagamento
-                For i = 0 To lstPagamentos.ListCount - 1
+            End If
+            
+            ' Itens do pagamento
+            For i = 0 To lstTitulos.ListCount - 1
+            
+                If sDecisao = "Inclusão" Then
                     
+                    With oPagamentoItem
+                    
+                        oTituloPagar.Carrega CLng(lstTitulos.List(i, 5))
+                        
+                        .PagamentoID = oPagamento.ID
+                        .TituloID = oTituloPagar.Recno
+                        .ValorBaixado = CCur(lstTitulos.List(i, 3))
+                        .DataBaixa = oPagamento.Data
+                        .FornecedorID = oTituloPagar.FornecedorID
+                        .TituloValor = oTituloPagar.Valor
+                        .TituloData = oTituloPagar.Data
+                        .TituloVencimento = oTituloPagar.Vencimento
+                        
+                            
+                        .Inclui
+                    End With
+                ElseIf sDecisao = "Exclusão" Then
+                    With oPagamentoItem
+                        .Recno = CLng(lstTitulos.List(i, 5))
+                        .Exclui .Recno
+                    End With
+                End If
+            Next i
+            
+            ' Itens da forma de pagamento
+            For i = 0 To lstPgtos.ListCount - 1
+
+                If sDecisao = "Inclusão" Then
+                
                     With oContaMovimento
-                        .ContaID = CLng(lstPagamentos.List(i, 2))
+                        .ContaID = CLng(lstPgtos.List(i, 2))
                         .CliForID = oPagamento.FornecedorID
                         .Data = oPagamento.Data
                         .PagRec = "P"
-                        .Valor = CCur(lstPagamentos.List(i, 0))
+                        .Valor = CCur(lstPgtos.List(i, 0))
                         .TabelaOrigem = "tbl_pagamentos"
                         .RecnoOrigem = oPagamento.ID
                         
@@ -687,29 +684,57 @@ Private Sub btnConfirmar_Click()
                     
                         .Inclui
                     End With
-        
-                Next i
+                    
+                ElseIf sDecisao = "Exclusão" Then
+                
+                    With oContaMovimento
+                        .Recno = CLng(lstPgtos.List(i, 3))
+                        .Exclui .Recno
+                    End With
+                    
+                End If
+
+            Next i
             
-            ElseIf sDecisao = "Exclusão" Then
-            
-                oPagamentoItem.Exclui oPagamento.ID
+            If sDecisao = "Exclusão" Then
                 oPagamento.Exclui oPagamento.ID
-                  
             End If
             
-            Call btnFiltrar_Click
+            If sDecisao = "Inclusão" Then
+                If lstPrincipal.ListCount < myRst.PageSize Then
+                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
+                Else
+                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption))) + 1
+                End If
+            Else
+                lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
+            End If
+            
+            Set myRst = New ADODB.RecordSet
+            Set myRst = oPagamento.RecordSet
+        
+            With scrPagina
+                .Min = 1
+                .Max = myRst.PageCount
+            End With
+            
+            If myRst.PageCount > 0 Then
+                lPagina = myRst.PageCount
+                myRst.AbsolutePage = myRst.PageCount
+                scrPagina.Value = lPagina
+            End If
+            
+            Call lstPrincipalPopular(lPagina)
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
             MsgBox sDecisao & " realizada com sucesso.", vbInformation, sDecisao & " de registro"
             
+            MultiPage1.Value = 0
+            
             Call btnCancelar_Click
             
         ElseIf vbResposta = vbNo Then
-        
-            If sDecisao = "Exclusão" Then
-                Call btnCancelar_Click
-            End If
-            
+            Call btnCancelar_Click
         End If
     
     End If
@@ -722,27 +747,21 @@ Private Function Valida(Decisao As String) As Boolean
     If Decisao = "Inclusão" Then
         If txbData.Text = Empty Then
             MsgBox "Campo 'Data' é obrigatório", vbCritical
-            MultiPage1.Value = 1: txbData.SetFocus
+            MultiPage1.Value = 1: txbData.SetFocus: Exit Function
         ElseIf cbbFornecedor.ListIndex = -1 Then
             MsgBox "Campo 'Fornecedor' é obrigatório", vbCritical
-            MultiPage1.Value = 1: cbbFornecedor.SetFocus
+            MultiPage1.Value = 1: cbbFornecedor.SetFocus: Exit Function
         ElseIf optManual.Value = False And optAutomatico.Value = False Then
             MsgBox "Escolha o tipo de pagamento", vbCritical
-            MultiPage1.Value = 2: optManual.SetFocus
-        ElseIf lblTotalPagamentos.Caption = Format(0, "#,##0.00") Then
+            MultiPage1.Value = 2: optManual.SetFocus: Exit Function
+        ElseIf lblTotalPagamentos.Caption = "" Then
             MsgBox "Não há pagamentos apontados", vbCritical
-            MultiPage1.Value = 2
-        ElseIf lblTotalBaixar.Caption = Format(0, "#,##0.00") Then
-            MsgBox "Não há baixas apontadas", vbCritical
-            MultiPage1.Value = 2
-        ElseIf CCur(lblTotalBaixar.Caption) <> CCur(lblTotalPagamentos.Caption) Then
-            MsgBox "'Total à baixar' e 'Total de pagamentos' está divergente!", vbCritical
-            MultiPage1.Value = 2
+            MultiPage1.Value = 2: btnPgtoInclui.SetFocus: Exit Function
         Else
             
-            If optManual.Value = True And lblTotalBaixar.Caption = Format(0, "#,##0.00") Then
+            If optManual.Value = True And lblTotalBaixar.Caption = "" Then
                 MsgBox "Você precisa informar o valor que será baixado de cada título.", vbCritical
-                MultiPage1.Value = 2: frmTitulosAbertos.SetFocus: Exit Function
+                MultiPage1.Value = 2: lblExtrato.SetFocus: Exit Function
             Else
                 With oPagamento
                     .Data = CDate(txbData.Text)
@@ -766,16 +785,16 @@ Private Function Valida(Decisao As String) As Boolean
     End If
 
 End Function
-Private Sub lstPagamentos_Change()
+Private Sub lstPgtos_Change()
 
     Dim n As Integer
 
-    If lstPagamentos.ListIndex > -1 And btnPgtoConfirmar.Caption <> "Alterar" Then
+    If lstPgtos.ListIndex > -1 And btnPgtoConfirmar.Caption <> "Alterar" Then
         
-        txbValorPgto.Text = lstPagamentos.List(lstPagamentos.ListIndex, 0)
+        txbValorPgto.Text = lstPgtos.List(lstPgtos.ListIndex, 0)
         
         For n = 0 To cbbConta.ListCount - 1
-            If CInt(cbbConta.List(n, 1)) = CInt(lstPagamentos.List(lstPagamentos.ListIndex, 2)) Then
+            If CInt(cbbConta.List(n, 1)) = CInt(lstPgtos.List(lstPgtos.ListIndex, 2)) Then
                 cbbConta.ListIndex = n
                 Exit For
             End If
@@ -787,65 +806,46 @@ Private Sub lstPagamentos_Change()
 End Sub
 Private Sub lstTitulos_Change()
 
-    Dim cSaldo      As Currency
-    Dim cValorExtra As Currency
+    If lstTitulos.ListIndex > -1 Then
+        txbValorBaixar.Enabled = True: lblValorBaixar.Enabled = True
+        txbValorBaixar.Text = lstTitulos.List(lstTitulos.ListIndex, 3)
+    End If
+
+End Sub
+Private Sub txbValorBaixar_AfterUpdate()
+
+    Dim cSaldo As Currency
+    Dim cBaixar As Currency
+    
+    
     
     If lstTitulos.ListIndex > -1 Then
         
-        frmTitulo.Enabled = True
-        txbValorBaixar.Enabled = True: lblValorBaixar.Enabled = True
-        optDesconto.Visible = True
-        optAcrescimo.Visible = True
+        cSaldo = CCur(lstTitulos.List(lstTitulos.ListIndex, 1)) - CCur(lstTitulos.List(lstTitulos.ListIndex, 2))
+        cBaixar = CCur(txbValorBaixar.Text)
         
-        If CCur(lstTitulos.List(lstTitulos.ListIndex, 3)) = 0 Then
-            cSaldo = CCur(lstTitulos.List(lstTitulos.ListIndex, 1)) - CCur(lstTitulos.List(lstTitulos.ListIndex, 2))
-            txbValorBaixar.Text = Format(cSaldo, "#,##0.00")
+        If cBaixar > cSaldo Then
+            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(9 - Len(Format(cSaldo, "#,##0.00"))) & Format(cSaldo, "#,##0.00")
         Else
-            txbValorBaixar.Text = lstTitulos.List(lstTitulos.ListIndex, 3)
+            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(9 - Len(Format(cBaixar, "#,##0.00"))) & Format(cBaixar, "#,##0.00")
         End If
+
+        txbValorBaixar.Enabled = False: lblValorBaixar.Enabled = False: txbValorBaixar.Text = Format(0, "#,##0.00")
+        lstTitulos.ListIndex = -1
         
-        If CCur(lstTitulos.List(lstTitulos.ListIndex, 4)) > 0 Or CCur(lstTitulos.List(lstTitulos.ListIndex, 5)) > 0 Then
-                                
-            If CCur(lstTitulos.List(lstTitulos.ListIndex, 4)) > 0 Then
-                optDesconto.Value = True
-                cValorExtra = CCur(lstTitulos.List(lstTitulos.ListIndex, 4))
-            Else
-                optAcrescimo.Value = True
-                cValorExtra = CCur(lstTitulos.List(lstTitulos.ListIndex, 5))
-            End If
-            
-            txbDescontoAcrescimo.Text = Format(cValorExtra, "#,##0.00")
-        Else
-            optDesconto.Value = False
-            optAcrescimo.Value = False
-            lblDescontoAcrescimo.Visible = False
-            txbDescontoAcrescimo.Text = Format(0, "#,##0.00"): txbDescontoAcrescimo.Visible = False
-        End If
-        
-        btnTituloCancelar.Visible = True
-        btnTituloConfirmar.Visible = True
+        Call TotalizaBaixar
         
     End If
 
 End Sub
-
 Private Sub TotalizaBaixar()
 
     Dim cTotal As Currency
     Dim i As Integer
     
     For i = 0 To lstTitulos.ListCount - 1
-        cTotal = cTotal + CCur(lstTitulos.List(i, 3)) - CCur(lstTitulos.List(i, 4)) + CCur(lstTitulos.List(i, 5))
+        cTotal = cTotal + CCur(lstTitulos.List(i, 3))
     Next i
-    
-    If cTotal > 0 Then
-        frmFormaPagamento.Visible = True
-        btnPgtoInclui.Visible = True
-        btnPgtoAltera.Visible = True
-        btnPgtoExclui.Visible = True
-    Else
-        frmFormaPagamento.Visible = False
-    End If
     
     lblTotalBaixar.Caption = Format(cTotal, "#,##0.00")
 
@@ -879,14 +879,12 @@ Private Sub lstPrincipal_Change()
         End If
         
         Call lstTitulosPopular(oPagamento.FornecedorID)
-        
-        frmFormaPagamento.Visible = True
-        Call lstPagamentosPopular(oPagamento.ID)
+        Call lstPgtosPopular(oPagamento.ID)
     
     End If
 
 End Sub
-Private Sub lstPagamentosPopular(RecebimentoID As Long)
+Private Sub lstPgtosPopular(PagamentoID As Long)
 
     Dim r       As New ADODB.RecordSet
     Dim cVlrPg  As Currency
@@ -898,21 +896,21 @@ Private Sub lstPagamentosPopular(RecebimentoID As Long)
         sSQL = sSQL & "FROM tbl_contas_movimentos "
         sSQL = sSQL & "WHERE "
         sSQL = sSQL & "tabela_origem = 'tbl_pagamentos' "
-        sSQL = sSQL & "and recno_origem = " & RecebimentoID & " "
+        sSQL = sSQL & "and recno_origem = " & PagamentoID & " "
         sSQL = sSQL & "ORDER BY r_e_c_n_o_"
         
         r.Open sSQL, cnn, adOpenStatic
     
-        With lstPagamentos
+        With lstPgtos
                 .ColumnCount = 4
-                .ColumnWidths = "65pt; 60pt; 0pt; 0pt;"
+                .ColumnWidths = "60pt; 60pt; 0pt; 0pt;"
                 .Font = "Consolas"
                 
                 Do Until r.EOF
                 
                     .AddItem
                 
-                    .List(.ListCount - 1, 0) = Space(12 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
+                    .List(.ListCount - 1, 0) = Space(9 - Len(Format(r.Fields("valor").Value, "#,##0.00"))) & Format(r.Fields("valor").Value, "#,##0.00")
                     
                     oConta.Carrega r.Fields("conta_id").Value
                     
@@ -935,202 +933,6 @@ End Sub
 Private Sub btnData_Click()
     dtDate = IIf(txbData.Text = Empty, Date, txbData.Text)
     txbData.Text = GetCalendario
-End Sub
-Private Sub optDesconto_Click()
-    
-    lblDescontoAcrescimo.Visible = True
-    txbDescontoAcrescimo.Visible = True
-    txbDescontoAcrescimo.Text = Format(0, "#,##0.00")
-
-End Sub
-Private Sub optAcrescimo_Click()
-
-    Call optDesconto_Click
-
-End Sub
-Private Sub lstTitulos_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
-
-    Call btnTituloConfirmar_Click
-
-End Sub
-Private Sub btnTituloConfirmar_Click()
-
-    Dim cSaldo          As Currency
-    Dim cBaixar         As Currency
-    Dim cValorExtra     As Currency
-    Dim iColunaValor    As Integer
-    Dim iColunaZero     As Integer
-
-    If lstTitulos.ListIndex > -1 Then
-        
-        cSaldo = CCur(lstTitulos.List(lstTitulos.ListIndex, 1)) - CCur(lstTitulos.List(lstTitulos.ListIndex, 2))
-        cBaixar = CCur(txbValorBaixar.Text)
-        
-        If cBaixar > cSaldo Then
-            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(12 - Len(Format(cSaldo, "#,##0.00"))) & Format(cSaldo, "#,##0.00")
-        Else
-            lstTitulos.List(lstTitulos.ListIndex, 3) = Space(12 - Len(Format(cBaixar, "#,##0.00"))) & Format(cBaixar, "#,##0.00")
-        End If
-        
-        If optDesconto.Value = True Or optAcrescimo.Value = True Then
-        
-            cValorExtra = CCur(txbDescontoAcrescimo.Text)
-            
-            If optDesconto.Value = True Then
-                iColunaValor = 4
-                iColunaZero = 5
-            Else
-                iColunaValor = 5
-                iColunaZero = 4
-            End If
-            
-            lstTitulos.List(lstTitulos.ListIndex, iColunaValor) = Space(12 - Len(Format(cValorExtra, "#,##0.00"))) & Format(cValorExtra, "#,##0.00")
-            lstTitulos.List(lstTitulos.ListIndex, iColunaZero) = Space(12 - Len(Format(0, "#,##0.00"))) & Format(0, "#,##0.00")
-            
-        End If
-        
-        Call TotalizaBaixar
-        
-        Call btnTituloCancelar_Click
-        
-    End If
-
-End Sub
-Private Sub btnTituloCancelar_Click()
-
-    txbValorBaixar.Text = Format(0, "#,##0.00")
-    txbValorBaixar.Enabled = False: lblValorBaixar.Enabled = False
-    
-    optDesconto.Visible = False: optDesconto.Value = False
-    optAcrescimo.Visible = False: optAcrescimo.Value = False
-    
-    txbDescontoAcrescimo.Visible = False: lblDescontoAcrescimo.Visible = False
-    
-    frmTitulo.Enabled = False
-    
-    lstTitulos.ListIndex = -1
-    
-    btnTituloCancelar.Visible = False
-    btnTituloConfirmar.Visible = False
-
-End Sub
-Private Sub cbbFltFornecedorPopular()
-    
-    Dim idx         As Integer
-    Dim col         As New Collection
-    Dim n           As Variant
-
-    Set col = oFornecedor.Listar("nome")
-    
-    idx = cbbFornecedor.ListIndex
-    
-    With cbbFornecedor
-        .Clear
-        .ColumnCount = 2
-        .ColumnWidths = "180pt; 0pt;"
-    End With
-    
-    
-    For Each n In col
-        
-        oFornecedor.Carrega CLng(n)
-    
-        With cbbFornecedor
-            .AddItem
-            .List(.ListCount - 1, 0) = oFornecedor.Nome
-            .List(.ListCount - 1, 1) = oFornecedor.ID
-        End With
-        
-    Next n
-    
-    cbbFornecedor.ListIndex = idx
-
-End Sub
-Private Sub Filtros(Acao As String)
-
-    Dim b As Boolean
-    
-    b = IIf(Acao = "Habilitar", True, False)
-
-    cbbFltFornecedor.Enabled = b: lblFltFornecedor.Enabled = b
-    btnFiltrar.Enabled = b
-    frmFiltro.Enabled = b
-
-End Sub
-Private Sub btnFiltrar_Click()
-
-    Dim lFornecedorID As Long
-    
-    If cbbFltFornecedor.ListIndex = -1 Then
-        lFornecedorID = 0
-    Else
-        lFornecedorID = CLng(cbbFltFornecedor.List(cbbFltFornecedor.ListIndex, 1))
-    End If
-
-    Set myRst = oPagamento.RecordSet(lFornecedorID)
-    
-    If myRst.PageCount > 0 Then
-    
-        myRst.AbsolutePage = myRst.PageCount
-    
-        With scrPagina
-            .Max = myRst.PageCount
-            .Value = myRst.PageCount
-        End With
-        
-        Call scrPagina_Change
-        
-    End If
-
-End Sub
-Private Sub btnPaginaSeguinte_Click()
-    scrPagina.Value = scrPagina.Value + 1
-End Sub
-Private Sub btnPaginaAnterior_Click()
-    scrPagina.Value = scrPagina.Value - 1
-End Sub
-Private Sub btnPaginaInicial_Click()
-    scrPagina.Value = 1
-End Sub
-Private Sub btnPaginaFinal_Click()
-    scrPagina.Value = myRst.PageCount
-End Sub
-Private Sub scrPagina_Change()
-
-    ' Trata botões de navegação
-    If scrPagina.Value = myRst.PageCount And scrPagina.Value > 1 Then
-        btnPaginaInicial.Enabled = True
-        btnPaginaAnterior.Enabled = True
-        btnPaginaSeguinte.Enabled = False
-        btnPaginaFinal.Enabled = False
-        scrPagina.Enabled = True
-    ElseIf scrPagina.Value = 1 And myRst.PageCount = 1 Then
-        btnPaginaInicial.Enabled = False
-        btnPaginaAnterior.Enabled = False
-        btnPaginaSeguinte.Enabled = False
-        btnPaginaFinal.Enabled = False
-        scrPagina.Enabled = False
-    ElseIf scrPagina.Value > 1 And scrPagina.Value < myRst.PageCount Then
-        btnPaginaInicial.Enabled = True
-        btnPaginaAnterior.Enabled = True
-        btnPaginaSeguinte.Enabled = True
-        btnPaginaFinal.Enabled = True
-        scrPagina.Enabled = True
-    ElseIf scrPagina.Value = 1 And myRst.PageCount > 1 Then
-        btnPaginaInicial.Enabled = False
-        btnPaginaAnterior.Enabled = False
-        btnPaginaSeguinte.Enabled = True
-        btnPaginaFinal.Enabled = True
-        scrPagina.Enabled = True
-    End If
-
-    Call Campos("Limpar")
-    
-    On Error Resume Next
-    myRst.AbsolutePage = scrPagina.Value
-    
-    Call lstPrincipalPopular
-
 End Sub
 Private Sub cbbConta_AfterUpdate()
 
@@ -1162,3 +964,4 @@ Private Sub cbbConta_AfterUpdate()
 
     End If
 End Sub
+

@@ -97,9 +97,46 @@ Public Sub Inclui()
     Set rst = Nothing
        
 End Sub
+Public Sub AlteraTitulo(TituloID As Long)
+    
+    Set rst = New ADODB.RecordSet
+    
+    ' Comando SQL
+    sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & TituloID
+
+    'Armazena na variável o comando que fará a consulta SQL no BD Access
+    With rst
+        .Open Source:=sSQL, _
+              ActiveConnection:=cnn, _
+              CursorType:=adOpenDynamic, _
+              LockType:=adLockOptimistic
+        
+        ' Atribui novos valores aos campos
+        .Fields("compra_id").Value = Me.CompraID
+        .Fields("fornecedor_id").Value = Me.FornecedorID
+        .Fields("observacao").Value = Me.Observacao
+        .Fields("vencimento").Value = CLng(Me.Vencimento)
+        .Fields("valor").Value = Me.Valor
+        .Fields("data").Value = CLng(Me.Data)
+        
+        .Update
+        
+        ' Grava alterações
+        .Update
+    End With
+    
+    Set rst = Nothing
+End Sub
 Public Sub Exclui(CompraID As Long)
    
     sSQL = "DELETE FROM tbl_titulos_pagar WHERE compra_id = " & CompraID
+    
+    cnn.Execute sSQL
+
+End Sub
+Public Sub ExcluiTitulo(TituloID As Long)
+    
+    sSQL = "DELETE FROM tbl_titulos_receber WHERE r_e_c_n_o_ = " & TituloID
     
     cnn.Execute sSQL
 
@@ -120,4 +157,69 @@ Public Function GetValorBaixado(TituloID As Long) As Currency
     
     Set rTmp = Nothing
     
+End Function
+Public Function RecordSet(Optional FornecedorID As Long) As ADODB.RecordSet
+
+    sSQL = "SELECT * "
+    sSQL = sSQL & "FROM " & sTable & " "
+    
+    If FornecedorID > 0 Then
+        sSQL = sSQL & "WHERE fornecedor_id = " & FornecedorID & " "
+    End If
+    
+    sSQL = sSQL & "ORDER BY vencimento"
+    
+    Set RecordSet = New ADODB.RecordSet
+    
+    With RecordSet
+        .CursorLocation = adUseServer
+        .CursorType = adOpenStatic
+        .LockType = adLockReadOnly
+        .PageSize = 24
+        .Open sSQL, cnn
+    End With
+    
+End Function
+Public Function ExistePagamento(FornecedorID As Long, TituloID As Long) As Boolean
+
+    Dim rTmp    As New ADODB.RecordSet
+    Dim sMsg    As String
+    
+    ExistePagamento = False
+    
+    sSQL = "SELECT tbl_pagamentos_itens.pagamentos_id, tbl_titulos_pagar.r_e_c_n_o_ "
+    sSQL = sSQL & "FROM tbl_titulos_pagar INNER JOIN tbl_pagamentos_itens ON tbl_titulos_pagar.r_e_c_n_o_ = tbl_pagamentos_itens.titulo_id "
+    sSQL = sSQL & "GROUP BY tbl_pagamentos_itens.pagamento_id, tbl_titulos_pagar.fornecedor_id, tbl_titulos_pagar.r_e_c_n_o_ "
+    sSQL = sSQL & "HAVING (((tbl_titulos_pagar.fornecedor_id)=" & FornecedorID & ") AND ((tbl_titulos_pagar.r_e_c_n_o_)=" & TituloID & "));"
+     
+    rTmp.Open sSQL, cnn, adOpenStatic
+    
+    If rTmp.EOF = False Then
+    
+        sMsg = "Não posso excluir pois existem pagamentos vinculados a essa compra!"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Veja o número dos pagamentos:"
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & vbNewLine
+        
+        Do Until rTmp.EOF
+        
+            sMsg = sMsg & "Nº:" & Format(rTmp.Fields("pagamento_id").Value, "0000000000") & vbNewLine
+        
+            rTmp.MoveNext
+        Loop
+        
+        sMsg = sMsg & vbNewLine
+        sMsg = sMsg & "Fim!"
+        
+        MsgBox sMsg, vbCritical, "EXISTEM PAGAMENTOS"
+            
+        ExistePagamento = True
+    Else
+        ExistePagamento = False
+    End If
+        
+    Set rTmp = Nothing
+
 End Function
