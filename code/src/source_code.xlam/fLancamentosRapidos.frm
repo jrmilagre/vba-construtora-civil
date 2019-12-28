@@ -183,10 +183,12 @@ Private Sub chbRequisita_Click()
     If chbRequisita.Value = False Then
         MultiPage1.Pages(2).Visible = False
         frmTotalRequisicao.Visible = False
+        txbValor.Enabled = True: lblValor.Enabled = True
     Else
         MultiPage1.Pages(2).Visible = True
         'MultiPage1.Value = 2
         frmTotalRequisicao.Visible = True
+        txbValor.Enabled = False: lblValor.Enabled = False
     End If
 End Sub
 Private Sub btnData_Click()
@@ -205,8 +207,8 @@ Private Sub cbbObraPopular()
     
     With cbbObra
         .Clear
-        .ColumnCount = 4
-        .ColumnWidths = "100pt; 0pt; 100pt; 200pt;"
+        .ColumnCount = 2
+        .ColumnWidths = "180pt; 0pt;"
     End With
     
     
@@ -218,10 +220,8 @@ Private Sub cbbObraPopular()
     
         With cbbObra
             .AddItem
-            .List(.ListCount - 1, 0) = oObra.Bairro
+            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
             .List(.ListCount - 1, 1) = oObra.ID
-            .List(.ListCount - 1, 2) = oCliente.Nome
-            .List(.ListCount - 1, 3) = oObra.Endereco
         End With
         
     Next n
@@ -547,7 +547,7 @@ Private Sub cbbObra2Popular()
     With cbbObra2
         .Clear
         .ColumnCount = 4
-        .ColumnWidths = "100pt; 0pt; 100pt; 200pt;"
+        .ColumnWidths = "180pt; 0pt; 0pt; 0pt;"
     End With
     
     
@@ -559,10 +559,10 @@ Private Sub cbbObra2Popular()
     
         With cbbObra2
             .AddItem
-            .List(.ListCount - 1, 0) = oObra.Bairro
+            .List(.ListCount - 1, 0) = oObra.Bairro & ": " & oCliente.Nome & ": " & oObra.Endereco
             .List(.ListCount - 1, 1) = oObra.ID
-            .List(.ListCount - 1, 2) = oCliente.Nome
-            .List(.ListCount - 1, 3) = oObra.Endereco
+            .List(.ListCount - 1, 1) = oCliente.Nome
+            .List(.ListCount - 1, 1) = oObra.Endereco
         End With
         
     Next n
@@ -705,9 +705,6 @@ Private Function Valida() As Boolean
     ElseIf cbbPagRec.ListIndex = -1 Then
         MsgBox "Campo 'Pgto/Recebto' é obrigatório", vbCritical
         MultiPage1.Value = 1: cbbPagRec.SetFocus
-    ElseIf txbValor.Text = Empty Or txbValor.Text <= 0 Then
-        MsgBox "Campo 'Valor' é inválido", vbCritical
-        MultiPage1.Value = 1: txbValor.SetFocus
     ElseIf cbbConta.ListIndex = -1 Then
         MsgBox "Campo 'Conta' é obrigatório", vbCritical
         MultiPage1.Value = 1: cbbConta.SetFocus
@@ -722,18 +719,24 @@ Private Function Valida() As Boolean
             Else
                 
                 If chbRequisita.Value = False Then
-            
-                    With oLancamentoRapido
-                        .Data = CDate(txbData.Text)
-                        .ContaID = CLng(cbbConta.List(cbbConta.ListIndex, 1))
-                        .CliForID = CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
-                        .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
-                        .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
-                        .Valor = CCur(txbValor.Text)
-                        .Requisitado = chbRequisita.Value
-                    End With
                 
-                    Valida = True
+                    If txbValor.Text = Empty Or CCur(txbValor.Text = 0) Then
+                        MsgBox "Campo 'Valor' é inválido", vbCritical
+                        MultiPage1.Value = 1: txbValor.SetFocus
+                    Else
+                        With oLancamentoRapido
+                            .Data = CDate(txbData.Text)
+                            .ContaID = CLng(cbbConta.List(cbbConta.ListIndex, 1))
+                            .CliForID = CLng(cbbFornecedor.List(cbbFornecedor.ListIndex, 1))
+                            .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
+                            .PagRec = cbbPagRec.List(cbbPagRec.ListIndex, 1)
+                            .Valor = CCur(txbValor.Text)
+                            .Requisitado = chbRequisita.Value
+                        End With
+                    
+                        Valida = True
+                        
+                    End If
                     
                 Else
                     
@@ -875,14 +878,18 @@ Private Sub btnItemCancelar_Click()
 End Sub
 Private Sub btnItemConfirmar_Click()
 
-    If ValidaItem = True Then
+    Dim sDecisaoLancamento  As String
+    Dim sDecisaoItem        As String
+    Dim dVlrUnitario        As Double
     
-        Dim cVlrTotal As Currency
+    sDecisaoLancamento = Replace(btnConfirmar.Caption, "Confirmar ", "")
+    sDecisaoItem = btnItemConfirmar.Caption
     
-        With lstRequisicoes
-            .ColumnCount = 9
-            .ColumnWidths = "0pt; 0pt; 85pt; 55pt; 18pt; 55pt; 55pt; 240pt; 60pt"
-            ' Colunas
+    ' Configura ListBox
+    With lstRequisicoes
+        .ColumnCount = 9
+        .ColumnWidths = "0pt; 0pt; 85pt; 55pt; 18pt; 55pt; 55pt; 240pt; 60pt"
+        ' Colunas
             ' 0 - Recno do produto na tbl_requisicoes_itens
             ' 1 - Códigos: Produto;Unidade de medida;Obra;Etapa
             ' 2 - Produto
@@ -892,30 +899,62 @@ Private Sub btnItemConfirmar_Click()
             ' 6 - Preço total
             ' 7 - Obra
             ' 8 - Etapa
+        .Font = "Consolas"
+    End With
+    
+    If sDecisaoItem = "Incluir" Then
+
+        If ValidaItem = True Then
             
+            With lstRequisicoes
             
-            .Font = "Consolas"
+                .AddItem
+                .List(.ListCount - 1, 0) = ""
+                .List(.ListCount - 1, 1) = cbbProduto.List(cbbProduto.ListIndex, 1) & ";" & cbbUM.List(cbbUM.ListIndex, 1) & ";" & cbbObra.List(cbbObra.ListIndex, 1) & ";" & cbbEtapa.List(cbbEtapa.ListIndex, 1)
+                .List(.ListCount - 1, 2) = cbbProduto.List(cbbProduto.ListIndex, 0)
+                .List(.ListCount - 1, 3) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
+                .List(.ListCount - 1, 4) = cbbUM.List(cbbUM.ListIndex, 0)
+                
+                dVlrUnitario = Round(CCur(txbTotal.Text) / CDbl(txbQtde.Text), 2)
+                
+                .List(.ListCount - 1, 5) = Space(9 - Len(Format(dVlrUnitario, "#,##0.00"))) & Format(dVlrUnitario, "#,##0.00")
+                .List(.ListCount - 1, 6) = Space(9 - Len(Format(txbTotal.Text, "#,##0.00"))) & Format(txbTotal.Text, "#,##0.00")
+                .List(.ListCount - 1, 7) = cbbObra.List(cbbObra.ListIndex, 0) ' & Space(30 - Len(cbbObra.List(cbbObra.ListIndex, 2))) & " | " & cbbObra.List(cbbObra.ListIndex, 3)
+                .List(.ListCount - 1, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
+                
+            End With
+            
+        End If
+    
+    ElseIf sDecisaoItem = "Alterar" Then
         
-            .AddItem
-            .List(.ListCount - 1, 0) = ""
-            .List(.ListCount - 1, 1) = cbbProduto.List(cbbProduto.ListIndex, 1) & ";" & cbbUM.List(cbbUM.ListIndex, 1) & ";" & cbbObra.List(cbbObra.ListIndex, 1) & ";" & cbbEtapa.List(cbbEtapa.ListIndex, 1)
-            .List(.ListCount - 1, 2) = cbbProduto.List(cbbProduto.ListIndex, 0)
-            .List(.ListCount - 1, 3) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
-            .List(.ListCount - 1, 4) = cbbUM.List(cbbUM.ListIndex, 0)
-            .List(.ListCount - 1, 5) = Space(9 - Len(Format(CCur(txbUnitario.Text), "#,##0.00"))) & Format(CCur(txbUnitario.Text), "#,##0.00")
-            
-            cVlrTotal = CCur(txbQtde.Text) * CCur(txbUnitario.Text)
-            
-            .List(.ListCount - 1, 6) = Space(9 - Len(Format(cVlrTotal, "#,##0.00"))) & Format(cVlrTotal, "#,##0.00")
-            .List(.ListCount - 1, 7) = cbbObra.List(cbbObra.ListIndex, 0) & Space(30 - Len(cbbObra.List(cbbObra.ListIndex, 0))) & " | " & cbbObra.List(cbbObra.ListIndex, 2)
-            .List(.ListCount - 1, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
-            
-            
-        End With
+        If ValidaItem = True Then
         
-        Call btnItemCancelar_Click
-   
+            With lstRequisicoes
+            
+                .List(.ListIndex, 0) = ""
+                .List(.ListIndex, 1) = cbbProduto.List(cbbProduto.ListIndex, 1) & ";" & cbbUM.List(cbbUM.ListIndex, 1) & ";" & cbbObra.List(cbbObra.ListIndex, 1) & ";" & cbbEtapa.List(cbbEtapa.ListIndex, 1)
+                .List(.ListIndex, 2) = cbbProduto.List(cbbProduto.ListIndex, 0)
+                .List(.ListIndex, 3) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
+                .List(.ListIndex, 4) = cbbUM.List(cbbUM.ListIndex, 0)
+                
+                dVlrUnitario = Round(CCur(txbTotal.Text) / CDbl(txbQtde.Text), 2)
+                
+                .List(.ListIndex, 5) = Space(9 - Len(Format(dVlrUnitario, "#,##0.00"))) & Format(dVlrUnitario, "#,##0.00")
+                .List(.ListIndex, 6) = Space(9 - Len(Format(txbTotal.Text, "#,##0.00"))) & Format(txbTotal.Text, "#,##0.00")
+                .List(.ListIndex, 7) = cbbObra.List(cbbObra.ListIndex, 0) '& Space(30 - Len(cbbObra.List(cbbObra.ListIndex, 0))) & " | " & cbbObra.List(cbbObra.ListIndex, 2)
+                .List(.ListIndex, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
+                
+            End With
+        
+        End If
+    ElseIf sDecisaoItem = "Excluir" Then
+    
+        lstRequisicoes.RemoveItem (lstRequisicoes.ListIndex)
+         
     End If
+    
+    Call btnItemCancelar_Click
     
     Call TotalizaRequisicoes
 
@@ -932,7 +971,7 @@ Private Sub AcaoItem(Acao As String, Habilitar As Boolean)
         cbbUM.ListIndex = -1
         txbQtde.Text = Format(0, "#,##0.00")
         txbUnitario.Text = Format(0, "#,##0.00")
-        lblItemTotal.Caption = Format(0, "#,##0.00")
+        txbTotal.Text = Format(0, "#,##0.00")
     End If
     
     If Habilitar = True Then
@@ -944,6 +983,7 @@ Private Sub AcaoItem(Acao As String, Habilitar As Boolean)
         txbQtde.Enabled = Habilitar: lblQtde.Enabled = Habilitar
         cbbUM.Enabled = Habilitar: lblUM.Enabled = Habilitar
         txbUnitario.Enabled = Habilitar: lblUnitario.Enabled = Habilitar
+        txbTotal.Enabled = Habilitar: lblTotal.Enabled = Habilitar
         
         btnItemInclui.Visible = Not Habilitar
         btnItemAltera.Visible = Not Habilitar
@@ -962,7 +1002,7 @@ Private Sub AcaoItem(Acao As String, Habilitar As Boolean)
         txbQtde.Enabled = Habilitar: lblQtde.Enabled = Habilitar: txbQtde.Text = Empty
         cbbUM.Enabled = Habilitar: lblUM.Enabled = Habilitar: cbbUM.ListIndex = -1
         txbUnitario.Enabled = Habilitar: lblUnitario.Enabled = Habilitar: txbUnitario.Text = Empty
-        lblItemTotal.Caption = ""
+        txbTotal.Enabled = Habilitar: lblTotal.Enabled = Habilitar: txbTotal.Text = Empty
         
         btnItemInclui.Visible = Not Habilitar
         btnItemAltera.Visible = Not Habilitar
@@ -1036,7 +1076,7 @@ Private Sub lstRequisicoes_Change()
         
         txbQtde.Text = lstRequisicoes.List(lstRequisicoes.ListIndex, 3)
         txbUnitario.Text = lstRequisicoes.List(lstRequisicoes.ListIndex, 5)
-        lblItemTotal.Caption = lstRequisicoes.List(lstRequisicoes.ListIndex, 6)
+        txbTotal.Text = lstRequisicoes.List(lstRequisicoes.ListIndex, 6)
         
         btnItemAltera.Enabled = True
         btnItemExclui.Enabled = True
@@ -1128,7 +1168,7 @@ Private Sub cbbCategoriaPopular(PagRec As String)
     With cbbCategoria
         .Clear
         .ColumnCount = 4
-        .ColumnWidths = "100pt; 0pt; 100pt; 200pt;"
+        .ColumnWidths = "180pt; 0pt; 180pt; 100pt;"
     End With
     
     
@@ -1138,7 +1178,7 @@ Private Sub cbbCategoriaPopular(PagRec As String)
     
         With cbbCategoria
             .AddItem
-            .List(.ListCount - 1, 0) = oCategoria.Categoria
+            .List(.ListCount - 1, 0) = oCategoria.Categoria & ": " & oCategoria.Subcategoria & IIf(oCategoria.ItemSubcategoria = "", "", ": " & oCategoria.ItemSubcategoria)
             .List(.ListCount - 1, 1) = oCategoria.ID
             .List(.ListCount - 1, 2) = oCategoria.Subcategoria
             .List(.ListCount - 1, 3) = oCategoria.ItemSubcategoria
@@ -1319,4 +1359,63 @@ Private Sub scrPaginaAtualiza(AfetouBanco As Boolean, Optional Decisao As Varian
         Call scrPagina_Change
     End If
     
+End Sub
+Private Sub txbQtde_AfterUpdate()
+
+    If txbTotal.Text = Empty Then
+        txbQtde.Text = Format(0, "#,##0.00")
+    Else
+        txbTotal.Text = Format(CDbl(txbQtde.Text) * CCur(txbUnitario.Text), "#,##0.00")
+    End If
+
+End Sub
+Private Sub txbUnitario_AfterUpdate()
+
+    If txbUnitario.Text = Empty Then
+        txbUnitario.Text = Format(0, "#,##0.00")
+    Else
+        txbTotal.Text = Format(CDbl(txbQtde.Text) * CCur(txbUnitario.Text), "#,##0.00")
+    End If
+
+End Sub
+Private Sub txbTotal_AfterUpdate()
+
+    If txbTotal.Text = Empty Then
+        txbTotal.Text = Format(0, "#,##0.00")
+    Else
+        txbUnitario.Text = Format(CDbl(txbTotal.Text) / CCur(txbQtde.Text), "#,##0.00")
+    End If
+
+End Sub
+Private Sub cbbEtapa_AfterUpdate()
+
+    Dim vbResposta As VbMsgBoxResult
+    Dim idx As Integer
+    Dim n As Integer
+    
+    If cbbEtapa.ListIndex = -1 And cbbEtapa.Text <> "" Then
+        
+        vbResposta = MsgBox("Esta etapa não existe, deseja cadastrá-la?", vbQuestion + vbYesNo)
+        
+        If vbResposta = vbYes Then
+            
+            oEtapa.Nome = RTrim(cbbEtapa.Text)
+            oEtapa.Inclui
+            
+            idx = oEtapa.ID
+            
+            Call cbbEtapaPopular
+            
+            For n = 0 To cbbEtapa.ListCount - 1
+                If CInt(cbbEtapa.List(n, 1)) = idx Then
+                    cbbEtapa.ListIndex = n
+                    Exit For
+                End If
+            Next n
+        Else
+            cbbEtapa.ListIndex = -1
+        End If
+
+    End If
+
 End Sub
