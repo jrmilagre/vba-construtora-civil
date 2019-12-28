@@ -52,7 +52,7 @@ Public Sub Carrega(ID As Long)
 
     sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & ID
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     rst.Open sSQL, cnn, adOpenStatic
     
@@ -73,7 +73,7 @@ Public Sub Inclui()
 
     'Set oProduto = New cProduto
 
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
 
     With rst
         .Open Source:=sTable, _
@@ -102,7 +102,7 @@ Public Sub Inclui()
 End Sub
 Public Sub Altera(Recno As Long)
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     ' Comando SQL
     sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & Recno
@@ -138,7 +138,7 @@ Public Sub Exclui(CompraID As Long)
 End Sub
 Public Function GetQtdeBaixada(ItemCompraID As Long) As Currency
 
-    Dim rTmp As New ADODB.RecordSet
+    Dim rTmp As New ADODB.Recordset
 
     sSQL = "SELECT sum(quantidade) as quantidade FROM tbl_requisicoes_itens "
     sSQL = sSQL & "WHERE tabela_origem = 'tbl_compras_itens' "

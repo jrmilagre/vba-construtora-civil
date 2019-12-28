@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fContas 
    Caption         =   ":: Cadastro de Contas ::"
-   ClientHeight    =   7800
+   ClientHeight    =   9045
    ClientLeft      =   120
    ClientTop       =   465
-   ClientWidth     =   9120
+   ClientWidth     =   11325
    OleObjectBlob   =   "fContas.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -13,14 +13,22 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 
 Private oConta              As New cConta
+Private oContaMovimento     As New cContaMovimento
+
 Private colControles        As New Collection
-Private bListBoxOrdenando   As Boolean
+Private myRst               As ADODB.Recordset
+
+'Private bListBoxOrdenando   As Boolean
+
 Private Const sTable As String = "tbl_contas"
 Private Const sCampoOrderBy As String = "nome"
+
+Private Sub lstExtrato_Click()
+
+End Sub
 
 Private Sub UserForm_Initialize()
      
@@ -33,7 +41,16 @@ Private Sub UserForm_Initialize()
     btnExcluir.Enabled = False
     
     MultiPage1.Value = 0
+    MultiPage1.Pages(2).Visible = False
 
+End Sub
+Private Sub UserForm_Terminate()
+    
+    Set oConta = Nothing
+    Set myRst = Nothing
+    
+    Call Desconecta
+    
 End Sub
 Private Sub lblHdNome_Click():
     Call lstPrincipalPopular(sCampoOrderBy)
@@ -188,19 +205,20 @@ End Sub
 
 Private Sub lstPrincipal_Change()
 
-    If bListBoxOrdenando = False Then
+    If lstPrincipal.ListIndex > -1 Then
     
-        If btnAlterar.Enabled = False Then btnAlterar.Enabled = True
-        If btnExcluir.Enabled = False Then btnExcluir.Enabled = True
+        btnAlterar.Enabled = True
+        btnExcluir.Enabled = True
         
-        If lstPrincipal.ListIndex >= 0 Then
-            oConta.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
-        End If
+        oConta.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
         
         lblID.Caption = Format(IIf(oConta.ID = 0, "", oConta.ID), "00000")
         lblCabNome.Caption = oConta.Nome
         txbNome.Text = oConta.Nome
         txbSaldoInicial.Text = Format(oConta.SaldoInicial, "#,##0.00")
+        
+        MultiPage1.Pages(2).Visible = True
+        Call lstExtratoPopular
                 
     End If
 
@@ -224,6 +242,7 @@ Private Sub btnCancelar_Click()
     
     ' Tira a seleção
     lstPrincipal.ListIndex = -1
+    MultiPage1.Pages(2).Visible = False
 
 End Sub
 Private Sub Campos(Acao As String)
@@ -243,36 +262,36 @@ Private Sub Campos(Acao As String)
     End If
 
 End Sub
-Private Sub ListBoxOrdenar()
-    
-    Dim ini, fim, i, j  As Long
-    Dim sCol01          As String
-    Dim sCol02          As String
-    
-    bListBoxOrdenando = True
-    
-    With lstPrincipal
-        
-        ini = 0
-        fim = .ListCount - 1 '4 itens(0 - 3)
-        
-        For i = ini To fim - 1  ' Laço para comparar cada item com todos os outros itens
-            For j = i + 1 To fim    ' Laço para comparar item com o próximo item
-                If .List(i) > .List(j) Then
-                    sCol01 = .List(j, 0)
-                    sCol02 = .List(j, 1)
-                    .List(j, 0) = .List(i, 0)
-                    .List(j, 1) = .List(i, 1)
-                    .List(i, 0) = sCol01
-                    .List(i, 1) = sCol02
-                End If
-            Next j
-        Next i
-    End With
-    
-    bListBoxOrdenando = False
-    
-End Sub
+'Private Sub ListBoxOrdenar()
+'
+'    Dim ini, fim, i, j  As Long
+'    Dim sCol01          As String
+'    Dim sCol02          As String
+'
+'    bListBoxOrdenando = True
+'
+'    With lstPrincipal
+'
+'        ini = 0
+'        fim = .ListCount - 1 '4 itens(0 - 3)
+'
+'        For i = ini To fim - 1  ' Laço para comparar cada item com todos os outros itens
+'            For j = i + 1 To fim    ' Laço para comparar item com o próximo item
+'                If .List(i) > .List(j) Then
+'                    sCol01 = .List(j, 0)
+'                    sCol02 = .List(j, 1)
+'                    .List(j, 0) = .List(i, 0)
+'                    .List(j, 1) = .List(i, 1)
+'                    .List(i, 0) = sCol01
+'                    .List(i, 1) = sCol02
+'                End If
+'            Next j
+'        Next i
+'    End With
+'
+'    bListBoxOrdenando = False
+'
+'End Sub
 Private Sub lstPrincipalPopular(OrderBy As String)
 
     Dim col As New Collection
@@ -321,9 +340,80 @@ Private Function Valida() As Boolean
     End If
     
 End Function
-Private Sub UserForm_Terminate()
+Private Sub lstExtratoPopular()
+
+    Dim lCount      As Integer
+    Dim cValor      As Currency
+    Dim sHistorico  As String
+
+    Set myRst = oContaMovimento.Recordset(CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
+
+    If myRst.PageCount > 0 Then
     
-    ' Destrói objeto da classe cProduto
-    Set oConta = Nothing
-    Call Desconecta
+        myRst.AbsolutePage = myRst.PageCount
+        
+        If myRst.AbsolutePage = adPosEOF Then
+            lblPaginaAtual.Caption = "Página " & Format(myRst.PageCount, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+        Else
+            lblPaginaAtual.Caption = "Página " & Format(myRst.AbsolutePage, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+        End If
+    
+        With lstExtrato
+            .Clear
+            .ColumnCount = 6
+            .ColumnWidths = "0pt; 55pt; 65pt; 65pt; 65pt; 180pt;"
+                ' Colunas:
+                '   - ID (oculta)
+                '   - Data
+                '   - Débito
+                '   - Crédito
+                '   - Histórico
+            
+            .Enabled = True
+            .Font = "Consolas"
+            
+            lCount = 1
+            
+            While Not myRst.EOF = True And lCount <= myRst.PageSize
+    
+                .AddItem
+    
+                .List(.ListCount - 1, 0) = Format(myRst.Fields("r_e_c_n_o_").Value, "0000000000")
+                .List(.ListCount - 1, 1) = myRst.Fields("data").Value
+                
+                cValor = myRst.Fields("valor").Value
+                
+                If myRst.Fields("pag_rec").Value = "P" Then
+                    .List(.ListCount - 1, 2) = Space(12 - Len(Format(cValor, "#,##0.00"))) & Format(cValor, "#,##0.00")
+                    .List(.ListCount - 1, 3) = Space(12 - Len("-")) & "-"
+                Else
+                    .List(.ListCount - 1, 2) = Space(12 - Len("-")) & "-"
+                    .List(.ListCount - 1, 3) = Space(12 - Len(Format(cValor, "#,##0.00"))) & Format(cValor, "#,##0.00")
+                End If
+                
+                .List(.ListCount - 1, 4) = Space(12 - Len("-")) & "-"
+                
+                If myRst.Fields("tabela_origem").Value = "tbl_lancamentos_rapidos" Then
+                    sHistorico = "Pagamento à vista"
+                ElseIf myRst.Fields("tabela_origem").Value = "tbl_recebimentos" Then
+                    sHistorico = "Recebimento"
+                ElseIf myRst.Fields("tabela_origem").Value = "tbl_pagamentos" Then
+                    sHistorico = "Pagamento"
+                End If
+                
+                .List(.ListCount - 1, 5) = sHistorico & ": " & Format(myRst.Fields("recno_origem").Value, "0000000000")
+    
+                lCount = lCount + 1
+                
+                myRst.MoveNext
+                
+            Wend
+    
+        End With
+        
+    Else
+        lstExtrato.Clear
+    End If
+    
+
 End Sub

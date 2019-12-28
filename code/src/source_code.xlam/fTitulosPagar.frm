@@ -21,7 +21,7 @@ Private oFornecedor         As New cFornecedor
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
-Private myRst               As New ADODB.RecordSet
+Private myRst               As New ADODB.Recordset
 
 Private Const sTable As String = "tbl_titulos_pagar"
 Private Const sCampoOrderBy As String = "vencimento"
@@ -517,7 +517,7 @@ Private Sub btnFiltrar_Click()
         lFornecedorID = CLng(cbbFltFornecedor.List(cbbFltFornecedor.ListIndex, 1))
     End If
 
-    Set myRst = oTituloPagar.RecordSet(lFornecedorID)
+    Set myRst = oTituloPagar.Recordset(lFornecedorID)
     
     If myRst.PageCount > 0 Then
     

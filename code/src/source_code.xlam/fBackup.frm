@@ -16,7 +16,7 @@ Attribute VB_Exposed = False
 
 Private Sub UserForm_Initialize()
 
-    Dim rst As New ADODB.RecordSet
+    Dim rst As New ADODB.Recordset
     
     sSQL = "SELECT parametro, valor_unico FROM tbl_parametros WHERE parametro = 'backup'"
     

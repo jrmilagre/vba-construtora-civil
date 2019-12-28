@@ -52,7 +52,7 @@ Public Sub Carrega(ID As Long)
 
     sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & ID
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     rst.Open sSQL, cnn, adOpenStatic
     
@@ -72,7 +72,7 @@ Public Sub Inclui()
 
     'Set oProduto = New cProduto
 
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
 
     With rst
         .Open Source:=sTable, _
@@ -99,7 +99,7 @@ Public Sub Inclui()
 End Sub
 Public Sub AlteraTitulo(TituloID As Long)
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     ' Comando SQL
     sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & TituloID
@@ -143,7 +143,7 @@ Public Sub ExcluiTitulo(TituloID As Long)
 End Sub
 Public Function GetValorBaixado(TituloID As Long) As Currency
 
-    Dim rTmp As New ADODB.RecordSet
+    Dim rTmp As New ADODB.Recordset
 
     sSQL = "SELECT sum(valor_baixado) as valor_baixado FROM tbl_pagamentos_itens WHERE titulo_id = " & TituloID
     
@@ -158,7 +158,7 @@ Public Function GetValorBaixado(TituloID As Long) As Currency
     Set rTmp = Nothing
     
 End Function
-Public Function RecordSet(Optional FornecedorID As Long) As ADODB.RecordSet
+Public Function Recordset(Optional FornecedorID As Long) As ADODB.Recordset
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM " & sTable & " "
@@ -169,9 +169,9 @@ Public Function RecordSet(Optional FornecedorID As Long) As ADODB.RecordSet
     
     sSQL = sSQL & "ORDER BY vencimento"
     
-    Set RecordSet = New ADODB.RecordSet
+    Set Recordset = New ADODB.Recordset
     
-    With RecordSet
+    With Recordset
         .CursorLocation = adUseServer
         .CursorType = adOpenStatic
         .LockType = adLockReadOnly
@@ -182,7 +182,7 @@ Public Function RecordSet(Optional FornecedorID As Long) As ADODB.RecordSet
 End Function
 Public Function ExistePagamento(FornecedorID As Long, TituloID As Long) As Boolean
 
-    Dim rTmp    As New ADODB.RecordSet
+    Dim rTmp    As New ADODB.Recordset
     Dim sMsg    As String
     
     ExistePagamento = False

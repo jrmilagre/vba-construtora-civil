@@ -25,7 +25,7 @@ Private oCategoria          As New cCategoria
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
-Private myRst               As ADODB.RecordSet
+Private myRst               As ADODB.Recordset
 Private lPagina             As Long
 
 Private Const sTable As String = "tbl_compras"
@@ -40,8 +40,8 @@ Private Sub UserForm_Initialize()
     
     Call EventosCampos
     
-    Set myRst = New ADODB.RecordSet
-    Set myRst = oCompra.RecordSet
+    Set myRst = New ADODB.Recordset
+    Set myRst = oCompra.Recordset
     
     With scrPagina
         .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
@@ -219,8 +219,8 @@ Private Sub btnConfirmar_Click()
                 lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
             End If
             
-            Set myRst = New ADODB.RecordSet
-            Set myRst = oCompra.RecordSet
+            Set myRst = New ADODB.Recordset
+            Set myRst = oCompra.Recordset
         
             With scrPagina
                 .Min = 1
@@ -467,7 +467,7 @@ Private Sub lstPrincipal_Change()
 End Sub
 Private Sub lstItensPopular(CompraID As Long)
 
-    Dim r       As New ADODB.RecordSet
+    Dim r       As New ADODB.Recordset
     Dim cTotal As Currency
 
     sSQL = "SELECT * "
@@ -994,7 +994,7 @@ Private Function ValidaTitulo() As Boolean
 End Function
 Private Sub lstTitulosPopular(CompraID As Long)
 
-    Dim r       As New ADODB.RecordSet
+    Dim r       As New ADODB.Recordset
     Dim cTotal As Currency
 
     sSQL = "SELECT * "

@@ -21,7 +21,7 @@ Private oCliente            As New cCliente
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
-Private myRst               As New ADODB.RecordSet
+Private myRst               As New ADODB.Recordset
 
 Private Const sTable As String = "tbl_titulos_receber"
 Private Const sCampoOrderBy As String = "vencimento"
@@ -544,7 +544,7 @@ Private Sub btnFiltrar_Click()
         lObraID = CLng(cbbFltObra.List(cbbFltObra.ListIndex, 1))
     End If
 
-    Set myRst = oTituloReceber.RecordSet(lObraID)
+    Set myRst = oTituloReceber.Recordset(lObraID)
     
     If myRst.PageCount > 0 Then
     

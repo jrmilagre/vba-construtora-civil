@@ -56,7 +56,7 @@ Public Sub Carrega(ID As Long)
 
     sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & ID
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     rst.Open sSQL, cnn, adOpenStatic
     
@@ -71,7 +71,7 @@ Public Sub Carrega(ID As Long)
 End Sub
 Public Sub Inclui()
 
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
 
     With rst
         .Open Source:=sTable, _
@@ -100,7 +100,7 @@ Public Sub Inclui()
 End Sub
 Public Sub Altera(Recno As Long)
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     ' Comando SQL
     sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & Recno
@@ -134,3 +134,25 @@ Public Sub Exclui(Recno As Long)
     cnn.Execute sSQL
 
 End Sub
+Public Function Recordset(ContaID As Long) As ADODB.Recordset
+
+    sSQL = "SELECT * "
+    sSQL = sSQL & "FROM " & sTable & " "
+    
+    If ContaID > 0 Then
+        sSQL = sSQL & "WHERE conta_id = " & ContaID & " "
+    End If
+    
+    sSQL = sSQL & "ORDER BY data"
+    
+    Set Recordset = New ADODB.Recordset
+    
+    With Recordset
+        .CursorLocation = adUseServer
+        .CursorType = adOpenStatic
+        .LockType = adLockReadOnly
+        .PageSize = 24
+        .Open sSQL, cnn
+    End With
+
+End Function

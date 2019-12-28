@@ -53,7 +53,7 @@ Public Sub Carrega(ID As Long)
 
     sSQL = "SELECT * FROM " & sTable & " WHERE r_e_c_n_o_ = " & ID
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     rst.Open sSQL, cnn, adOpenStatic
     
@@ -73,7 +73,7 @@ Public Sub Inclui()
 
     'Set oProduto = New cProduto
 
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
 
     With rst
         .Open Source:=sTable, _

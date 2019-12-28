@@ -24,7 +24,7 @@ Private oUF                 As New cUF
 
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
-Private myRst               As ADODB.RecordSet
+Private myRst               As ADODB.Recordset
 Private lPagina             As Long
 
 Private Const sTable As String = "tbl_obras"
@@ -40,8 +40,8 @@ Private Sub UserForm_Initialize()
     'Call lstPrincipalPopular(sCampoOrderBy)
     Call EventosCampos
     
-    Set myRst = New ADODB.RecordSet
-    Set myRst = oObra.RecordSet
+    Set myRst = New ADODB.Recordset
+    Set myRst = oObra.Recordset
     
     With scrPagina
         .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
@@ -566,7 +566,7 @@ Private Sub cbbCategoriaPopular()
 End Sub
 Private Sub lstTitulosPopular(ObraID As Long)
 
-    Dim r       As New ADODB.RecordSet
+    Dim r       As New ADODB.Recordset
     Dim cTotal As Currency
 
     sSQL = "SELECT * "
@@ -740,8 +740,8 @@ Private Sub btnConfirmar_Click()
                 lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
             End If
             
-            Set myRst = New ADODB.RecordSet
-            Set myRst = oObra.RecordSet
+            Set myRst = New ADODB.Recordset
+            Set myRst = oObra.Recordset
         
             With scrPagina
                 .Min = 1

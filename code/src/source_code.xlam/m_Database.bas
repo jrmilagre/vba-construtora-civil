@@ -7,7 +7,7 @@ Option Private Module   ' Deixa o módulo privado (invisível)
 ' ---> Microsoft ADO Ext. 2.8 for DDL and Security
 
 Public cnn  As ADODB.Connection  ' Objeto de conexão com o banco de dados
-Public rst  As ADODB.RecordSet   ' Objeto de armazenamento de dados
+Public rst  As ADODB.Recordset   ' Objeto de armazenamento de dados
 Public cat  As ADOX.Catalog
 Public sSQL As String
 Private Const sBanco As String = "database.mdb"

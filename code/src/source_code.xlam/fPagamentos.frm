@@ -25,7 +25,7 @@ Private oContaMovimento     As New cContaMovimento
 Private oCompra             As New cCompra
 
 Private colControles        As New Collection
-Private myRst               As New ADODB.RecordSet
+Private myRst               As New ADODB.Recordset
 
 Private Const sTable As String = "tbl_recebimentos"
 Private Const sCampoOrderBy As String = "data"
@@ -63,7 +63,7 @@ Private Sub lstPrincipalPopular()
     Dim lPosicao    As Long
     Dim lCount      As Long
     
-    Set myRst = oPagamento.RecordSet
+    Set myRst = oPagamento.Recordset
     
     With scrPagina
         .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
@@ -331,7 +331,7 @@ Private Sub cbbFornecedor_AfterUpdate()
 End Sub
 Private Sub lstTitulosPopular(FornecedorID As Long)
 
-    Dim r       As New ADODB.RecordSet
+    Dim r       As New ADODB.Recordset
     Dim cVlrPg  As Currency
     Dim cSaldo  As Currency
     Dim cVlrBx  As Currency
@@ -888,7 +888,7 @@ Private Sub lstPrincipal_Change()
 End Sub
 Private Sub lstPagamentosPopular(RecebimentoID As Long)
 
-    Dim r       As New ADODB.RecordSet
+    Dim r       As New ADODB.Recordset
     Dim cVlrPg  As Currency
     Dim cSaldo  As Currency
 
@@ -1067,7 +1067,7 @@ Private Sub btnFiltrar_Click()
         lFornecedorID = CLng(cbbFltFornecedor.List(cbbFltFornecedor.ListIndex, 1))
     End If
 
-    Set myRst = oPagamento.RecordSet(lFornecedorID)
+    Set myRst = oPagamento.Recordset(lFornecedorID)
     
     If myRst.PageCount > 0 Then
     

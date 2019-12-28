@@ -36,7 +36,7 @@ Public Sub Carrega(ID As Long)
     sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     ' Atribui resultado da consulta SQL ao recordset
     rst.Open sSQL, cnn, adOpenStatic
@@ -53,7 +53,7 @@ End Sub
 ' Rotina para incluir registro no banco de dados
 Public Sub Inclui()
 
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
 
     'Armazena na variável o comando que fará a consulta SQL no BD Access
     With rst
@@ -79,7 +79,7 @@ End Sub
 ' Rotina para alterar registro no banco de dados
 Public Sub Altera()
     
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     ' Comando SQL
     sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.ID
@@ -119,7 +119,7 @@ Public Function Listar(OrderBy As String) As Collection
     sSQL = sSQL & "WHERE deletado = False "
     sSQL = sSQL & "ORDER BY " & OrderBy
 
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     rst.Open sSQL, cnn, adOpenStatic
 

@@ -29,7 +29,7 @@ Private oRequisicaoItem     As New cRequisicaoItem
 Private oCategoria          As New cCategoria
 
 Private colControles        As New Collection
-Private myRst               As ADODB.RecordSet
+Private myRst               As ADODB.Recordset
 
 Private Const sTable As String = "tbl_compras"
 Private Const sCampoOrderBy As String = "data"
@@ -47,7 +47,7 @@ Private Sub UserForm_Initialize()
     
     Call EventosCampos
     
-    Set myRst = oLancamentoRapido.RecordSet
+    Set myRst = oLancamentoRapido.Recordset
     
     Call scrPaginaAtualiza(False, Null)
     
@@ -673,7 +673,7 @@ Private Sub btnConfirmar_Click()
                 
             End If
             
-            Set myRst = oLancamentoRapido.RecordSet
+            Set myRst = oLancamentoRapido.Recordset
             
             Call scrPaginaAtualiza(True, sDecisao)
             
@@ -1097,8 +1097,8 @@ Private Sub TotalizaRequisicoes()
 End Sub
 Private Sub lstRequisicoesPopular(RequisicaoID As Long)
 
-    Dim r       As New ADODB.RecordSet
-    Dim cTotal  As Currency
+    Dim r               As New ADODB.Recordset
+    Dim dVlrUnitario    As Currency
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM tbl_requisicoes_itens "
@@ -1137,12 +1137,11 @@ Private Sub lstRequisicoesPopular(RequisicaoID As Long)
             .List(.ListCount - 1, 2) = oProduto.Nome
             .List(.ListCount - 1, 3) = Space(9 - Len(Format(r.Fields("quantidade").Value, "#,##0.00"))) & Format(r.Fields("quantidade").Value, "#,##0.00")
             .List(.ListCount - 1, 4) = oUM.Abreviacao
-            .List(.ListCount - 1, 5) = Space(9 - Len(Format(r.Fields("unitario").Value, "#,##0.00"))) & Format(r.Fields("unitario").Value, "#,##0.00")
             
-            cTotal = r.Fields("quantidade").Value * r.Fields("unitario").Value
+            dVlrUnitario = Round(r.Fields("total").Value / r.Fields("quantidade").Value, 2)
             
-            .List(.ListCount - 1, 6) = Space(9 - Len(Format(cTotal, "#,##0.00"))) & Format(cTotal, "#,##0.00")
-            
+            .List(.ListCount - 1, 5) = Space(9 - Len(Format(dVlrUnitario, "#,##0.00"))) & Format(dVlrUnitario, "#,##0.00")
+            .List(.ListCount - 1, 6) = Space(9 - Len(Format(r.Fields("total").Value, "#,##0.00"))) & Format(r.Fields("total").Value, "#,##0.00")
             .List(.ListCount - 1, 7) = oObra.Bairro & Space(30 - Len(oObra.Bairro)) & " | " & oCliente.Nome
             .List(.ListCount - 1, 8) = oEtapa.Nome
             

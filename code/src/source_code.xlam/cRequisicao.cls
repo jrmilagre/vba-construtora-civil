@@ -31,7 +31,7 @@ Public Sub Carrega(ID As Long)
     sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
     
     ' Cria objeto Recordset
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
     
     ' Atribui resultado da consulta SQL ao recordset
     rst.Open sSQL, cnn, adOpenStatic
@@ -45,7 +45,7 @@ Public Sub Carrega(ID As Long)
 End Sub
 Public Sub Inclui()
 
-    Set rst = New ADODB.RecordSet
+    Set rst = New ADODB.Recordset
 
     'Armazena na variável o comando que fará a consulta SQL no BD Access
     With rst
@@ -72,14 +72,14 @@ Public Sub Exclui(ID As Long)
     cnn.Execute sSQL
     
 End Sub
-Public Function RecordSet() As ADODB.RecordSet
+Public Function Recordset() As ADODB.Recordset
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM " & sTable
     
-    Set RecordSet = New ADODB.RecordSet
+    Set Recordset = New ADODB.Recordset
     
-    With RecordSet
+    With Recordset
         .CursorLocation = adUseServer
         .CursorType = adOpenStatic
         .LockType = adLockReadOnly

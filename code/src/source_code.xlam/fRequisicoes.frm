@@ -26,7 +26,7 @@ Private oRequisicaoItem     As New cRequisicaoItem
 Private oUM                 As New cUnidadeMedida
 
 Private colControles        As New Collection
-Private myRst               As ADODB.RecordSet
+Private myRst               As ADODB.Recordset
 Private lPagina             As Long
 
 Private Const sTable As String = "tbl_requisicoes"
@@ -38,8 +38,8 @@ Private Sub UserForm_Initialize()
     Call cbbEtapaPopular
     Call EventosCampos
     
-    Set myRst = New ADODB.RecordSet
-    Set myRst = oRequisicao.RecordSet
+    Set myRst = New ADODB.Recordset
+    Set myRst = oRequisicao.Recordset
     
     With scrPagina
         .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
@@ -346,7 +346,7 @@ Private Sub PosDecisaoTomada(Decisao As String)
 End Sub
 Private Sub lstCompraItensPopular()
 
-    Dim r       As New ADODB.RecordSet
+    Dim r       As New ADODB.Recordset
     Dim dQtdBx  As Currency
     Dim dSaldo  As Currency
     Dim dRequisitado As Currency
@@ -649,8 +649,8 @@ Private Sub btnConfirmar_Click()
                 lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
             End If
             
-            Set myRst = New ADODB.RecordSet
-            Set myRst = oRequisicao.RecordSet
+            Set myRst = New ADODB.Recordset
+            Set myRst = oRequisicao.Recordset
         
             With scrPagina
                 .Min = 1
@@ -730,7 +730,7 @@ Private Sub lstPrincipal_Change()
 End Sub
 Private Sub lstRequisicoesPopular(RequisicaoID As Long)
 
-    Dim r       As New ADODB.RecordSet
+    Dim r       As New ADODB.Recordset
 
     If lstPrincipal.ListIndex > -1 Then
     
