@@ -26,10 +26,6 @@ Private myRst               As ADODB.Recordset
 Private Const sTable As String = "tbl_contas"
 Private Const sCampoOrderBy As String = "nome"
 
-Private Sub lstExtrato_Click()
-
-End Sub
-
 Private Sub UserForm_Initialize()
      
     Call lstPrincipalPopular(sCampoOrderBy)
@@ -218,6 +214,7 @@ Private Sub lstPrincipal_Change()
         txbSaldoInicial.Text = Format(oConta.SaldoInicial, "#,##0.00")
         
         MultiPage1.Pages(2).Visible = True
+        
         Call lstExtratoPopular
                 
     End If
@@ -394,7 +391,7 @@ Private Sub lstExtratoPopular()
                 .List(.ListCount - 1, 4) = Space(12 - Len("-")) & "-"
                 
                 If myRst.Fields("tabela_origem").Value = "tbl_lancamentos_rapidos" Then
-                    sHistorico = "Pagamento à vista"
+                    sHistorico = "Lançamento à vista"
                 ElseIf myRst.Fields("tabela_origem").Value = "tbl_recebimentos" Then
                     sHistorico = "Recebimento"
                 ElseIf myRst.Fields("tabela_origem").Value = "tbl_pagamentos" Then

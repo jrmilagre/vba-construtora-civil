@@ -15,6 +15,7 @@ Private Type TCompraItem
     Quantidade      As Double
     UmID            As Long
     Unitario        As Currency
+    Total           As Currency
     Data            As Date
     FornecedorID    As Long
     Recno           As Long
@@ -39,6 +40,9 @@ Public Property Let UmID(ByVal Value As Long): This.UmID = Value: End Property
 Public Property Get Unitario() As Currency: Unitario = This.Unitario: End Property
 Public Property Let Unitario(ByVal Value As Currency): This.Unitario = Value: End Property
 
+Public Property Get Total() As Currency: Total = This.Total: End Property
+Public Property Let Total(ByVal Value As Currency): This.Total = Value: End Property
+
 Public Property Get Data() As Date: Data = This.Data: End Property
 Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 
@@ -62,6 +66,7 @@ Public Sub Carrega(ID As Long)
         Me.Quantidade = .Fields("quantidade").Value
         Me.UmID = .Fields("um_id").Value
         Me.Unitario = .Fields("unitario").Value
+        Me.Total = .Fields("total").Value
         Me.Data = .Fields("data").Value
         Me.FornecedorID = IIf(IsNull(.Fields("fornecedor_id").Value), Null, .Fields("fornecedor_id").Value)
         Me.Recno = .Fields("r_e_c_n_o_").Value
@@ -90,7 +95,7 @@ Public Sub Inclui()
         .Fields("quantidade").Value = Me.Quantidade
         .Fields("um_id").Value = Me.UmID
         .Fields("unitario").Value = Me.Unitario
-        .Fields("total").Value = Me.Quantidade * Me.Unitario
+        .Fields("total").Value = Me.Total
         .Fields("data").Value = CLng(Data)
         .Fields("fornecedor_id").Value = FornecedorID
         
@@ -119,7 +124,7 @@ Public Sub Altera(Recno As Long)
         .Fields("quantidade").Value = Me.Quantidade
         .Fields("um_id").Value = Me.UmID
         .Fields("unitario").Value = Me.Unitario
-        .Fields("total").Value = Me.Quantidade * Me.Unitario
+        .Fields("total").Value = Me.Total
         .Fields("data").Value = CLng(Data)
         .Fields("fornecedor_id").Value = FornecedorID
         

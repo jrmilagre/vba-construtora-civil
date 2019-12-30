@@ -150,6 +150,7 @@ Private Sub btnConfirmar_Click()
                         .Quantidade = CDbl(lstItens.List(i, 2))
                         .UmID = CLng(lstItens.List(i, 7))
                         .Unitario = CDbl(lstItens.List(i, 3))
+                        .Total = CCur(lstItens.List(i, 4))
                         .Data = oCompra.Data
                         .FornecedorID = oCompra.FornecedorID
                         .CompraID = oCompra.ID
@@ -312,8 +313,8 @@ Private Sub lstPrincipalPopular(Pagina As Long)
     
     With lstPrincipal
         .Clear
-        .ColumnCount = 8 ' Funcionário, ID, Empresa, Filial
-        .ColumnWidths = "55pt; 55pt; 160pt;"
+        .ColumnCount = 3 ' Funcionário, ID, Empresa, Filial
+        .ColumnWidths = "55pt; 55pt; 180pt;"
         .Enabled = True
         .Font = "Consolas"
         
@@ -467,8 +468,8 @@ Private Sub lstPrincipal_Change()
 End Sub
 Private Sub lstItensPopular(CompraID As Long)
 
-    Dim r       As New ADODB.Recordset
-    Dim cTotal As Currency
+    Dim r           As New ADODB.Recordset
+    Dim cUnitario   As Currency
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM tbl_compras_itens "
@@ -491,11 +492,11 @@ Private Sub lstItensPopular(CompraID As Long)
             .List(.ListCount - 1, 0) = oProduto.Nome
             .List(.ListCount - 1, 1) = r.Fields("produto_id").Value
             .List(.ListCount - 1, 2) = Space(9 - Len(Format(r.Fields("quantidade").Value, "#,##0.00"))) & Format(r.Fields("quantidade").Value, "#,##0.00")
-            .List(.ListCount - 1, 3) = Space(9 - Len(Format(r.Fields("unitario").Value, "#,##0.00"))) & Format(r.Fields("unitario").Value, "#,##0.00")
             
-            cTotal = r.Fields("quantidade").Value * r.Fields("unitario").Value
+            cUnitario = r.Fields("total").Value / r.Fields("quantidade").Value
             
-            .List(.ListCount - 1, 4) = Space(9 - Len(Format(cTotal, "#,##0.00"))) & Format(cTotal, "#,##0.00")
+            .List(.ListCount - 1, 3) = Space(9 - Len(Format(cUnitario, "#,##0.00"))) & Format(cUnitario, "#,##0.00")
+            .List(.ListCount - 1, 4) = Space(9 - Len(Format(r.Fields("total").Value, "#,##0.00"))) & Format(r.Fields("total").Value, "#,##0.00")
             .List(.ListCount - 1, 5) = r.Fields("r_e_c_n_o_").Value
             .List(.ListCount - 1, 6) = oUM.Abreviacao
             .List(.ListCount - 1, 7) = r.Fields("um_id").Value
@@ -788,6 +789,7 @@ Private Sub btnItemConfirmar_Click()
 
     Dim sDecisaoLancamento  As String
     Dim sDecisaoItem        As String
+    Dim cUnitario           As Currency
     
     sDecisaoLancamento = Replace(btnConfirmar.Caption, "Confirmar ", "")
     sDecisaoItem = btnItemConfirmar.Caption
@@ -805,34 +807,44 @@ Private Sub btnItemConfirmar_Click()
                 .List(.ListCount - 1, 0) = cbbProduto.List(cbbProduto.ListIndex, 0)
                 .List(.ListCount - 1, 1) = cbbProduto.List(cbbProduto.ListIndex, 1)
                 .List(.ListCount - 1, 2) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
-                .List(.ListCount - 1, 3) = Space(9 - Len(Format(CDbl(txbUnitario.Text), "#,##0.00"))) & Format(CDbl(txbUnitario.Text), "#,##0.00")
-                .List(.ListCount - 1, 4) = Space(9 - Len(Format(CDbl(txbTotal.Text), "#,##0.00"))) & Format(CDbl(txbTotal.Text), "#,##0.00")
+                
+                cUnitario = CCur(txbTotal.Text) / CDbl(txbQtde.Text)
+                
+                .List(.ListCount - 1, 3) = Space(9 - Len(Format(cUnitario, "#,##0.00"))) & Format(cUnitario, "#,##0.00")
+                .List(.ListCount - 1, 4) = Space(9 - Len(Format(CCur(txbTotal.Text), "#,##0.00"))) & Format(CCur(txbTotal.Text), "#,##0.00")
                 .List(.ListCount - 1, 6) = cbbUM.List(cbbUM.ListIndex, 0)
                 .List(.ListCount - 1, 7) = cbbUM.List(cbbUM.ListIndex, 1)
                 
             End With
-            
-            Call btnItemCancelar_Click
 
         End If
+        
     ElseIf sDecisaoItem = "Alterar" Then
+    
         If ValidaItem = True Then
+        
             With lstItens
                 .List(.ListIndex, 0) = cbbProduto.List(cbbProduto.ListIndex, 0)
                 .List(.ListIndex, 1) = cbbProduto.List(cbbProduto.ListIndex, 1)
                 .List(.ListIndex, 2) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
-                .List(.ListIndex, 3) = Space(9 - Len(Format(CDbl(txbUnitario.Text), "#,##0.00"))) & Format(CDbl(txbUnitario.Text), "#,##0.00")
-                .List(.ListIndex, 4) = Space(9 - Len(Format(CDbl(txbTotal.Text), "#,##0.00"))) & Format(CDbl(txbTotal.Text), "#,##0.00")
+                
+                cUnitario = CCur(txbTotal.Text) / CDbl(txbQtde.Text)
+                
+                .List(.ListIndex, 3) = Space(9 - Len(Format(cUnitario, "#,##0.00"))) & Format(cUnitario, "#,##0.00")
+                .List(.ListIndex, 4) = Space(9 - Len(Format(CCur(txbTotal.Text), "#,##0.00"))) & Format(CCur(txbTotal.Text), "#,##0.00")
                 .List(.ListIndex, 6) = cbbUM.List(cbbUM.ListIndex, 0)
                 .List(.ListIndex, 7) = cbbUM.List(cbbUM.ListIndex, 1)
             End With
-            
-            Call btnItemCancelar_Click
+        
         End If
+        
     ElseIf sDecisaoItem = "Excluir" Then
+    
         lstItens.RemoveItem (lstItens.ListIndex)
-        Call btnItemCancelar_Click
+        
     End If
+    
+    Call btnItemCancelar_Click
     
     Call TotalizaItens
     
@@ -915,14 +927,6 @@ Private Sub AcaoTitulo(Acao As String, Habilitar As Boolean)
         btnCancelar.Enabled = Not Habilitar
     End If
     
-End Sub
-Private Sub txbQtde_AfterUpdate()
-    txbQtde.Text = Format(txbQtde.Text, "#,##0.00")
-    txbTotal.Text = Format(CDbl(txbQtde.Text) * CDbl(txbUnitario.Text), "#,##0.00")
-End Sub
-Private Sub txbUnitario_AfterUpdate()
-    txbQtde.Text = Format(txbQtde.Text, "#,##0.00")
-    txbTotal.Text = Format(CDbl(txbQtde.Text) * CDbl(txbUnitario.Text), "#,##0.00")
 End Sub
 Private Sub btnVencimento_Click()
     dtDate = IIf(txbVencimento.Text = Empty, Date, txbVencimento.Text)
@@ -1183,4 +1187,31 @@ Private Sub cbbUM_AfterUpdate()
         
     End If
     
+End Sub
+Private Sub txbQtde_AfterUpdate()
+
+    If txbTotal.Text = Empty Then
+        txbQtde.Text = Format(0, "#,##0.00")
+    Else
+        txbTotal.Text = Format(CDbl(txbQtde.Text) * CCur(txbUnitario.Text), "#,##0.00")
+    End If
+
+End Sub
+Private Sub txbUnitario_AfterUpdate()
+
+    If txbUnitario.Text = Empty Then
+        txbUnitario.Text = Format(0, "#,##0.00")
+    Else
+        txbTotal.Text = Format(CDbl(txbQtde.Text) * CCur(txbUnitario.Text), "#,##0.00")
+    End If
+
+End Sub
+Private Sub txbTotal_AfterUpdate()
+
+    If txbTotal.Text = Empty Then
+        txbTotal.Text = Format(0, "#,##0.00")
+    Else
+        txbUnitario.Text = Format(CDbl(txbTotal.Text) / CCur(txbQtde.Text), "#,##0.00")
+    End If
+
 End Sub
