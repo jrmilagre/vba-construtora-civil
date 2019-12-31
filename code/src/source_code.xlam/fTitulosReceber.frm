@@ -20,7 +20,6 @@ Private oObra               As New cObra
 Private oCliente            As New cCliente
 
 Private colControles        As New Collection
-Private bListBoxOrdenando   As Boolean
 Private myRst               As New ADODB.Recordset
 Private bChangeScrPag       As Boolean
 
@@ -162,7 +161,7 @@ Private Sub lstPrincipalPopular(Pagina As Long)
     Dim cVlrBxd     As Currency
     Dim cVlrSld     As Currency
     
-    myRst.AbsolutePage = Pagina
+        
     
     With lstPrincipal
         .Clear
@@ -419,25 +418,6 @@ Private Sub btnVencimento_Click()
     txbVencimento.Text = GetCalendario
 End Sub
 
-Private Function ValidaTitulo() As Boolean
-
-    ValidaTitulo = False
-    
-    If txbVencimento.Text = Empty Then
-        MsgBox "Campo 'Vencimento' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbVencimento.SetFocus: Exit Function
-    ElseIf txbValor.Text = Empty Then
-        MsgBox "Campo 'Valor' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbValor.SetFocus: Exit Function
-    ElseIf txbObservacao.Text = Empty Then
-        MsgBox "Campo 'Observação' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbObservacao.SetFocus: Exit Function
-    Else
-        ValidaTitulo = True
-    End If
-    
-End Function
-
 Private Sub cbbObraPopular()
     
     Dim idx         As Long
@@ -554,12 +534,6 @@ Private Sub txbValor_AfterUpdate()
     End If
 
 End Sub
-Private Sub lblPaginaSeguinte_Click()
-    scrPagina.Value = scrPagina.Value + 1
-End Sub
-Private Sub lblPaginaAnterior_Click()
-    scrPagina.Value = scrPagina.Value - 1
-End Sub
 Private Sub btnPaginaInicial_Click()
     
     Call lstPrincipalPopular(1)
@@ -640,9 +614,8 @@ End Sub
 
 Private Sub ColoreLegenda()
 
+    Dim idx         As Integer
     Dim c           As control
-    
-    Dim idx As Integer
     
     For Each c In fTitulosReceber.Controls
         

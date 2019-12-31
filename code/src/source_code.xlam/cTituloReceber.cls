@@ -135,7 +135,7 @@ End Sub
 Public Sub ExcluiTitulo(TituloID As Long)
     
     sSQL = "DELETE FROM tbl_titulos_receber WHERE r_e_c_n_o_ = " & TituloID
-    
+
     cnn.Execute sSQL
 
 End Sub
@@ -160,9 +160,10 @@ Public Function Recordset(Optional ObraID As Long) As ADODB.Recordset
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM " & sTable & " "
+    sSQL = sSQL & "WHERE (valor - valor_recebido) > 0 "
     
     If ObraID > 0 Then
-        sSQL = sSQL & "WHERE obra_id = " & ObraID & " "
+        sSQL = sSQL & "and obra_id = " & ObraID & " "
     End If
     
     sSQL = sSQL & "ORDER BY vencimento"

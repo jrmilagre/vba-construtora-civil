@@ -162,9 +162,10 @@ Public Function Recordset(Optional FornecedorID As Long) As ADODB.Recordset
 
     sSQL = "SELECT * "
     sSQL = sSQL & "FROM " & sTable & " "
+    sSQL = sSQL & "WHERE (valor - valor_pago) > 0 "
     
     If FornecedorID > 0 Then
-        sSQL = sSQL & "WHERE fornecedor_id = " & FornecedorID & " "
+        sSQL = sSQL & "and fornecedor_id = " & FornecedorID & " "
     End If
     
     sSQL = sSQL & "ORDER BY vencimento"
@@ -187,7 +188,7 @@ Public Function ExistePagamento(FornecedorID As Long, TituloID As Long) As Boole
     
     ExistePagamento = False
     
-    sSQL = "SELECT tbl_pagamentos_itens.pagamentos_id, tbl_titulos_pagar.r_e_c_n_o_ "
+    sSQL = "SELECT tbl_pagamentos_itens.pagamento_id, tbl_titulos_pagar.r_e_c_n_o_ "
     sSQL = sSQL & "FROM tbl_titulos_pagar INNER JOIN tbl_pagamentos_itens ON tbl_titulos_pagar.r_e_c_n_o_ = tbl_pagamentos_itens.titulo_id "
     sSQL = sSQL & "GROUP BY tbl_pagamentos_itens.pagamento_id, tbl_titulos_pagar.fornecedor_id, tbl_titulos_pagar.r_e_c_n_o_ "
     sSQL = sSQL & "HAVING (((tbl_titulos_pagar.fornecedor_id)=" & FornecedorID & ") AND ((tbl_titulos_pagar.r_e_c_n_o_)=" & TituloID & "));"

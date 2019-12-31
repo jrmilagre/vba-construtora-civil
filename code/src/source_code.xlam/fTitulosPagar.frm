@@ -13,15 +13,14 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 
 Private oTituloPagar        As New cTituloPagar
 Private oFornecedor         As New cFornecedor
 
 Private colControles        As New Collection
-Private bListBoxOrdenando   As Boolean
 Private myRst               As New ADODB.Recordset
+Private bChangeScrPag       As Boolean
 
 Private Const sTable As String = "tbl_titulos_pagar"
 Private Const sCampoOrderBy As String = "vencimento"
@@ -44,11 +43,11 @@ Private Sub UserForm_Terminate()
     ' Destrói objeto da classe cProduto
     Set oTituloPagar = Nothing
     Set oFornecedor = Nothing
+    Set myRst = Nothing
     
     Call Desconecta
     
 End Sub
-
 Private Sub btnConfirmar_Click()
     
     Dim vbResposta As VBA.VbMsgBoxResult
@@ -141,33 +140,24 @@ Private Sub PosDecisaoTomada(Decisao As String)
                 txbValor.SetFocus
             End If
         End If
-            
+    Else
+        MultiPage1.Value = 1
+        MultiPage1.Pages(0).Enabled = False
     End If
     
     lstPrincipal.Enabled = False
     lstPrincipal.ForeColor = &H80000010
     
     Call Filtros("Desabilitar")
-
-    btnPaginaInicial.Enabled = False
-    btnPaginaAnterior.Enabled = False
-    btnPaginaSeguinte.Enabled = False
-    btnPaginaFinal.Enabled = False
     
 End Sub
-Private Sub lstPrincipalPopular()
+Private Sub lstPrincipalPopular(Pagina As Long)
 
     Dim lCount      As Long
     Dim cVlrBxd     As Currency
     Dim cVlrSld     As Currency
-    Dim c           As control
     
-    ' Numera a página posicionada
-    If myRst.AbsolutePage = adPosEOF Then
-        lblPaginaAtual.Caption = "Página " & Format(myRst.PageCount, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
-    Else
-        lblPaginaAtual.Caption = "Página " & Format(myRst.AbsolutePage, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
-    End If
+    myRst.AbsolutePage = Pagina
     
     With lstPrincipal
         .Clear
@@ -202,31 +192,15 @@ Private Sub lstPrincipalPopular()
 
     End With
     
-    ' Colore status
-    Dim idx As Integer
+    Call ColoreLegenda
     
-    For Each c In fTitulosReceber.Controls
-        
-        If TypeName(c) = "Label" And c.Tag = "status" Then
-            'Stop
-            
-            idx = CInt(Mid(c.name, 2, 2))
-            
-            If idx <= (lstPrincipal.ListCount - 1) Then
-                If CDate(lstPrincipal.List(idx, 2)) > (Date + 3) Then
-                    c.BackColor = &HC000& ' Verde
-                ElseIf CDate(lstPrincipal.List(idx, 2)) < Date Then
-                    c.BackColor = &HC0& ' Vermelho
-                Else
-                    c.BackColor = &HFFFF&         ' Amarelo
-                End If
-            Else
-                c.BackColor = &H8000000F
-            End If
-        
-        End If
-        
-    Next c
+    ' Posiciona scroll de navegação em páginas
+    lblPagina.Caption = Pagina
+    lblNumeroPaginas.Caption = myRst.PageCount
+    bChangeScrPag = False: scrPagina.Value = CLng(lblPagina.Caption): bChangeScrPag = True
+    
+    ' Trata os botões de navegação
+    Call TrataBotoesNavegacao
    
 End Sub
 Private Sub btnData_Click()
@@ -317,7 +291,6 @@ Private Sub lstPrincipal_Change()
     End If
 
 End Sub
-
 Private Sub btnCancelar_Click()
 
     btnIncluir.Visible = True: btnAlterar.Visible = True: btnExcluir.Visible = True
@@ -350,6 +323,7 @@ Private Sub Campos(Acao As String)
         txbObservacao.Enabled = False: lblObservacao.Enabled = False
         cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
 
+        MultiPage1.Pages(0).Enabled = True
         
     ElseIf Acao = "Habilitar" Then
         
@@ -361,6 +335,8 @@ Private Sub Campos(Acao As String)
         txbVencimento.Enabled = True: lblVencimento.Enabled = True: btnVencimento.Enabled = True
         txbValor.Enabled = True: lblValor.Enabled = True
         txbObservacao.Enabled = True: lblObservacao.Enabled = True
+        
+        MultiPage1.Pages(0).Enabled = False
         
         
     ElseIf Acao = "Limpar" Then
@@ -431,12 +407,10 @@ Private Function Valida(Decisao As String) As Boolean
     End If
 
 End Function
-
 Private Sub btnVencimento_Click()
     dtDate = IIf(txbVencimento.Text = Empty, Date, txbVencimento.Text)
     txbVencimento.Text = GetCalendario
 End Sub
-
 Private Sub cbbFornecedorPopular()
     
     Dim col         As New Collection
@@ -523,12 +497,14 @@ Private Sub btnFiltrar_Click()
     
         myRst.AbsolutePage = myRst.PageCount
         
+        bChangeScrPag = False
+        
         With scrPagina
             .Max = myRst.PageCount
             .Value = myRst.PageCount
         End With
         
-        Call scrPagina_Change
+        Call lstPrincipalPopular(myRst.PageCount)
         
     End If
 
@@ -545,51 +521,132 @@ Private Sub txbValor_AfterUpdate()
 
 End Sub
 Private Sub btnPaginaSeguinte_Click()
-    scrPagina.Value = scrPagina.Value + 1
+    Call lstPrincipalPopular(CLng(lblPagina.Caption) + 1)
 End Sub
 Private Sub btnPaginaAnterior_Click()
-    scrPagina.Value = scrPagina.Value - 1
+    Call lstPrincipalPopular(CLng(lblPagina.Caption) - 1)
 End Sub
 Private Sub btnPaginaInicial_Click()
-    scrPagina.Value = 1
+    Call lstPrincipalPopular(1)
 End Sub
 Private Sub btnPaginaFinal_Click()
-    scrPagina.Value = myRst.PageCount
+    Call lstPrincipalPopular(myRst.PageCount)
+End Sub
+Private Sub btnRegistroAnterior_Click()
+
+        If lstPrincipal.ListIndex > 0 Then
+        
+            lstPrincipal.ListIndex = lstPrincipal.ListIndex - 1
+            
+        ElseIf lstPrincipal.ListIndex = 0 And CLng(lblPagina.Caption) > 1 Then
+            
+            Call lstPrincipalPopular(CLng(lblPagina.Caption) - 1)
+            
+            lstPrincipal.ListIndex = myRst.PageSize - 1
+            
+        ElseIf CLng(lblPagina.Caption) = 1 And lstPrincipal.ListIndex = 0 Then
+        
+            MsgBox "Primeiro registro"
+            Exit Sub
+            
+        Else
+        
+            lstPrincipal.ListIndex = -1
+            
+        End If
+        
+End Sub
+Private Sub btnRegistroSeguinte_Click()
+
+    If lstPrincipal.ListIndex = -1 Then
+        
+        lstPrincipal.ListIndex = 0
+    
+    ElseIf lstPrincipal.ListIndex = myRst.PageSize - 1 And CLng(lblPagina.Caption) < myRst.PageCount Then
+        
+        Call lstPrincipalPopular(CLng(lblPagina.Caption) + 1)
+        
+        lstPrincipal.ListIndex = 0
+        
+    ElseIf CLng(lblPagina.Caption) = myRst.PageCount And (lstPrincipal.ListIndex + 1) = lstPrincipal.ListCount Then
+    
+        MsgBox "Último registro"
+        Exit Sub
+        
+    Else
+    
+        lstPrincipal.ListIndex = lstPrincipal.ListIndex + 1
+    
+    End If
+    
 End Sub
 Private Sub scrPagina_Change()
 
-    ' Trata botões de navegação
-    If scrPagina.Value = myRst.PageCount And scrPagina.Value > 1 Then
-        btnPaginaInicial.Enabled = True
-        btnPaginaAnterior.Enabled = True
-        btnPaginaSeguinte.Enabled = False
-        btnPaginaFinal.Enabled = False
-        scrPagina.Enabled = True
-    ElseIf scrPagina.Value = 1 And myRst.PageCount = 1 Then
-        btnPaginaInicial.Enabled = False
-        btnPaginaAnterior.Enabled = False
-        btnPaginaSeguinte.Enabled = False
-        btnPaginaFinal.Enabled = False
-        scrPagina.Enabled = False
-    ElseIf scrPagina.Value > 1 And scrPagina.Value < myRst.PageCount Then
-        btnPaginaInicial.Enabled = True
-        btnPaginaAnterior.Enabled = True
-        btnPaginaSeguinte.Enabled = True
-        btnPaginaFinal.Enabled = True
-        scrPagina.Enabled = True
-    ElseIf scrPagina.Value = 1 And myRst.PageCount > 1 Then
-        btnPaginaInicial.Enabled = False
-        btnPaginaAnterior.Enabled = False
-        btnPaginaSeguinte.Enabled = True
-        btnPaginaFinal.Enabled = True
-        scrPagina.Enabled = True
+    If bChangeScrPag = True Then
+        
+        Call lstPrincipalPopular(scrPagina.Value)
+        
     End If
 
-    Call Campos("Limpar")
+End Sub
+Private Sub ColoreLegenda()
+
+    Dim idx         As Integer
+    Dim c           As control
     
-    On Error Resume Next
-    myRst.AbsolutePage = scrPagina.Value
+    For Each c In fTitulosReceber.Controls
+        
+        If TypeName(c) = "Label" And c.Tag = "status" Then
+            'Stop
+            
+            idx = CInt(Mid(c.name, 2, 2))
+            
+            If idx <= (lstPrincipal.ListCount - 1) Then
+                If CDate(lstPrincipal.List(idx, 2)) > (Date + 3) Then
+                    c.BackColor = &HC000& ' Verde
+                ElseIf CDate(lstPrincipal.List(idx, 2)) < Date Then
+                    c.BackColor = &HC0& ' Vermelho
+                Else
+                    c.BackColor = &HFFFF&         ' Amarelo
+                End If
+            Else
+                c.BackColor = &H8000000F
+            End If
+        
+        End If
+        
+    Next c
+End Sub
+Private Sub TrataBotoesNavegacao()
+
+    If CLng(lblPagina.Caption) = myRst.PageCount And CLng(lblPagina.Caption) > 1 Then
     
-    Call lstPrincipalPopular
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaFinal.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+        
+    ElseIf CLng(lblPagina.Caption) < myRst.PageCount And CLng(lblPagina.Caption) = 1 Then
+    
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaFinal.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        
+    ElseIf CLng(lblPagina.Caption) = myRst.PageCount And CLng(lblPagina.Caption) = 1 Then
+    
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaFinal.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+    
+    Else
+    
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaFinal.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        
+    End If
 
 End Sub

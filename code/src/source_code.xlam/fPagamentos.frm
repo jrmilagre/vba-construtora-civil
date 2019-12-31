@@ -13,7 +13,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 
 Private oPagamento          As New cPagamento
@@ -27,7 +26,7 @@ Private oCompra             As New cCompra
 Private colControles        As New Collection
 Private myRst               As New ADODB.Recordset
 
-Private Const sTable As String = "tbl_recebimentos"
+Private Const sTable As String = "tbl_pagamentos"
 Private Const sCampoOrderBy As String = "data"
 
 Private Sub UserForm_Initialize()
@@ -53,11 +52,11 @@ Private Sub UserForm_Terminate()
     Set oPagamentoItem = Nothing
     Set oTituloPagar = Nothing
     Set oContaMovimento = Nothing
+    Set myRst = Nothing
     
     Call Desconecta
     
 End Sub
-
 Private Sub lstPrincipalPopular()
 
     Dim lPosicao    As Long
@@ -692,7 +691,11 @@ Private Sub btnConfirmar_Click()
             
             ElseIf sDecisao = "Exclusão" Then
             
-                oPagamentoItem.Exclui oPagamento.ID
+                For i = 0 To lstTitulos.ListCount - 1
+                    oPagamentoItem.Exclui CLng(lstTitulos.List(i, 7))
+                Next i
+                
+                oPagamentoItem.ExcluiMovimentacaoEmContas oPagamento.ID
                 oPagamento.Exclui oPagamento.ID
                   
             End If

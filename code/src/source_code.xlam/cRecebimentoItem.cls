@@ -23,6 +23,8 @@ End Type
 
 Private This As TRecebimentoItem
 
+Private oTituloReceber As New cTituloReceber
+
 Private Const sTable As String = "tbl_recebimentos_itens"
 
 Public Property Get RecebimentoID() As Long: RecebimentoID = This.RecebimentoID: End Property
@@ -97,19 +99,64 @@ Public Sub Inclui()
     End With
     
     Set rst = Nothing
+    
+    Me.AtualizaCampoValorRecebidoEmTitulosReceber "Inclusão"
        
 End Sub
-Public Sub Exclui(RecebimentoID As Long)
+Public Sub Exclui(Recno As Long)
+
+    Me.Carrega Recno
+
+    Me.AtualizaCampoValorRecebidoEmTitulosReceber "Exclusão"
     
-    sSQL = "DELETE FROM " & sTable & " WHERE recebimento_id = " & RecebimentoID
+    sSQL = "DELETE FROM " & sTable & " WHERE r_e_c_n_o_ = " & Recno
     
     cnn.Execute sSQL
-    
+End Sub
+Public Sub ExcluiMovimentacaoEmContas(RecebimentoID As Long)
+
     sSQL = "DELETE FROM tbl_contas_movimentos "
     sSQL = sSQL & "WHERE tabela_origem = 'tbl_recebimentos' "
     sSQL = sSQL & "and recno_origem = " & RecebimentoID
-    
+
     cnn.Execute sSQL
 
 End Sub
+Public Sub AtualizaCampoValorRecebidoEmTitulosReceber(Decisao As String)
 
+    Dim rTmp            As New ADODB.Recordset
+    Dim cValorAntigo    As Currency
+    Dim cValorRecebido  As Currency
+    Dim cValorNovo      As Currency
+    Dim lTitulo         As Long
+    
+    ' Pega o valor recebido antes de atualizar
+    sSQL = "SELECT valor_recebido FROM tbl_titulos_receber WHERE r_e_c_n_o_ = " & Me.TituloID
+        
+    rTmp.Open sSQL, cnn, adOpenStatic
+    
+    If IsNull(rTmp.Fields("valor_recebido").Value) Then
+        cValorAntigo = 0
+    Else
+        cValorAntigo = rTmp.Fields("valor_recebido").Value
+    End If
+    
+    Set rTmp = Nothing
+    
+    If Decisao = "Inclusão" Then
+        
+        cValorNovo = cValorAntigo + Me.ValorBaixado
+    
+    ElseIf Decisao = "Exclusão" Then
+
+        cValorNovo = cValorAntigo - Me.ValorBaixado
+        
+    End If
+    
+    sSQL = "UPDATE tbl_titulos_receber "
+    sSQL = sSQL & "SET valor_recebido = " & cValorNovo & " "
+    sSQL = sSQL & "WHERE r_e_c_n_o_ = " & TituloID
+    
+    cnn.Execute sSQL
+    
+End Sub

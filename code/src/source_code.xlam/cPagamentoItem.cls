@@ -96,14 +96,22 @@ Public Sub Inclui()
     End With
     
     Set rst = Nothing
+    
+    Me.AtualizaCampoValorRecebidoEmTitulosPagar "Inclusão"
        
 End Sub
-Public Sub Exclui(PagamentoID As Long)
+Public Sub Exclui(Recno As Long)
+
+    Me.Carrega Recno
     
-    sSQL = "DELETE FROM " & sTable & " WHERE pagamento_id = " & PagamentoID
+    Me.AtualizaCampoValorRecebidoEmTitulosPagar "Exclusão"
+    
+    sSQL = "DELETE FROM " & sTable & " WHERE r_e_c_n_o_ = " & Recno
     
     cnn.Execute sSQL
     
+End Sub
+Public Sub ExcluiMovimentacaoEmContas(PagametoID As Long)
     sSQL = "DELETE FROM tbl_contas_movimentos "
     sSQL = sSQL & "WHERE tabela_origem = 'tbl_pagamentos' "
     sSQL = sSQL & "and recno_origem = " & PagamentoID
@@ -111,4 +119,41 @@ Public Sub Exclui(PagamentoID As Long)
     cnn.Execute sSQL
 
 End Sub
+Public Sub AtualizaCampoValorRecebidoEmTitulosPagar(Decisao As String)
 
+    Dim rTmp            As New ADODB.Recordset
+    Dim cValorAntigo    As Currency
+    Dim cValorRecebido  As Currency
+    Dim cValorNovo      As Currency
+    Dim lTitulo         As Long
+    
+    ' Pega o valor recebido antes de atualizar
+    sSQL = "SELECT valor_pago FROM tbl_titulos_pagar WHERE r_e_c_n_o_ = " & Me.TituloID
+        
+    rTmp.Open sSQL, cnn, adOpenStatic
+    
+    If IsNull(rTmp.Fields("valor_pago").Value) Then
+        cValorAntigo = 0
+    Else
+        cValorAntigo = rTmp.Fields("valor_pago").Value
+    End If
+    
+    Set rTmp = Nothing
+    
+    If Decisao = "Inclusão" Then
+        
+        cValorNovo = cValorAntigo + Me.ValorBaixado
+    
+    ElseIf Decisao = "Exclusão" Then
+
+        cValorNovo = cValorAntigo - Me.ValorBaixado
+        
+    End If
+    
+    sSQL = "UPDATE tbl_titulos_pagar "
+    sSQL = sSQL & "SET valor_pago = " & cValorNovo & " "
+    sSQL = sSQL & "WHERE r_e_c_n_o_ = " & TituloID
+    
+    cnn.Execute sSQL
+    
+End Sub

@@ -53,6 +53,7 @@ Private Sub UserForm_Terminate()
     Set oRecebimentoItem = Nothing
     Set oTituloReceber = Nothing
     Set oContaMovimento = Nothing
+    Set myRst = Nothing
     
     Call Desconecta
     
@@ -694,9 +695,14 @@ Private Sub btnConfirmar_Click()
             
             ElseIf sDecisao = "Exclusão" Then
             
-                oRecebimentoItem.Exclui oRecebimento.ID
+                For i = 0 To lstTitulos.ListCount - 1
+                    
+                    oRecebimentoItem.Exclui CLng(lstTitulos.List(i, 7))
+                    
+                Next i
+            
+                oRecebimentoItem.ExcluiMovimentacaoEmContas oRecebimento.ID
                 oRecebimento.Exclui oRecebimento.ID
-                  
             End If
             
             Call btnFiltrar_Click
