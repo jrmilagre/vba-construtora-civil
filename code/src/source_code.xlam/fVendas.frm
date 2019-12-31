@@ -172,8 +172,6 @@ Private Sub PosDecisaoTomada(Decisao As String)
         txbEndereco.SetFocus
     End If
     
-    Call Filtros("Desabilitar")
-    
 End Sub
 
 Private Sub lstPrincipal_Change()
@@ -379,8 +377,6 @@ Private Sub Campos(Acao As String)
         lstTitulos.Clear
         
     End If
-
-    Call Filtros("Habilitar")
 
 End Sub
 Private Sub lstPrincipalPopular(Pagina As Long)
@@ -902,17 +898,6 @@ Private Sub ColoreLegenda()
         
     Next c
     
-End Sub
-Private Sub Filtros(Acao As String)
-
-    Dim b As Boolean
-    
-    b = IIf(Acao = "Habilitar", True, False)
-
-    cbbFltStatus.Enabled = b: cbbFltStatus.Enabled = b
-    btnFiltrar.Enabled = b
-    frmFiltro.Enabled = b
-
 End Sub
 Private Sub TrataBotoesNavegacao()
 

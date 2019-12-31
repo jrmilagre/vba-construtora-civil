@@ -145,11 +145,6 @@ Private Sub PosDecisaoTomada(Decisao As String)
         MultiPage1.Pages(0).Enabled = False
     End If
     
-    lstPrincipal.Enabled = False
-    lstPrincipal.ForeColor = &H80000010
-    
-    Call Filtros("Desabilitar")
-    
 End Sub
 Private Sub lstPrincipalPopular(Pagina As Long)
 
@@ -350,8 +345,6 @@ Private Sub Campos(Acao As String)
         txbObservacao.Text = Empty
         cbbFornecedor.ListIndex = -1
     End If
-    
-    Call Filtros("Habilitar")
 
 End Sub
 Private Function Valida(Decisao As String) As Boolean
@@ -468,17 +461,6 @@ Private Sub cbbFltFornecedorPopular()
     Next n
     
     cbbFltFornecedor.ListIndex = 0
-
-End Sub
-Private Sub Filtros(Acao As String)
-
-    Dim b As Boolean
-    
-    b = IIf(Acao = "Habilitar", True, False)
-
-    cbbFltFornecedor.Enabled = b: lblFltFornecedor.Enabled = b
-    btnFiltrar.Enabled = b
-    frmFiltro.Enabled = b
 
 End Sub
 Private Sub btnFiltrar_Click()
