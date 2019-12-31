@@ -174,10 +174,14 @@ Public Function Listar(OrderBy As String) As Collection
     Set Listar = col
 
 End Function
-Public Function Recordset() As ADODB.Recordset
+Public Function Recordset(Status As Variant) As ADODB.Recordset
 
     sSQL = "SELECT * "
-    sSQL = sSQL & "FROM " & sTable
+    sSQL = sSQL & "FROM " & sTable & " "
+    
+    If Not IsNull(Status) Then
+        sSQL = sSQL & "WHERE encerrada = " & Status
+    End If
     
     Set Recordset = New ADODB.Recordset
     

@@ -199,9 +199,9 @@ Private Sub lstPrincipalPopular(Pagina As Long)
     Call ColoreLegenda
     
     ' Posiciona scroll de navegação em páginas
-    lblPagina.Caption = Pagina
+    lblPaginaAtual.Caption = Pagina
     lblNumeroPaginas.Caption = myRst.PageCount
-    bChangeScrPag = False: scrPagina.Value = CLng(lblPagina.Caption): bChangeScrPag = True
+    bChangeScrPag = False: scrPagina.Value = CLng(lblPaginaAtual.Caption): bChangeScrPag = True
     
     ' Trata os botões de navegação
     Call TrataBotoesNavegacao
@@ -519,6 +519,9 @@ Private Sub btnFiltrar_Click()
         End With
         
         Call lstPrincipalPopular(myRst.PageCount)
+    Else
+    
+        lstPrincipal.Clear
         
     End If
 
@@ -541,12 +544,12 @@ Private Sub btnPaginaInicial_Click()
 End Sub
 Private Sub btnPaginaAnterior_Click()
 
-    Call lstPrincipalPopular(CLng(lblPagina.Caption) - 1)
+    Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) - 1)
     
 End Sub
 Private Sub btnPaginaSeguinte_Click()
 
-    Call lstPrincipalPopular(CLng(lblPagina.Caption) + 1)
+    Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) + 1)
 
 End Sub
 Private Sub btnPaginaFinal_Click()
@@ -560,13 +563,13 @@ Private Sub btnRegistroAnterior_Click()
         
             lstPrincipal.ListIndex = lstPrincipal.ListIndex - 1
             
-        ElseIf lstPrincipal.ListIndex = 0 And CLng(lblPagina.Caption) > 1 Then
+        ElseIf lstPrincipal.ListIndex = 0 And CLng(lblPaginaAtual.Caption) > 1 Then
             
-            Call lstPrincipalPopular(CLng(lblPagina.Caption) - 1)
+            Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) - 1)
             
             lstPrincipal.ListIndex = myRst.PageSize - 1
             
-        ElseIf CLng(lblPagina.Caption) = 1 And lstPrincipal.ListIndex = 0 Then
+        ElseIf CLng(lblPaginaAtual.Caption) = 1 And lstPrincipal.ListIndex = 0 Then
         
             MsgBox "Primeiro registro"
             Exit Sub
@@ -584,13 +587,13 @@ Private Sub btnRegistroSeguinte_Click()
         
         lstPrincipal.ListIndex = 0
     
-    ElseIf lstPrincipal.ListIndex = myRst.PageSize - 1 And CLng(lblPagina.Caption) < myRst.PageCount Then
+    ElseIf lstPrincipal.ListIndex = myRst.PageSize - 1 And CLng(lblPaginaAtual.Caption) < myRst.PageCount Then
         
-        Call lstPrincipalPopular(CLng(lblPagina.Caption) + 1)
+        Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) + 1)
         
         lstPrincipal.ListIndex = 0
         
-    ElseIf CLng(lblPagina.Caption) = myRst.PageCount And (lstPrincipal.ListIndex + 1) = lstPrincipal.ListCount Then
+    ElseIf CLng(lblPaginaAtual.Caption) = myRst.PageCount And (lstPrincipal.ListIndex + 1) = lstPrincipal.ListCount Then
     
         MsgBox "Último registro"
         Exit Sub
@@ -643,21 +646,21 @@ Private Sub ColoreLegenda()
 End Sub
 Private Sub TrataBotoesNavegacao()
 
-    If CLng(lblPagina.Caption) = myRst.PageCount And CLng(lblPagina.Caption) > 1 Then
+    If CLng(lblPaginaAtual.Caption) = myRst.PageCount And CLng(lblPaginaAtual.Caption) > 1 Then
     
         btnPaginaInicial.Enabled = True
         btnPaginaAnterior.Enabled = True
         btnPaginaFinal.Enabled = False
         btnPaginaSeguinte.Enabled = False
         
-    ElseIf CLng(lblPagina.Caption) < myRst.PageCount And CLng(lblPagina.Caption) = 1 Then
+    ElseIf CLng(lblPaginaAtual.Caption) < myRst.PageCount And CLng(lblPaginaAtual.Caption) = 1 Then
     
         btnPaginaInicial.Enabled = False
         btnPaginaAnterior.Enabled = False
         btnPaginaFinal.Enabled = True
         btnPaginaSeguinte.Enabled = True
         
-    ElseIf CLng(lblPagina.Caption) = myRst.PageCount And CLng(lblPagina.Caption) = 1 Then
+    ElseIf CLng(lblPaginaAtual.Caption) = myRst.PageCount And CLng(lblPaginaAtual.Caption) = 1 Then
     
         btnPaginaInicial.Enabled = False
         btnPaginaAnterior.Enabled = False

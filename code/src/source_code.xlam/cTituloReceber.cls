@@ -87,6 +87,7 @@ Public Sub Inclui()
         .Fields("observacao").Value = Me.Observacao
         .Fields("vencimento").Value = CLng(Me.Vencimento)
         .Fields("valor").Value = Me.Valor
+        .Fields("valor_recebido").Value = 0
         .Fields("data").Value = CLng(Me.Data)
         
         .Update

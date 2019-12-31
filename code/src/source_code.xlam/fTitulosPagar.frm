@@ -506,6 +506,10 @@ Private Sub btnFiltrar_Click()
         
         Call lstPrincipalPopular(myRst.PageCount)
         
+    Else
+    
+        lstPrincipal.Clear
+        
     End If
 
 End Sub

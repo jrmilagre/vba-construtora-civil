@@ -9,7 +9,7 @@ Sub OnActionButton(control As IRibbonControl)
             Case "btnClientes": fClientes.Show
             Case "btnFornecedores": fFornecedores.Show
             Case "btnProdutos": fProdutos.Show
-            Case "btnObras": fObras.Show
+            Case "btnVendas": fVendas.Show
             Case "btnCompras": fCompras.Show
             Case "btnRequisicoes": fRequisicoes.Show
             Case "btnLancamentoRapido": fLancamentosRapidos.Show

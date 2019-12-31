@@ -29,6 +29,7 @@ tbl_obras;uf;202;2;True;False;UF;False;False
 tbl_obras;cliente_id;3;0;True;False;Código do cliente;False;tbl_clientes.id
 tbl_obras;data;7;0;True;False;Data de início;False;False
 tbl_obras;categoria_id;3;0;True;False;Código da categoria;False;False
+tbl_obras;encerrada;11;0;False;False;Encerrada?;False;False
 tbl_obras;deletado;11;0;False;False;Deletado;False;False
 tbl_estados;id;3;0;True;True;Código;True;False
 tbl_estados;nome;202;75;True;False;Nome;False;False
