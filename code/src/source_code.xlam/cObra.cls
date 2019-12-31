@@ -19,6 +19,7 @@ Private Type TTipoObra
     ClienteID       As Variant
     Data            As Date
     CategoriaID     As Long
+    Encerrada       As Boolean
 End Type
 
 Private This As TTipoObra
@@ -52,6 +53,9 @@ Public Property Let Data(ByVal Value As Date): This.Data = Value: End Property
 Public Property Get CategoriaID() As Variant: CategoriaID = This.CategoriaID: End Property
 Public Property Let CategoriaID(ByVal Value As Variant): This.CategoriaID = Value: End Property
 
+Public Property Get Encerrada() As Boolean: Encerrada = This.Encerrada: End Property
+Public Property Let Encerrada(ByVal Value As Boolean): This.Encerrada = Value: End Property
+
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
 
@@ -75,6 +79,7 @@ Public Sub Carrega(ID As Long)
         Me.ClienteID = IIf(IsNull(.Fields("cliente_id").Value), Null, .Fields("cliente_id").Value)
         Me.Data = .Fields("data").Value
         Me.CategoriaID = .Fields("categoria_id").Value
+        Me.Encerrada = .Fields("encerrada").Value
     End With
     
 End Sub
@@ -102,6 +107,7 @@ Public Sub Inclui()
         .Fields("cliente_id").Value = Me.ClienteID
         .Fields("data").Value = Me.Data
         .Fields("categoria_id").Value = Me.CategoriaID
+        .Fields("encerrada").Value = Me.Encerrada
         
         .Update
     End With
@@ -135,6 +141,7 @@ Public Sub Altera()
         .Fields("cliente_id").Value = Me.ClienteID
         .Fields("data").Value = Me.Data
         .Fields("categoria_id").Value = Me.CategoriaID
+        .Fields("encerrada").Value = Me.Encerrada
         
         ' Grava alterações
         .Update
@@ -157,7 +164,6 @@ Public Function Listar(OrderBy As String) As Collection
 
     sSQL = "SELECT id "
     sSQL = sSQL & "FROM " & sTable & " "
-    'sSQL = sSQL & "WHERE deletado = False "
     sSQL = sSQL & "ORDER BY " & OrderBy
 
     Set rst = New ADODB.Recordset

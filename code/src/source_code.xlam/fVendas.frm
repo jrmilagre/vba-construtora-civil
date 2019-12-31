@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fVendas
    ClientHeight    =   10560
    ClientLeft      =   120
    ClientTop       =   465
-   ClientWidth     =   13560
+   ClientWidth     =   13200
    OleObjectBlob   =   "fVendas.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -222,6 +222,8 @@ Private Sub lstPrincipal_Change()
         Next n
     End If
     
+    chbEncerrada.Value = oObra.Encerrada
+    
     Call lstTitulosPopular(CLng(lblCabID.Caption))
 
 End Sub
@@ -320,6 +322,7 @@ Private Sub Campos(Acao As String)
         cbbCliente.Enabled = False: lblCliente.Enabled = False
         txbData.Enabled = False: lblData.Enabled = False: btnData.Enabled = False
         cbbCategoria.Enabled = False: lblCategoria.Enabled = False
+        chbEncerrada.Enabled = False
         
         frmTitulo.Enabled = False
         lblHdVencimento.Enabled = False
@@ -344,6 +347,7 @@ Private Sub Campos(Acao As String)
         cbbCliente.Enabled = True: lblCliente.Enabled = True
         txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
         cbbCategoria.Enabled = True: lblCategoria.Enabled = True
+        chbEncerrada.Enabled = True
         
         frmTitulo.Enabled = True
         lstTitulos.Enabled = True: lstTitulos.ForeColor = &H80000008
@@ -368,6 +372,7 @@ Private Sub Campos(Acao As String)
         cbbCliente.ListIndex = -1
         cbbCategoria.ListIndex = -1
         txbData.Text = Empty
+        chbEncerrada.Value = False
         
         lblTotalTitulos.Caption = Format(0, "#,##0.00")
         
@@ -461,6 +466,7 @@ Private Function Valida(Decisao As String) As Boolean
                 .ClienteID = CLng(cbbCliente.List(cbbCliente.ListIndex, 1))
                 .Data = CDate(txbData.Text)
                 .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
+                .Encerrada = chbEncerrada.Value
             End With
             
             Valida = True
