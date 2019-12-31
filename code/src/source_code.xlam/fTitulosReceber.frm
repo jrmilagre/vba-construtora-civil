@@ -156,8 +156,6 @@ Private Sub lstPrincipalPopular(Pagina As Long)
     Dim cVlrBxd     As Currency
     Dim cVlrSld     As Currency
     
-        
-    
     With lstPrincipal
         .Clear
         .ColumnCount = 7
