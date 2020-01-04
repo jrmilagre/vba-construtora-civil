@@ -31,6 +31,13 @@ tbl_obras;data;7;0;True;False;Data de início;False;False
 tbl_obras;categoria_id;3;0;True;False;Código da categoria;False;False
 tbl_obras;encerrada;11;0;False;False;Encerrada?;False;False
 tbl_obras;deletado;11;0;False;False;Deletado;False;False
+tbl_obras;qtde;3;0;True;False;Quantidade;False;False
+tbl_obras;m2_obra;0.5;0;True;False;Metragem do imóvel;False;False
+tbl_obras;m2_terreno;0.5;0;True;False;Metragem total do terreno;False;False
+tbl_obras;preco_m2;6;0;True;False;Valor da construção em R$/m²;False;False
+tbl_obras;preco_muro_portao;6;0;True;False;Preço do muro e portão;False;False
+tbl_obras;prazo_dias;3;0;True;False;Prazo das casas (em dias);False;False
+tbl_obras;metros_frente;0.5;0;True;False;Tamanho da frente da casa;False;False
 tbl_estados;id;3;0;True;True;Código;True;False
 tbl_estados;nome;202;75;True;False;Nome;False;False
 tbl_estados;uf;202;2;True;False;Nome;False;False

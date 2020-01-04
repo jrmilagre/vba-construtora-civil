@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Private Type TTipoObra
+Private Type TObra
     ID              As Long
     Endereco        As String
     Bairro          As String
@@ -20,9 +20,16 @@ Private Type TTipoObra
     Data            As Date
     CategoriaID     As Long
     Encerrada       As Boolean
+    QtdeCasas       As Variant 'Integer
+    ObraM2          As Variant 'Double
+    TerrenoM2       As Variant 'Double
+    PrecoM2         As Variant 'Currency
+    PrecoMuroPortao As Variant 'Currency
+    PrazoDias       As Variant 'Integer
+    MetrosFrente    As Variant 'Double
 End Type
 
-Private This As TTipoObra
+Private This As TObra
 
 Private Const sTable As String = "tbl_obras"
 
@@ -56,6 +63,27 @@ Public Property Let CategoriaID(ByVal Value As Variant): This.CategoriaID = Valu
 Public Property Get Encerrada() As Boolean: Encerrada = This.Encerrada: End Property
 Public Property Let Encerrada(ByVal Value As Boolean): This.Encerrada = Value: End Property
 
+Public Property Get QtdeCasas() As Variant: QtdeCasas = This.QtdeCasas: End Property
+Public Property Let QtdeCasas(ByVal Value As Variant): This.QtdeCasas = Value: End Property
+
+Public Property Get ObraM2() As Variant: ObraM2 = This.ObraM2: End Property
+Public Property Let ObraM2(ByVal Value As Variant): This.ObraM2 = Value: End Property
+
+Public Property Get TerrenoM2() As Variant: TerrenoM2 = This.TerrenoM2: End Property
+Public Property Let TerrenoM2(ByVal Value As Variant): This.TerrenoM2 = Value: End Property
+
+Public Property Get PrecoM2() As Variant: PrecoM2 = This.PrecoM2: End Property
+Public Property Let PrecoM2(ByVal Value As Variant): This.PrecoM2 = Value: End Property
+
+Public Property Get PrecoMuroPortao() As Variant: PrecoMuroPortao = This.PrecoMuroPortao: End Property
+Public Property Let PrecoMuroPortao(ByVal Value As Variant): This.PrecoMuroPortao = Value: End Property
+
+Public Property Get PrazoDias() As Variant: PrazoDias = This.PrazoDias: End Property
+Public Property Let PrazoDias(ByVal Value As Variant): This.PrazoDias = Value: End Property
+
+Public Property Get MetrosFrente() As Variant: MetrosFrente = This.MetrosFrente: End Property
+Public Property Let MetrosFrente(ByVal Value As Variant): This.MetrosFrente = Value: End Property
+
 ' Rotina para carregar dados
 Public Sub Carrega(ID As Long)
 
@@ -80,6 +108,13 @@ Public Sub Carrega(ID As Long)
         Me.Data = .Fields("data").Value
         Me.CategoriaID = .Fields("categoria_id").Value
         Me.Encerrada = .Fields("encerrada").Value
+        Me.QtdeCasas = IIf(IsNull(.Fields("qtde").Value), Null, .Fields("qtde").Value)
+        Me.ObraM2 = IIf(IsNull(.Fields("m2_obra").Value), Null, .Fields("m2_obra").Value)
+        Me.TerrenoM2 = IIf(IsNull(.Fields("m2_terreno").Value), Null, .Fields("m2_terreno").Value)
+        Me.PrecoM2 = IIf(IsNull(.Fields("preco_m2").Value), Null, .Fields("preco_m2").Value)
+        Me.PrecoMuroPortao = IIf(IsNull(.Fields("preco_muro_portao").Value), Null, .Fields("preco_muro_portao").Value)
+        Me.PrazoDias = IIf(IsNull(.Fields("prazo_dias").Value), Null, .Fields("prazo_dias").Value)
+        Me.MetrosFrente = IIf(IsNull(.Fields("metros_frente").Value), Null, .Fields("metros_frente").Value)
     End With
     
 End Sub
@@ -108,6 +143,13 @@ Public Sub Inclui()
         .Fields("data").Value = Me.Data
         .Fields("categoria_id").Value = Me.CategoriaID
         .Fields("encerrada").Value = Me.Encerrada
+        .Fields("qtde").Value = Me.QtdeCasas
+        .Fields("m2_obra").Value = Me.ObraM2
+        .Fields("m2_terreno").Value = Me.TerrenoM2
+        .Fields("preco_m2").Value = Me.PrecoM2
+        .Fields("preco_muro_portao").Value = Me.PrecoMuroPortao
+        .Fields("prazo_dias").Value = Me.PrazoDias
+        .Fields("metros_frente").Value = Me.MetrosFrente
         
         .Update
     End With
@@ -142,6 +184,13 @@ Public Sub Altera()
         .Fields("data").Value = Me.Data
         .Fields("categoria_id").Value = Me.CategoriaID
         .Fields("encerrada").Value = Me.Encerrada
+        .Fields("qtde").Value = Me.QtdeCasas
+        .Fields("m2_obra").Value = Me.ObraM2
+        .Fields("m2_terreno").Value = Me.TerrenoM2
+        .Fields("preco_m2").Value = Me.PrecoM2
+        .Fields("preco_muro_portao").Value = Me.PrecoMuroPortao
+        .Fields("prazo_dias").Value = Me.PrazoDias
+        .Fields("metros_frente").Value = Me.MetrosFrente
         
         ' Grava alterações
         .Update

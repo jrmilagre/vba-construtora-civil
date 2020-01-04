@@ -11,7 +11,7 @@ Option Explicit
 
 Private Type TRecebimentoItem
     RecebimentoID       As Long
-    TituloID            As Date
+    TituloID            As Long
     ValorBaixado        As Currency
     DataBaixa           As Date
     ObraID              As Long
@@ -154,7 +154,7 @@ Public Sub AtualizaCampoValorRecebidoEmTitulosReceber(Decisao As String)
     End If
     
     sSQL = "UPDATE tbl_titulos_receber "
-    sSQL = sSQL & "SET valor_recebido = " & cValorNovo & " "
+    sSQL = sSQL & "SET valor_recebido = " & Replace(cValorNovo, ",", ".") & " "
     sSQL = sSQL & "WHERE r_e_c_n_o_ = " & TituloID
     
     cnn.Execute sSQL

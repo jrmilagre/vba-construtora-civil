@@ -11,7 +11,7 @@ Option Explicit
 
 Private Type TPagamentoItem
     PagamentoID         As Long
-    TituloID            As Date
+    TituloID            As Long
     ValorBaixado        As Currency
     DataBaixa           As Date
     FornecedorID        As Long
@@ -151,7 +151,7 @@ Public Sub AtualizaCampoValorRecebidoEmTitulosPagar(Decisao As String)
     End If
     
     sSQL = "UPDATE tbl_titulos_pagar "
-    sSQL = sSQL & "SET valor_pago = " & cValorNovo & " "
+    sSQL = sSQL & "SET valor_pago = " & Replace(cValorNovo, ",", ".") & " "
     sSQL = sSQL & "WHERE r_e_c_n_o_ = " & TituloID
     
     cnn.Execute sSQL

@@ -1142,7 +1142,7 @@ Private Sub lstRequisicoesPopular(RequisicaoID As Long)
             
             .List(.ListCount - 1, 5) = Space(9 - Len(Format(dVlrUnitario, "#,##0.00"))) & Format(dVlrUnitario, "#,##0.00")
             .List(.ListCount - 1, 6) = Space(9 - Len(Format(r.Fields("total").Value, "#,##0.00"))) & Format(r.Fields("total").Value, "#,##0.00")
-            .List(.ListCount - 1, 7) = oObra.Bairro & Space(30 - Len(oObra.Bairro)) & " | " & oCliente.Nome
+            .List(.ListCount - 1, 7) = oObra.Bairro & ": " & oCliente.Nome
             .List(.ListCount - 1, 8) = oEtapa.Nome
             
             r.MoveNext

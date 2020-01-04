@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fVendas 
-   Caption         =   ":: Cadastro de Obras ::"
+   Caption         =   ":: Cadastro de Vendas ::"
    ClientHeight    =   10560
    ClientLeft      =   120
    ClientTop       =   465
@@ -169,7 +169,7 @@ Private Sub PosDecisaoTomada(Decisao As String)
     
     If Decisao <> "Exclusão" Then
         Call Campos("Habilitar")
-        txbEndereco.SetFocus
+        cbbCliente.SetFocus
     End If
     
 End Sub
@@ -184,10 +184,15 @@ Private Sub lstPrincipal_Change()
     
     If lstPrincipal.ListIndex >= 0 Then
         oObra.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 0)))
+        oCliente.Carrega oObra.ClienteID
     End If
     
+    ' Preenche informações do cabeçalho
     lblCabID.Caption = Format(IIf(oObra.ID = 0, "", oObra.ID), "00000")
+    lblCabCliente.Caption = oCliente.Nome
+    lblCabBairro.Caption = oObra.Bairro
     lblCabEndereco.Caption = oObra.Endereco
+    
     
     txbBairro.Text = oObra.Bairro
     txbCidade.Text = oObra.Cidade
@@ -221,6 +226,14 @@ Private Sub lstPrincipal_Change()
     End If
     
     chbEncerrada.Value = oObra.Encerrada
+    
+    txbQtde.Text = IIf(IsNull(oObra.QtdeCasas), Format(0, "#,##0"), oObra.QtdeCasas)
+    txbObraM2.Text = IIf(IsNull(oObra.ObraM2), Format(0, "#,##0.00"), oObra.ObraM2)
+    txbTerrenoM2.Text = IIf(IsNull(oObra.TerrenoM2), Format(0, "#,##0.00"), oObra.TerrenoM2)
+    txbPrecoM2.Text = IIf(IsNull(oObra.PrecoM2), Format(0, "#,##0.00"), oObra.PrecoM2)
+    txbMuroPortao.Text = IIf(IsNull(oObra.PrecoMuroPortao), Format(0, "#,##0.00"), oObra.PrecoMuroPortao)
+    txbPrazoDias.Text = IIf(IsNull(oObra.PrazoDias), Format(0, "#,##0"), oObra.PrazoDias)
+    txbMetrosFrente.Text = IIf(IsNull(oObra.MetrosFrente), Format(0, "#,##0.00"), oObra.MetrosFrente)
     
     Call lstTitulosPopular(CLng(lblCabID.Caption))
 
@@ -297,13 +310,13 @@ Private Function ValidaTitulo() As Boolean
     
     If txbVencimento.Text = Empty Then
         MsgBox "Campo 'Vencimento' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbVencimento.SetFocus
+        MultiPage1.Value = 2: txbVencimento.SetFocus
     ElseIf txbValor.Text = Empty Then
         MsgBox "Campo 'Valor' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbValor.SetFocus
+        MultiPage1.Value = 2: txbValor.SetFocus
     ElseIf txbObservacao.Text = Empty Then
         MsgBox "Campo 'Observação' é obrigatório", vbCritical
-        MultiPage1.Value = 3: txbObservacao.SetFocus
+        MultiPage1.Value = 2: txbObservacao.SetFocus
     Else
         ValidaTitulo = True
     End If
@@ -321,6 +334,13 @@ Private Sub Campos(Acao As String)
         txbData.Enabled = False: lblData.Enabled = False: btnData.Enabled = False
         cbbCategoria.Enabled = False: lblCategoria.Enabled = False
         chbEncerrada.Enabled = False
+        txbQtde.Enabled = False: lblQtde.Enabled = False
+        txbObraM2.Enabled = False: lblObraM2.Enabled = False
+        txbTerrenoM2.Enabled = False: lblTerrenoM2.Enabled = False
+        txbPrecoM2.Enabled = False: lblPrecoM2.Enabled = False
+        txbMuroPortao.Enabled = False: lblMuroPortao.Enabled = False
+        txbPrazoDias.Enabled = False: lblPrazoDias.Enabled = False
+        txbMetrosFrente.Enabled = False: lblMetrosFrente.Enabled = False
         
         frmTitulo.Enabled = False
         lblHdVencimento.Enabled = False
@@ -346,6 +366,13 @@ Private Sub Campos(Acao As String)
         txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
         cbbCategoria.Enabled = True: lblCategoria.Enabled = True
         chbEncerrada.Enabled = True
+        txbQtde.Enabled = True: lblQtde.Enabled = True
+        txbObraM2.Enabled = True: lblObraM2.Enabled = True
+        txbTerrenoM2.Enabled = True: lblTerrenoM2.Enabled = True
+        txbPrecoM2.Enabled = True: lblPrecoM2.Enabled = True
+        txbMuroPortao.Enabled = True: lblMuroPortao.Enabled = True
+        txbPrazoDias.Enabled = True: lblPrazoDias.Enabled = True
+        txbMetrosFrente.Enabled = True: lblMetrosFrente.Enabled = True
         
         frmTitulo.Enabled = True
         lstTitulos.Enabled = True: lstTitulos.ForeColor = &H80000008
@@ -371,6 +398,13 @@ Private Sub Campos(Acao As String)
         cbbCategoria.ListIndex = -1
         txbData.Text = Empty
         chbEncerrada.Value = False
+        txbQtde.Text = Format(0, "#,##0")
+        txbObraM2.Text = Format(0, "#,##0.00")
+        txbTerrenoM2.Text = Format(0, "#,##0.00")
+        txbPrecoM2.Text = Format(0, "#,##0.00")
+        txbMuroPortao.Text = Format(0, "#,##0.00")
+        txbPrazoDias.Text = Format(0, "#,##0")
+        txbMetrosFrente.Text = Format(0, "#,##0.00")
         
         lblTotalTitulos.Caption = Format(0, "#,##0.00")
         
@@ -386,11 +420,13 @@ Private Sub lstPrincipalPopular(Pagina As Long)
     
     With lstPrincipal
         .Clear
-        .ColumnCount = 4 ' Funcionário, ID, Empresa, Filial
-        .ColumnWidths = "55 pt; 0pt; 180pt; 0pt;"
+        .ColumnCount = 6
+        .ColumnWidths = "55pt; 55pt; 180pt; 0pt; 120pt; 180pt;"
             ' COLUNAS:
-            '   - ID
+            '   - Código (ID)
             '   - Data
+            '   - Cliente
+            '   - Bairro
             '   - Endereço
             '   - Encerrada?
         .Enabled = True
@@ -402,12 +438,14 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
             .AddItem
 
-            'oObra.Carrega myRst.Fields("id").Value
+            oCliente.Carrega myRst.Fields("cliente_id").Value
 
             .List(.ListCount - 1, 0) = Format(myRst.Fields("id").Value, "0000000000")
             .List(.ListCount - 1, 1) = myRst.Fields("data").Value
-            .List(.ListCount - 1, 2) = myRst.Fields("endereco").Value
+            .List(.ListCount - 1, 2) = oCliente.Nome
             .List(.ListCount - 1, 3) = myRst.Fields("encerrada").Value
+            .List(.ListCount - 1, 4) = myRst.Fields("bairro").Value
+            .List(.ListCount - 1, 5) = myRst.Fields("endereco").Value
             
 '            .List(.ListCount - 1, 4) = oEmpresa.Empresa & IIf(oEmpresa.Filial = "", "", " : " & oEmpresa.Filial)
 '            .List(.ListCount - 1, 5) = myRst.Fields("status").Value
@@ -463,6 +501,13 @@ Private Function Valida(Decisao As String) As Boolean
                 .Data = CDate(txbData.Text)
                 .CategoriaID = CLng(cbbCategoria.List(cbbCategoria.ListIndex, 1))
                 .Encerrada = chbEncerrada.Value
+                .QtdeCasas = CInt(txbQtde.Text)
+                .ObraM2 = CDbl(txbObraM2.Text)
+                .TerrenoM2 = CDbl(txbTerrenoM2.Text)
+                .PrecoM2 = CCur(txbPrecoM2.Text)
+                .PrecoMuroPortao = CCur(txbMuroPortao.Text)
+                .PrazoDias = CInt(txbPrazoDias.Text)
+                .MetrosFrente = CDbl(txbMetrosFrente.Text)
             End With
             
             Valida = True
