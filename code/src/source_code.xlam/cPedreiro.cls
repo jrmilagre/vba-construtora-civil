@@ -31,90 +31,67 @@ Public Property Let Apelido(ByVal Value As String): This.Apelido = Value: End Pr
 Public Property Get PrecoM2() As Currency: PrecoM2 = This.PrecoM2: End Property
 Public Property Let PrecoM2(ByVal Value As Currency): This.PrecoM2 = Value: End Property
 
-' Rotina para carregar dados
-Public Sub Carrega(ID As Long)
-
-    ' Consulta SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
+Public Sub Crud(Acao As Crud, Optional ID As Long)
     
+    If ID > 0 Then
+        sSQL = "SELECT * FROM " & sTable & " WHERE id = " & ID
+    End If
+
     ' Cria objeto Recordset
     Set rst = New ADODB.Recordset
     
-    ' Atribui resultado da consulta SQL ao recordset
-    rst.Open sSQL, cnn, adOpenStatic
-    
-    '---Propriedades
-    With rst
-        Me.ID = .Fields("id").Value
-        Me.Nome = .Fields("nome").Value
-        Me.Apelido = .Fields("apelido").Value
-        Me.PrecoM2 = .Fields("preco_m2").Value
-    End With
-    
-End Sub
-
-' Rotina para incluir registro no banco de dados
-Public Sub Inclui()
-
-    Set rst = New ADODB.Recordset
-
-    'Armazena na variável o comando que fará a consulta SQL no BD Access
-    With rst
-        .Open Source:=sTable, _
-              ActiveConnection:=cnn, _
-              CursorType:=adOpenDynamic, _
-              LockType:=adLockOptimistic, _
-              Options:=adCmdTable
-        .AddNew
+    If Acao = Read Then
         
-        Me.ID = .Fields("id").Value
-        .Fields("nome").Value = Me.Nome
-        .Fields("apelido").Value = Me.Apelido
-        .Fields("preco_m2").Value = Me.PrecoM2
+        With rst
+            .Open sSQL, cnn, adOpenStatic
         
-        .Update
-    End With
+            Me.ID = .Fields("id").Value
+            Me.Nome = .Fields("nome").Value
+            Me.Apelido = .Fields("apelido").Value
+            Me.PrecoM2 = .Fields("preco_m2").Value
+            
+        End With
+        
+    ElseIf Acao = Create Or Acao = Update Then
+        
+        With rst
+        
+            If Acao = Create Then
+                .Open sTable, cnn, adOpenDynamic, adLockOptimistic, adCmdTable
+                .AddNew
+                
+                Me.ID = .Fields("id").Value
+                
+            ElseIf Acao = Update Then
+            
+                .Open sSQL, cnn, adOpenDynamic, adLockOptimistic
+                
+            End If
+            
+            .Fields("nome").Value = Me.Nome
+            .Fields("apelido").Value = Me.Apelido
+            .Fields("preco_m2").Value = Me.PrecoM2
+            
+            .Update
+            
+        End With
+        
+    ElseIf Acao = Delete Then
+    
+        With rst
+        
+            .Open sSQL, cnn, adOpenDynamic, adLockOptimistic
+            
+            .Delete
+            
+        End With
+        
+    End If
     
     Set rst = Nothing
-       
 
 End Sub
 
-' Rotina para alterar registro no banco de dados
-Public Sub Altera()
-    
-    Set rst = New ADODB.Recordset
-    
-    ' Comando SQL
-    sSQL = "SELECT * FROM " & sTable & " WHERE id = " & Me.ID
-
-    'Armazena na variável o comando que fará a consulta SQL no BD Access
-    With rst
-        .Open Source:=sSQL, _
-              ActiveConnection:=cnn, _
-              CursorType:=adOpenDynamic, _
-              LockType:=adLockOptimistic
-        
-        ' Atribui novos valores aos campos
-        .Fields("nome").Value = Me.Nome
-        .Fields("apelido").Value = Me.Apelido
-        .Fields("preco_m2").Value = Me.PrecoM2
-        
-        ' Grava alterações
-        .Update
-    End With
-    
-    Set rst = Nothing
-End Sub
-
-' Rotina para Excluir registro do banco de dados
-Public Sub Exclui()
-    
-    sSQL = "UPDATE " & sTable & " SET deletado = True WHERE id = " & Me.ID
-    
-    cnn.Execute sSQL
-    
-End Sub
 Public Function Listar(OrderBy As String) As Collection
 
     Dim col As New Collection

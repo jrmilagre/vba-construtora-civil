@@ -910,6 +910,7 @@ Private Sub lstPagamentosPopular(RecebimentoID As Long)
                 .ColumnCount = 4
                 .ColumnWidths = "65pt; 60pt; 0pt; 0pt;"
                 .Font = "Consolas"
+                .Clear
                 
                 Do Until r.EOF
                 

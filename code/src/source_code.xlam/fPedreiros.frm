@@ -22,16 +22,20 @@ Private Const sTable As String = "tbl_pedreiros"
 Private Const sCampoOrderBy As String = "nome"
 
 Private Sub UserForm_Initialize()
+
+    If Conecta = True Then
      
-    Call lstPrincipalPopular(sCampoOrderBy)
-    Call EventosCampos
-    Call Campos("Desabilitar")
-    
-    btnCancelar.Visible = False: btnConfirmar.Visible = False
-    btnAlterar.Enabled = False
-    btnExcluir.Enabled = False
-    
-    MultiPage1.Value = 0
+        Call lstPrincipalPopular(sCampoOrderBy)
+        Call EventosCampos
+        Call Campos("Desabilitar")
+        
+        btnCancelar.Visible = False: btnConfirmar.Visible = False
+        btnAlterar.Enabled = False
+        btnExcluir.Enabled = False
+        
+        MultiPage1.Value = 0
+        
+    End If
 
 End Sub
 Private Sub lblHdFornecedor_Click():
@@ -100,41 +104,24 @@ Private Sub btnConfirmar_Click()
         
             If sDecisao = vbNewLine & "Inclusão" Then
             
-                ' Chama método para incluir registro no banco de dados
-                oPedreiro.Inclui
-                Call lstPrincipalPopular(sCampoOrderBy)
-                ' Inclui registro na ListBox
-'                With lstPrincipal
-'                    .AddItem
-'                    .List(.ListCount - 1, 0) = oPedreiro.NomeFantasia
-'                    .List(.ListCount - 1, 1) = oPedreiro.ID
-'                    .List(.ListCount - 1, 2) = oPedreiro.Endereco
-'                End With
-                    
+                oPedreiro.Crud Create
                 
-                'Call ListBoxOrdenar
+                Call lstPrincipalPopular(sCampoOrderBy)
+
                 
             ElseIf sDecisao = vbNewLine & "Alteração" Then
                 
-                ' Chama método para alterar dados no banco de dados
-                oPedreiro.Altera
+                oPedreiro.Crud Update, CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1))
+                
                 Call lstPrincipalPopular(sCampoOrderBy)
-                ' Replica as alterações na ListBox
-'                With lstPrincipal
-'                    .List(.ListIndex, 0) = oPedreiro.NomeFantasia
-'                    .List(.ListIndex, 2) = oPedreiro.Endereco
-'                End With
-                
-                
-                'Call ListBoxOrdenar
+
                     
             ElseIf sDecisao = vbNewLine & "Exclusão" Then
                         
-                ' Chama método para deletar registro do banco de dados
-                oPedreiro.Exclui
+                oPedreiro.Crud Delete, CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1))
+                
                 Call lstPrincipalPopular(sCampoOrderBy)
-                ' Remove item da ListBox
-                'lstPrincipal.RemoveItem (lstPrincipal.ListIndex)
+                
             End If
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
@@ -218,7 +205,7 @@ Private Sub lstPrincipal_Change()
         If btnExcluir.Enabled = False Then btnExcluir.Enabled = True
         
         If lstPrincipal.ListIndex >= 0 Then
-            oPedreiro.Carrega (CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1)))
+            oPedreiro.Crud Read, CLng(lstPrincipal.List(lstPrincipal.ListIndex, 1))
         End If
         
         lblID.Caption = Format(IIf(oPedreiro.ID = 0, "", oPedreiro.ID), "00000")
@@ -330,7 +317,7 @@ Private Sub lstPrincipalPopular(OrderBy As String)
 End Sub
 
 Private Function Valida() As Boolean
-    
+        
     Valida = False
     
     If txbNome.Text = Empty Then

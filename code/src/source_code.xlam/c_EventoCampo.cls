@@ -9,6 +9,13 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+Enum Crud
+    Create = 1
+    Read = 2
+    Update = 3
+    Delete = 4
+End Enum
+
 Public WithEvents cGeneric  As MSForms.TextBox
 Attribute cGeneric.VB_VarHelpID = -1
 
