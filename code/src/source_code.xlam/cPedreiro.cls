@@ -43,7 +43,7 @@ Public Sub Crud(Acao As Crud, Optional ID As Long)
     If Acao = Read Then
         
         With rst
-            .Open sSQL, cnn, adOpenStatic
+            .Open sSQL, cnn, adOpenStatic, adLockReadOnly
         
             Me.ID = .Fields("id").Value
             Me.Nome = .Fields("nome").Value

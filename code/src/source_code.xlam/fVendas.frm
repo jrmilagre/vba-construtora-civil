@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fVendas 
    Caption         =   ":: Cadastro de Vendas ::"
-   ClientHeight    =   10560
+   ClientHeight    =   10065
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13200
@@ -25,8 +25,6 @@ Private oUF                 As New cUF
 Private colControles        As New Collection
 Private myRst               As ADODB.Recordset
 Private bChangeScrPag       As Boolean
-
-Private lPagina             As Long
 
 Private Const sTable As String = "tbl_obras"
 Private Const sCampoOrderBy As String = "endereco"
@@ -417,6 +415,8 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
     Dim lPosicao    As Long
     Dim lCount      As Long
+    
+    myRst.AbsolutePage = Pagina
     
     With lstPrincipal
         .Clear

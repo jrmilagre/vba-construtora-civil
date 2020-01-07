@@ -580,7 +580,7 @@ Private Sub ColoreLegenda()
     Dim idx         As Integer
     Dim c           As control
     
-    For Each c In fTitulosReceber.Controls
+    For Each c In fTitulosPagar.Controls
         
         If TypeName(c) = "Label" And c.Tag = "status" Then
             'Stop

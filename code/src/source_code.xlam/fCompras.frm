@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fCompras 
    Caption         =   ":: Cadastro de Compras ::"
-   ClientHeight    =   9705
+   ClientHeight    =   10560
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13320
@@ -26,7 +26,7 @@ Private oCategoria          As New cCategoria
 Private colControles        As New Collection
 Private bListBoxOrdenando   As Boolean
 Private myRst               As ADODB.Recordset
-Private lPagina             As Long
+Private bChangeScrPag       As Boolean
 
 Private Const sTable As String = "tbl_compras"
 Private Const sCampoOrderBy As String = "data"
@@ -38,25 +38,11 @@ Private Sub UserForm_Initialize()
     Call cbbUMPopular
     Call cbbCategoriaPopular
     
+    Call cbbFltFornecedorPopular
+    
     Call EventosCampos
     
-    Set myRst = New ADODB.Recordset
-    Set myRst = oCompra.Recordset
-    
-    With scrPagina
-        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
-        .Max = myRst.PageCount
-    End With
-    
-    lPagina = myRst.PageCount
-    
-    If myRst.PageCount > 0 Then
-        myRst.AbsolutePage = myRst.PageCount
-    End If
-    
-    scrPagina.Value = lPagina
-    
-    Call lstPrincipalPopular(lPagina)
+    Call btnFiltrar_Click
     
     Call btnCancelar_Click
 
@@ -65,6 +51,15 @@ Private Sub UserForm_Terminate()
     
     ' Destrói objeto da classe cProduto
     Set oCompra = Nothing
+    Set oFornecedor = Nothing
+    Set oProduto = Nothing
+    Set oCompraItem = Nothing
+    Set oTituloPagar = Nothing
+    Set oUM = Nothing
+    Set oCategoria = Nothing
+    
+    Set myRst = Nothing
+    
     Call Desconecta
     
 End Sub
@@ -155,28 +150,18 @@ Private Sub btnConfirmar_Click()
                         .FornecedorID = oCompra.FornecedorID
                         .CompraID = oCompra.ID
                         
-                        If Not IsNull(lstItens.List(i, 5)) Then
+                        If sDecisao = "Inclusão" Then
+                            .Inclui
+                        ElseIf sDecisao = "Exclusão" Then
                             .Recno = CLng(lstItens.List(i, 5))
-                        Else
-                            If sDecisao = "Inclusão" Then
-                                .Inclui
-                            ElseIf sDecisao = "Alteração" Then
-                                If IsNull(lstItens.List(i, 5)) Then
-                                    .Inclui
-                                Else
-                                    .Altera .Recno
-                                End If
-                            ElseIf sDecisao = "Exclusão" Then
-                                .Exclui .Recno
-                            End If
-                            
+                            .Exclui .Recno
                         End If
                         
                     End With
                     
                 Next i
                 
-                ' Títulos das compras (DOING)
+                ' Títulos das compras
                 For i = 0 To lstTitulos.ListCount - 1
                 
                     With oTituloPagar
@@ -186,18 +171,13 @@ Private Sub btnConfirmar_Click()
                         .Vencimento = CDate(lstTitulos.List(i, 0))
                         .Valor = CCur(lstTitulos.List(i, 1))
                         .Data = oCompra.Data
-                        
-                        If Not IsNull(lstItens.List(i, 5)) Then
+
+                        If sDecisao = "Inclusão" Then
+                            .Inclui
+
+                        ElseIf sDecisao = "Exclusão" Then
                             .Recno = CLng(lstItens.List(i, 5))
-                        Else
-                            If sDecisao = "Inclusão" Then
-                                .Inclui
-                            ElseIf sDecisao = "Alteração" Then
-                                '.Altera .Recno
-                            ElseIf sDecisao = "Exclusão" Then
-                                .Exclui .Recno
-                            End If
-                            
+                            .Exclui .Recno
                         End If
                         
                     End With
@@ -205,58 +185,38 @@ Private Sub btnConfirmar_Click()
                 Next i
             
             ElseIf sDecisao = "Exclusão" Then
+            
                 oCompraItem.Exclui oCompra.ID
                 oTituloPagar.Exclui oCompra.ID
                 oCompra.Exclui oCompra.ID
+                
             End If
             
-            If sDecisao = "Inclusão" Then
-                If lstPrincipal.ListCount < myRst.PageSize Then
-                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
-                Else
-                    lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption))) + 1
-                End If
-            Else
-                lPagina = Trim(Mid(lblPaginaAtual.Caption, InStr(1, lblPaginaAtual.Caption, "de") + 3, Len(lblPaginaAtual.Caption)))
-            End If
-            
-            Set myRst = New ADODB.Recordset
-            Set myRst = oCompra.Recordset
-        
-            With scrPagina
-                .Min = 1
-                .Max = myRst.PageCount
-            End With
-            
-            On Error Resume Next
-            myRst.AbsolutePage = myRst.PageCount
-            scrPagina.Value = IIf(lPagina = 0, 1, lPagina)
-            
-            Call lstPrincipalPopular(lPagina)
+            Call btnFiltrar_Click
             
             ' Exibe mensagem de sucesso na decisão tomada (inclusão, alteração ou exclusão do registro).
             MsgBox sDecisao & " realizada com sucesso.", vbInformation, sDecisao & " de registro"
             
-            MultiPage1.Value = 0
-            
             Call btnCancelar_Click
             
         ElseIf vbResposta = vbNo Then
+        
             Call btnCancelar_Click
+            
         End If
+        
     Else
+    
         If sDecisao = "Exclusão" Then
+        
             Call btnCancelar_Click
+            
         End If
     End If
     
 End Sub
 Private Sub btnIncluir_Click()
     Call PosDecisaoTomada("Inclusão")
-    lstPrincipal.ListIndex = -1
-End Sub
-Private Sub btnAlterar_Click()
-    Call PosDecisaoTomada("Alteração")
 End Sub
 Private Sub btnExcluir_Click()
     Call PosDecisaoTomada("Exclusão")
@@ -269,47 +229,24 @@ Private Sub PosDecisaoTomada(Decisao As String)
     
     btnIncluir.Visible = False: btnExcluir.Visible = False
     
+    MultiPage1.Value = 1
+    
     If Decisao = "Inclusão" Then
+        MultiPage1.Value = 1
+        MultiPage1.Pages(0).Enabled = False
         Call Campos("Limpar")
-    End If
-    
-    If Decisao <> "Exclusão" Then
         Call Campos("Habilitar")
-        
-        If MultiPage1.Value = 0 Then
-            MultiPage1.Value = 1
-        End If
-        
-        If Decisao = "Inclusão" Then
-            txbData.Text = Date
-            If MultiPage1.Value = 1 Then
-                cbbFornecedor.SetFocus
-            End If
-        Else
-            If MultiPage1.Value = 1 Then
-                cbbFornecedor.SetFocus
-            End If
-        End If
-            
+        txbData.Text = Date
+        cbbFornecedor.SetFocus
     End If
-    
-    lstPrincipal.Enabled = False
-    lstPrincipal.ForeColor = &H80000010
-    
-'    cbbFltEmpresa.Enabled = False: lblFltEmpresa.Enabled = False
-'    cbbFltFuncionario.Enabled = False: lblFltFuncionario.Enabled = False
-'    cbbFltStatus.Enabled = False: lblFltStatus.Enabled = False
-'    btnFiltrar.Enabled = False
-    btnPaginaInicial.Enabled = False
-    btnPaginaAnterior.Enabled = False
-    btnPaginaSeguinte.Enabled = False
-    btnPaginaFinal.Enabled = False
     
 End Sub
 Private Sub lstPrincipalPopular(Pagina As Long)
 
     Dim lPosicao    As Long
     Dim lCount      As Long
+    
+    myRst.AbsolutePage = Pagina
     
     With lstPrincipal
         .Clear
@@ -342,7 +279,13 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
     End With
    
-    lblPaginaAtual.Caption = "Página " & Format(scrPagina.Value, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+    ' Posiciona scroll de navegação em páginas
+    lblPaginaAtual.Caption = Pagina
+    lblNumeroPaginas.Caption = myRst.PageCount
+    bChangeScrPag = False: scrPagina.Value = CLng(lblPaginaAtual.Caption): bChangeScrPag = True
+    
+    ' Trata os botões de navegação
+    Call TrataBotoesNavegacao
 
 End Sub
 Private Sub btnData_Click()
@@ -376,10 +319,6 @@ Private Sub cbbFornecedorPopular()
     cbbFornecedor.ListIndex = idx
 
 End Sub
-'Private Sub lblHdNome_Click():
-'    Call lstPrincipalPopular(sCampoOrderBy)
-'End Sub
-'
 Private Sub lstPrincipal_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     MultiPage1.Value = 1
 End Sub
@@ -526,6 +465,8 @@ Private Sub btnCancelar_Click()
 
     btnIncluir.Visible = True: btnExcluir.Visible = True
     btnConfirmar.Visible = False: btnCancelar.Visible = False
+    
+    lstPrincipal.ListIndex = -1
 
     Call Campos("Limpar")
     Call Campos("Desabilitar")
@@ -534,9 +475,6 @@ Private Sub btnCancelar_Click()
     btnIncluir.SetFocus
     
     MultiPage1.Value = 0
-
-    ' Tira a seleção
-    lstPrincipal.ListIndex = -1: lstPrincipal.ForeColor = &H80000008: lstPrincipal.Enabled = True:
 
 End Sub
 Private Sub Campos(Acao As String)
@@ -570,6 +508,8 @@ Private Sub Campos(Acao As String)
         btnTituloExclui.Visible = False
         lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
         
+        MultiPage1.Pages(0).Enabled = True
+        
     ElseIf Acao = "Habilitar" Then
         txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
         cbbFornecedor.Enabled = True: lblFornecedor.Enabled = True
@@ -597,6 +537,8 @@ Private Sub Campos(Acao As String)
         btnTituloAltera.Visible = True
         btnTituloExclui.Visible = True
         
+        MultiPage1.Pages(0).Enabled = False
+        
     ElseIf Acao = "Limpar" Then
         lblCabID.Caption = ""
         lblCabData.Caption = ""
@@ -614,36 +556,6 @@ Private Sub Campos(Acao As String)
     End If
 
 End Sub
-'Private Sub ListBoxOrdenar()
-'
-'    Dim ini, fim, i, j  As Long
-'    Dim sCol01          As String
-'    Dim sCol02          As String
-'
-'    bListBoxOrdenando = True
-'
-'    With lstPrincipal
-'
-'        ini = 0
-'        fim = .ListCount - 1 '4 itens(0 - 3)
-'
-'        For i = ini To fim - 1  ' Laço para comparar cada item com todos os outros itens
-'            For j = i + 1 To fim    ' Laço para comparar item com o próximo item
-'                If .List(i) > .List(j) Then
-'                    sCol01 = .List(j, 0)
-'                    sCol02 = .List(j, 1)
-'                    .List(j, 0) = .List(i, 0)
-'                    .List(j, 1) = .List(i, 1)
-'                    .List(i, 0) = sCol01
-'                    .List(i, 1) = sCol02
-'                End If
-'            Next j
-'        Next i
-'    End With
-'
-'    bListBoxOrdenando = False
-'
-'End Sub
 
 Private Function Valida(Decisao As String) As Boolean
     
@@ -801,6 +713,15 @@ Private Sub btnItemConfirmar_Click()
             With lstItens
                 .ColumnCount = 8
                 .ColumnWidths = "200pt; 0pt; 60pt; 60pt; 60pt; 0pt; 40pt; 0pt;"
+                    ' COLUNAS:
+                    '   0 - Código do produto
+                    '   1 - Descrição do produto
+                    '   2 - Quantidade
+                    '   3 - Preço unitário
+                    '   4 - Total
+                    '   5 -
+                    '   6 - Código da unidade de medida
+                    '   7 - Descrição da unidade de medida
                 .Font = "Consolas"
                 .AddItem
                 
@@ -1212,6 +1133,179 @@ Private Sub txbTotal_AfterUpdate()
         txbTotal.Text = Format(0, "#,##0.00")
     Else
         txbUnitario.Text = Format(CDbl(txbTotal.Text) / CCur(txbQtde.Text), "#,##0.00")
+    End If
+
+End Sub
+Private Sub cbbFltFornecedorPopular()
+    
+    Dim idx         As Integer
+    Dim col         As New Collection
+    Dim n           As Variant
+
+    Set col = oFornecedor.Listar("nome")
+    
+    idx = cbbFltFornecedor.ListIndex
+    
+    With cbbFltFornecedor
+        .Clear
+        .AddItem
+        .List(.ListCount - 1, 0) = "***TODOS***"
+        .List(.ListCount - 1, 1) = 0
+    
+    
+        For Each n In col
+            
+            oFornecedor.Carrega CLng(n)
+        
+            .AddItem
+            .List(.ListCount - 1, 0) = oFornecedor.Nome
+            .List(.ListCount - 1, 1) = oFornecedor.ID
+            
+        Next n
+        
+        .ListIndex = 0
+    
+    End With
+
+End Sub
+Private Sub btnFiltrar_Click()
+
+    Dim lFornecedorID As Long
+    
+    If cbbFltFornecedor.ListIndex = -1 Then
+        lFornecedorID = 0
+    Else
+        lFornecedorID = CLng(cbbFltFornecedor.List(cbbFltFornecedor.ListIndex, 1))
+    End If
+
+    Set myRst = oCompra.Recordset(lFornecedorID)
+    
+    If myRst.PageCount > 0 Then
+    
+        myRst.AbsolutePage = myRst.PageCount
+        
+        bChangeScrPag = False
+        
+        With scrPagina
+            .Max = myRst.PageCount
+            .Value = myRst.PageCount
+        End With
+        
+        Call lstPrincipalPopular(myRst.PageCount)
+    Else
+    
+        lstPrincipal.Clear
+        
+    End If
+
+End Sub
+Private Sub TrataBotoesNavegacao()
+
+    If CLng(lblPaginaAtual.Caption) = myRst.PageCount And CLng(lblPaginaAtual.Caption) > 1 Then
+    
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaFinal.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+        
+    ElseIf CLng(lblPaginaAtual.Caption) < myRst.PageCount And CLng(lblPaginaAtual.Caption) = 1 Then
+    
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaFinal.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        
+    ElseIf CLng(lblPaginaAtual.Caption) = myRst.PageCount And CLng(lblPaginaAtual.Caption) = 1 Then
+    
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaFinal.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+    
+    Else
+    
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaFinal.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        
+    End If
+
+End Sub
+Private Sub btnPaginaInicial_Click()
+    
+    Call lstPrincipalPopular(1)
+    
+End Sub
+Private Sub btnPaginaAnterior_Click()
+
+    Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) - 1)
+    
+End Sub
+Private Sub btnPaginaSeguinte_Click()
+
+    Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) + 1)
+
+End Sub
+Private Sub btnPaginaFinal_Click()
+
+    Call lstPrincipalPopular(myRst.PageCount)
+    
+End Sub
+Private Sub btnRegistroAnterior_Click()
+
+        If lstPrincipal.ListIndex > 0 Then
+        
+            lstPrincipal.ListIndex = lstPrincipal.ListIndex - 1
+            
+        ElseIf lstPrincipal.ListIndex = 0 And CLng(lblPaginaAtual.Caption) > 1 Then
+            
+            Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) - 1)
+            
+            lstPrincipal.ListIndex = myRst.PageSize - 1
+            
+        ElseIf CLng(lblPaginaAtual.Caption) = 1 And lstPrincipal.ListIndex = 0 Then
+        
+            MsgBox "Primeiro registro"
+            Exit Sub
+            
+        Else
+        
+            lstPrincipal.ListIndex = -1
+            
+        End If
+        
+End Sub
+Private Sub btnRegistroSeguinte_Click()
+
+    If lstPrincipal.ListIndex = -1 Then
+        
+        lstPrincipal.ListIndex = 0
+    
+    ElseIf lstPrincipal.ListIndex = myRst.PageSize - 1 And CLng(lblPaginaAtual.Caption) < myRst.PageCount Then
+        
+        Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) + 1)
+        
+        lstPrincipal.ListIndex = 0
+        
+    ElseIf CLng(lblPaginaAtual.Caption) = myRst.PageCount And (lstPrincipal.ListIndex + 1) = lstPrincipal.ListCount Then
+    
+        MsgBox "Último registro"
+        Exit Sub
+        
+    Else
+    
+        lstPrincipal.ListIndex = lstPrincipal.ListIndex + 1
+    
+    End If
+    
+End Sub
+Private Sub scrPagina_Change()
+
+    If bChangeScrPag = True Then
+        
+        Call lstPrincipalPopular(scrPagina.Value)
+        
     End If
 
 End Sub
