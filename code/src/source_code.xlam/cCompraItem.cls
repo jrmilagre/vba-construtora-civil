@@ -178,4 +178,24 @@ Public Sub CancelaRequisicaoTotalItem(ItemCompraID As Long)
     cnn.Execute sSQL
 
 End Sub
+Public Sub BuscaUltimoUMeUnitario(ProdutoID As Long)
 
+    Dim rTmp As New ADODB.Recordset
+
+    sSQL = "SELECT top 1 um_id, unitario FROM tbl_compras_itens "
+    sSQL = sSQL & "WHERE produto_id = " & ProdutoID & " "
+    sSQL = sSQL & "ORDER BY r_e_c_n_o_ DESC"
+    
+    rTmp.Open sSQL, cnn
+    
+    If Not rTmp.EOF = True Then
+        Me.UmID = rTmp.Fields("um_id").Value
+        Me.Unitario = rTmp.Fields("unitario").Value
+    Else
+        Me.UmID = 0
+        Me.Unitario = 0
+    End If
+    
+    Set rTmp = Nothing
+
+End Sub

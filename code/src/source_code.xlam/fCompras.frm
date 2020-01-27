@@ -479,65 +479,45 @@ Private Sub btnCancelar_Click()
 End Sub
 Private Sub Campos(Acao As String)
 
+    Dim b As Boolean
+    
     If Acao = "Desabilitar" Then
-        txbData.Enabled = False: lblData.Enabled = False: btnData.Enabled = False
-        cbbFornecedor.Enabled = False: lblFornecedor.Enabled = False
-        cbbCategoria.Enabled = False: lblCategoria.Enabled = False
+        b = False
+    ElseIf Acao = "Habilitar" Then
+        b = True
+    End If
+
+    If Acao <> "Limpar" Then
+    
+        txbData.Enabled = b: lblData.Enabled = b: btnData.Enabled = b
+        cbbFornecedor.Enabled = b: lblFornecedor.Enabled = b
+        cbbCategoria.Enabled = b: lblCategoria.Enabled = b
         
-        frmItem.Enabled = False
-        lblHdProduto.Enabled = False
-        lblHdQuant.Enabled = False
-        lblHdUnitario.Enabled = False
-        lblHdTotal.Enabled = False
-        lblHdUM.Enabled = False
+        frmItem.Enabled = b
+        lblHdProduto.Enabled = b
+        lblHdQuant.Enabled = b
+        lblHdUnitario.Enabled = b
+        lblHdTotal.Enabled = b
+        lblHdUM.Enabled = b
         Call btnItemCancelar_Click
-        btnItemInclui.Visible = False
-        btnItemAltera.Visible = False
-        btnItemExclui.Visible = False
-        lstItens.Enabled = False: lstItens.ForeColor = &H80000010
+        btnItemInclui.Visible = b
+        btnItemAltera.Visible = b
+        btnItemExclui.Visible = b
+        lstItens.Enabled = b: lstItens.ForeColor = &H80000010
         
-        frmTitulo.Enabled = False
-        lblHdVencimento.Enabled = False
-        lblHdValor.Enabled = False
-        lblHdObservacao.Enabled = False
+        frmTitulo.Enabled = b
+        lblHdVencimento.Enabled = b
+        lblHdValor.Enabled = b
+        lblHdObservacao.Enabled = b
 
         Call btnTituloCancelar_Click
         
-        btnTituloInclui.Visible = False
-        btnTituloAltera.Visible = False
-        btnTituloExclui.Visible = False
-        lstTitulos.Enabled = False: lstTitulos.ForeColor = &H80000010
+        btnTituloInclui.Visible = b
+        btnTituloAltera.Visible = b
+        btnTituloExclui.Visible = b
+        lstTitulos.Enabled = b: lstTitulos.ForeColor = &H80000010
         
-        MultiPage1.Pages(0).Enabled = True
-        
-    ElseIf Acao = "Habilitar" Then
-        txbData.Enabled = True: lblData.Enabled = True: btnData.Enabled = True
-        cbbFornecedor.Enabled = True: lblFornecedor.Enabled = True
-        cbbCategoria.Enabled = True: lblCategoria.Enabled = True
-        frmItem.Enabled = True
-        
-        lstItens.Enabled = True: lstItens.ForeColor = &H80000008
-        lblHdProduto.Enabled = True
-        lblHdProduto.Enabled = True
-        lblHdQuant.Enabled = True
-        lblHdUnitario.Enabled = True
-        lblHdTotal.Enabled = True
-        lblHdUM.Enabled = True
-        btnItemInclui.Visible = True
-        btnItemAltera.Visible = True
-        btnItemExclui.Visible = True
-        
-        frmTitulo.Enabled = True
-        lstTitulos.Enabled = True: lstTitulos.ForeColor = &H80000008
-        lblHdVencimento.Enabled = True
-        lblHdValor.Enabled = True
-        lblHdObservacao.Enabled = True
-
-        btnTituloInclui.Visible = True
-        btnTituloAltera.Visible = True
-        btnTituloExclui.Visible = True
-        
-        MultiPage1.Pages(0).Enabled = False
+        MultiPage1.Pages(0).Enabled = Not b
         
     ElseIf Acao = "Limpar" Then
         lblCabID.Caption = ""
@@ -1059,19 +1039,43 @@ Private Sub cbbProduto_AfterUpdate()
         If vbResposta = vbYes Then
             
             oProduto.Nome = RTrim(cbbProduto.Text)
+            
             oProduto.Inclui
+            
             idx = oProduto.ID
+            
             Call cbbProdutoPopular
             
             For n = 0 To cbbProduto.ListCount - 1
+            
                 If CInt(cbbProduto.List(n, 1)) = idx Then
+                
                     cbbProduto.ListIndex = n
+                    
                     Exit For
+                    
                 End If
+                
             Next n
+            
         Else
+        
             cbbProduto.ListIndex = -1
+            
         End If
+        
+    Else
+    
+        ' Carrega UM e último preço
+        oCompraItem.BuscaUltimoUMeUnitario CLng(cbbProduto.List(cbbProduto.ListIndex, 1))
+        
+        For n = 0 To cbbUM.ListCount - 1
+            If CLng(cbbUM.List(n, 1)) = oCompraItem.UmID Then
+                cbbUM.ListIndex = n: Exit For
+            End If
+        Next n
+        
+        txbUnitario.Text = Format(oCompraItem.Unitario, "#,##0.00")
 
     End If
 
