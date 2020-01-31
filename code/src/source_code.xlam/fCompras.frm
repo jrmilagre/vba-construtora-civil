@@ -1069,12 +1069,20 @@ Private Sub cbbProduto_AfterUpdate()
         ' Carrega UM e último preço
         oCompraItem.BuscaUltimoUMeUnitario CLng(cbbProduto.List(cbbProduto.ListIndex, 1))
         
-        For n = 0 To cbbUM.ListCount - 1
-            If CLng(cbbUM.List(n, 1)) = oCompraItem.UmID Then
-                cbbUM.ListIndex = n: Exit For
-            End If
-        Next n
+        If oCompraItem.UmID > 0 Then
         
+            For n = 0 To cbbUM.ListCount - 1
+                If CLng(cbbUM.List(n, 1)) = oCompraItem.UmID Then
+                    cbbUM.ListIndex = n: Exit For
+                End If
+            Next n
+            
+        Else
+            
+            cbbUM.ListIndex = -1
+            
+        End If
+            
         txbUnitario.Text = Format(oCompraItem.Unitario, "#,##0.00")
 
     End If
@@ -1109,6 +1117,15 @@ Private Sub cbbUM_AfterUpdate()
         Else
             cbbUM.ListIndex = -1
         End If
+        
+    Else
+    
+        If cbbProduto.ListIndex > -1 Then
+            
+            oProduto.AtualizaUM CLng(cbbProduto.List(cbbProduto.ListIndex, 1)), CLng(cbbUM.List(cbbUM.ListIndex, 1))
+            
+        End If
+        
         
     End If
     

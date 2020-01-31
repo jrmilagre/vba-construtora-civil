@@ -37,13 +37,29 @@ Private Sub btnLocalizar_Click()
 End Sub
 Private Sub btnBackup_Click()
 
-    Dim b As Boolean
-
-    b = m_Database.Backup(txbCaminho.Text & "\" & Format(Now, "yyyymmdd-hhMMss") & ".mdb")
+    On Error GoTo Sair
     
-    If b = True Then
-        Unload Me
-    End If
+    Dim sPath   As String
+    Dim FSO     As Object
+    
+    Set FSO = CreateObject("scripting.filesystemobject")
+    
+    sPath = "C:\Users\" & Environ("username") & "\Dropbox\01 - Meu money\Sistema de construção civil\banco.mdb"
+    
+    FSO.Copyfile Replace(wbCode.Path, "code", "data\banco.mdb"), sPath
+    
+    MsgBox "Backup realizado com sucesso!", vbInformation
+    
+    Unload Me
+    
+    Exit Sub
+
+Sair:
+    
+    MsgBox "Problema no Backup!", vbCritical
+    
+    Exit Sub
+    
 End Sub
 
 Private Sub SelectFolder()

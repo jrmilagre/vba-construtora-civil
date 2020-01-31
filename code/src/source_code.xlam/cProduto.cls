@@ -152,4 +152,14 @@ Public Function Existe(Nome As String) As Boolean
     Set rst = Nothing
         
 End Function
+Public Sub AtualizaUM(ProdutoID As Long, UnidadeID As Long)
 
+    sSQL = "UPDATE tbl_produtos"
+    sSQL = sSQL & " SET "
+    sSQL = sSQL & " um_id = " & UnidadeID
+    sSQL = sSQL & " WHERE"
+    sSQL = sSQL & " id = " & ProdutoID
+    
+    cnn.Execute sSQL
+    
+End Sub

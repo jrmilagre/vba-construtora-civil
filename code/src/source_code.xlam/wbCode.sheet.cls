@@ -1,4 +1,10 @@
 Private Sub Workbook_AfterSave(ByVal Success As Boolean)
-    Call m_GitHub.ExportarCodigo
+    
+    If Environ("username") = "jfonseca" Then
+        
+        m_GitHub.ExportarCodigo
+    
+    End If
+    
 End Sub
 
