@@ -131,7 +131,7 @@ Public Function Recordset() As ADODB.Recordset
         .CursorLocation = adUseServer
         .CursorType = adOpenStatic
         .LockType = adLockReadOnly
-        .PageSize = 3
+        .PageSize = 24
         .Open sSQL, cnn
     End With
     

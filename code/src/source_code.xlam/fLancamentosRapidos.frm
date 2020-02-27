@@ -27,6 +27,7 @@ Private oContaMovimento     As New cContaMovimento
 Private oRequisicao         As New cRequisicao
 Private oRequisicaoItem     As New cRequisicaoItem
 Private oCategoria          As New cCategoria
+Private oCompraItem         As New cCompraItem
 
 Private colControles        As New Collection
 Private myRst               As ADODB.Recordset
@@ -1244,8 +1245,30 @@ Private Sub cbbProduto_AfterUpdate()
         Else
             cbbProduto.ListIndex = -1
         End If
+    Else
+    
+        ' Carrega UM e último preço
+        oCompraItem.BuscaUltimoUMeUnitario CLng(cbbProduto.List(cbbProduto.ListIndex, 1))
+        
+        If oCompraItem.UmID > 0 Then
+        
+            For n = 0 To cbbUM.ListCount - 1
+                If CLng(cbbUM.List(n, 1)) = oCompraItem.UmID Then
+                    cbbUM.ListIndex = n: Exit For
+                End If
+            Next n
+            
+        Else
+            
+            cbbUM.ListIndex = -1
+            
+        End If
+            
+        txbUnitario.Text = Format(oCompraItem.Unitario, "#,##0.00")
 
     End If
+    
+    
 
 End Sub
 Private Sub cbbUM_AfterUpdate()
@@ -1276,6 +1299,13 @@ Private Sub cbbUM_AfterUpdate()
             Next n
         Else
             cbbUM.ListIndex = -1
+        End If
+    Else
+        
+        If cbbProduto.ListIndex > -1 Then
+            
+            oProduto.AtualizaUM CLng(cbbProduto.List(cbbProduto.ListIndex, 1)), CLng(cbbUM.List(cbbUM.ListIndex, 1))
+            
         End If
         
     End If

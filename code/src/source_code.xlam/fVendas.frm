@@ -258,6 +258,9 @@ Private Sub btnTituloConfirmar_Click()
 
     Dim sDecisaoLancamento  As String
     Dim sDecisaoTitulo      As String
+    Dim iParcelas           As Integer '27/02/2020
+    Dim i                   As Integer '27/02/2020
+    Dim d                   As Date '27/02/2020
     
     sDecisaoLancamento = Replace(btnConfirmar.Caption, "Confirmar ", "")
     sDecisaoTitulo = btnTituloConfirmar.Caption
@@ -266,17 +269,55 @@ Private Sub btnTituloConfirmar_Click()
     
         If ValidaTitulo = True Then
             
-            With lstTitulos
-                .ColumnCount = 4
-                .ColumnWidths = "60pt; 65pt; 135pt; 0pt;"
-                .Font = "Consolas"
-                .AddItem
+            If chbGerarParcelas.Value = False Then
+            
+                With lstTitulos
+                    .ColumnCount = 4
+                    .ColumnWidths = "60pt; 65pt; 135pt; 0pt;"
+                    .Font = "Consolas"
+                    .AddItem
+                    
+                    .List(.ListCount - 1, 0) = txbVencimento.Text
+                    .List(.ListCount - 1, 1) = Space(12 - Len(Format(CDbl(txbValor.Text), "#,##0.00"))) & Format(CDbl(txbValor.Text), "#,##0.00")
+                    .List(.ListCount - 1, 2) = txbObservacao.Text
+                    
+                End With
                 
-                .List(.ListCount - 1, 0) = txbVencimento.Text
-                .List(.ListCount - 1, 1) = Space(12 - Len(Format(CDbl(txbValor.Text), "#,##0.00"))) & Format(CDbl(txbValor.Text), "#,##0.00")
-                .List(.ListCount - 1, 2) = txbObservacao.Text
+            Else '27/02/2020
+            
+                If txbNumParcelas.Text = Empty Or CInt(txbNumParcelas.Text) < 1 Then
+                    MsgBox "Número de parcelas inválido", vbInformation
+                Else
                 
-            End With
+                    iParcelas = CInt(txbNumParcelas.Text)
+                    d = txbVencimento.Text
+                    
+                    With lstTitulos
+                        .ColumnCount = 4
+                        .ColumnWidths = "60pt; 65pt; 135pt; 0pt;"
+                        .Font = "Consolas"
+                        
+                        For i = 1 To iParcelas
+                        
+                            .AddItem
+                            
+                            If i = 1 Then
+                                .List(.ListCount - 1, 0) = d
+                            Else
+                                d = DateAdd("D", 30, d)
+                                .List(.ListCount - 1, 0) = d
+                            End If
+                            
+                            .List(.ListCount - 1, 1) = Space(12 - Len(Format(CDbl(txbValor.Text), "#,##0.00"))) & Format(CDbl(txbValor.Text), "#,##0.00")
+                            .List(.ListCount - 1, 2) = txbObservacao.Text & " - " & i & "/" & iParcelas
+                            
+                        Next i
+                        
+                    End With
+                    
+                End If
+                                
+            End If
             
             Call btnTituloCancelar_Click
 
@@ -692,6 +733,8 @@ Private Sub AcaoTitulo(Acao As String, Habilitar As Boolean)
         txbVencimento.Enabled = Habilitar: lblVencimento.Enabled = Habilitar: btnVencimento.Enabled = Habilitar
         txbValor.Enabled = Habilitar: lblValor.Enabled = Habilitar
         txbObservacao.Enabled = Habilitar: lblObservacao.Enabled = Habilitar
+        chbGerarParcelas.Enabled = Habilitar ' 27/02/2020
+        chbGerarParcelas.Value = Not Habilitar '27/02/2020
         
         btnTituloInclui.Visible = Not Habilitar
         btnTituloAltera.Visible = Not Habilitar
@@ -708,6 +751,8 @@ Private Sub AcaoTitulo(Acao As String, Habilitar As Boolean)
         txbVencimento.Enabled = Habilitar: lblVencimento.Enabled = Habilitar: txbVencimento.Text = Empty: btnVencimento.Enabled = Habilitar
         txbValor.Enabled = Habilitar: lblValor.Enabled = Habilitar: txbValor.Text = Empty
         txbObservacao.Enabled = Habilitar: lblObservacao.Enabled = Habilitar: txbObservacao.Text = Empty
+        chbGerarParcelas.Enabled = Habilitar '27/02/2020
+        chbGerarParcelas.Value = Habilitar '27/02/2020
         
         btnTituloInclui.Visible = Not Habilitar
         btnTituloAltera.Visible = Not Habilitar
@@ -717,6 +762,9 @@ Private Sub AcaoTitulo(Acao As String, Habilitar As Boolean)
         lstTitulos.Enabled = Not Habilitar: lstTitulos.ForeColor = &H80000008
         btnConfirmar.Enabled = Not Habilitar
         btnCancelar.Enabled = Not Habilitar
+        
+        txbNumParcelas.Visible = Habilitar: lblNumParcelas.Visible = Habilitar '27/02/2020
+        
     End If
     
 End Sub
@@ -1052,5 +1100,12 @@ Private Sub scrPagina_Change()
         Call lstPrincipalPopular(scrPagina.Value)
         
     End If
+
+End Sub
+Private Sub chbGerarParcelas_Click() '27/02/2020
+
+    lblNumParcelas.Visible = True: lblNumParcelas.Enabled = True
+    txbNumParcelas.Visible = True: txbNumParcelas.Enabled = True
+    txbNumParcelas.Text = 3
 
 End Sub

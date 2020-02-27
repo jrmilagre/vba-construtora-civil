@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} fRequisicoes 
    Caption         =   ":: Cadastro de Requisições ::"
-   ClientHeight    =   9480
+   ClientHeight    =   9840
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   13215
@@ -28,6 +28,7 @@ Private oUM                 As New cUnidadeMedida
 Private colControles        As New Collection
 Private myRst               As ADODB.Recordset
 Private lPagina             As Long
+Private bChangeScrPag       As Boolean
 
 Private Const sTable As String = "tbl_requisicoes"
 Private Const sCampoOrderBy As String = "data"
@@ -38,23 +39,7 @@ Private Sub UserForm_Initialize()
     Call cbbEtapaPopular
     Call EventosCampos
     
-    Set myRst = New ADODB.Recordset
-    Set myRst = oRequisicao.Recordset
-    
-    With scrPagina
-        .Min = IIf(myRst.PageCount = 0, 1, myRst.PageCount)
-        .Max = myRst.PageCount
-    End With
-    
-    lPagina = myRst.PageCount
-    
-    If myRst.PageCount > 0 Then
-        myRst.AbsolutePage = myRst.PageCount
-    End If
-    
-    scrPagina.Value = lPagina
-    
-    Call lstPrincipalPopular(lPagina)
+    Call btnFiltrar_Click
     
     Call btnCancelar_Click
 
@@ -177,6 +162,8 @@ Private Sub lstPrincipalPopular(Pagina As Long)
     Dim lPosicao    As Long
     Dim lCount      As Long
     
+    myRst.AbsolutePage = Pagina
+    
     With lstPrincipal
         .Clear
         .ColumnCount = 2 ' Funcionário, ID, Empresa, Filial
@@ -199,7 +186,13 @@ Private Sub lstPrincipalPopular(Pagina As Long)
 
     End With
    
-    lblPaginaAtual.Caption = "Página " & Format(scrPagina.Value, "#,##0") & " de " & Format(myRst.PageCount, "#,##0")
+    ' Posiciona scroll de navegação em páginas
+    lblPaginaAtual.Caption = Pagina
+    lblNumeroPaginas.Caption = myRst.PageCount
+    bChangeScrPag = False: scrPagina.Value = CLng(lblPaginaAtual.Caption): bChangeScrPag = True
+    
+    ' Trata os botões de navegação
+    Call TrataBotoesNavegacao
 
 End Sub
 Private Sub btnCancelar_Click()
@@ -439,47 +432,119 @@ Private Sub lstCompraItens_Change()
 End Sub
 Private Sub btnRequisitar_Click()
 
-    If ValidaItem = True Then
     
-        Dim cVlrTotal As Currency
+
+    If chbRequisitaVarios.Value = False Then
     
-        With lstRequisicoes
-            .ColumnCount = 9
-            .ColumnWidths = "0pt; 85pt; 55pt; 55pt; 55pt; 240pt; 0pt; 60pt; 0pt;"
-            ' Colunas
-            ' 0 - Recno do item da compra
-            ' 1 - Descrição do item
-            ' 2 - Quantidade do item
-            ' 3 - Preço unitário do item
-            ' 4 - Preço total do item
-            ' 5 - Descrição da obra
-            ' 6 - Código da obra
-            ' 7 - Descrição da etapa da obra
-            ' 8 - Código da etapa da obra
-            
-            .Font = "Consolas"
-            
-            
-            oCompraItem.Carrega CLng(lstCompraItens.List(lstCompraItens.ListIndex, 7))
+        If ValidaItem = True Then
         
-            .AddItem
-            .List(.ListCount - 1, 0) = oCompraItem.Recno
-            .List(.ListCount - 1, 1) = lblItemProduto.Caption
-            .List(.ListCount - 1, 2) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
-            .List(.ListCount - 1, 3) = Space(9 - Len(Format(CCur(lblItemUnitario.Caption), "#,##0.00"))) & Format(CCur(lblItemUnitario.Caption), "#,##0.00")
-            
-            cVlrTotal = CCur(txbQtde.Text) * CCur(lblItemUnitario.Caption)
-            
-            .List(.ListCount - 1, 4) = Space(9 - Len(Format(cVlrTotal, "#,##0.00"))) & Format(cVlrTotal, "#,##0.00")
-            .List(.ListCount - 1, 5) = cbbObra.List(cbbObra.ListIndex, 0)
-            .List(.ListCount - 1, 6) = cbbObra.List(cbbObra.ListIndex, 1)
-            .List(.ListCount - 1, 7) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
-            .List(.ListCount - 1, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 1)
-            
-        End With
+            Dim cVlrTotal As Currency
         
-        Call AtualizaColunaRequisitado(CDbl(txbQtde.Text), lstCompraItens.ListIndex)
-   
+            With lstRequisicoes
+                .ColumnCount = 9
+                .ColumnWidths = "0pt; 85pt; 55pt; 55pt; 55pt; 240pt; 0pt; 60pt; 0pt;"
+                ' Colunas
+                ' 0 - Recno do item da compra
+                ' 1 - Descrição do item
+                ' 2 - Quantidade do item
+                ' 3 - Preço unitário do item
+                ' 4 - Preço total do item
+                ' 5 - Descrição da obra
+                ' 6 - Código da obra
+                ' 7 - Descrição da etapa da obra
+                ' 8 - Código da etapa da obra
+                
+                .Font = "Consolas"
+                
+                
+                oCompraItem.Carrega CLng(lstCompraItens.List(lstCompraItens.ListIndex, 7))
+            
+                .AddItem
+                .List(.ListCount - 1, 0) = oCompraItem.Recno
+                .List(.ListCount - 1, 1) = lblItemProduto.Caption
+                .List(.ListCount - 1, 2) = Space(9 - Len(Format(CDbl(txbQtde.Text), "#,##0.00"))) & Format(CDbl(txbQtde.Text), "#,##0.00")
+                .List(.ListCount - 1, 3) = Space(9 - Len(Format(CCur(lblItemUnitario.Caption), "#,##0.00"))) & Format(CCur(lblItemUnitario.Caption), "#,##0.00")
+                
+                cVlrTotal = CCur(txbQtde.Text) * CCur(lblItemUnitario.Caption)
+                
+                .List(.ListCount - 1, 4) = Space(9 - Len(Format(cVlrTotal, "#,##0.00"))) & Format(cVlrTotal, "#,##0.00")
+                .List(.ListCount - 1, 5) = cbbObra.List(cbbObra.ListIndex, 0)
+                .List(.ListCount - 1, 6) = cbbObra.List(cbbObra.ListIndex, 1)
+                .List(.ListCount - 1, 7) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
+                .List(.ListCount - 1, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 1)
+                
+            End With
+            
+            Call AtualizaColunaRequisitado(CDbl(txbQtde.Text), lstCompraItens.ListIndex)
+        
+        End If
+    Else
+    
+        Dim i As Integer
+        Dim q As Double
+        
+        If cbbObra.ListIndex = -1 Then
+            MsgBox "Campo 'Obra' é obrigatório", vbCritical
+            MultiPage1.Value = 2: cbbObra.SetFocus
+        ElseIf cbbEtapa.ListIndex = -1 Then
+            MsgBox "Campo 'Etapa' é obrigatório", vbCritical
+            MultiPage1.Value = 2: cbbEtapa.SetFocus
+        Else
+            
+            For i = 0 To lstCompraItens.ListCount - 1
+                
+                If lstCompraItens.Selected(i) = True Then
+        
+                    With lstRequisicoes
+                        .ColumnCount = 9
+                        .ColumnWidths = "0pt; 85pt; 55pt; 55pt; 55pt; 240pt; 0pt; 60pt; 0pt;"
+                        ' Colunas
+                        ' 0 - Recno do item da compra
+                        ' 1 - Descrição do item
+                        ' 2 - Quantidade do item
+                        ' 3 - Preço unitário do item
+                        ' 4 - Preço total do item
+                        ' 5 - Descrição da obra
+                        ' 6 - Código da obra
+                        ' 7 - Descrição da etapa da obra
+                        ' 8 - Código da etapa da obra
+                        
+                        .Font = "Consolas"
+                        
+                        
+                        oCompraItem.Carrega CLng(lstCompraItens.List(i, 7))
+                    
+                        .AddItem
+                        .List(.ListCount - 1, 0) = oCompraItem.Recno
+                        .List(.ListCount - 1, 1) = lstCompraItens.List(i, 3)
+                        
+                        q = CDbl(lstCompraItens.List(i, 4)) - CDbl(lstCompraItens.List(i, 8))
+                        
+                        .List(.ListCount - 1, 2) = Space(9 - Len(Format(q, "#,##0.00"))) & Format(q, "#,##0.00")
+                        .List(.ListCount - 1, 3) = Space(9 - Len(Format(CCur(lstCompraItens.List(i, 5)), "#,##0.00"))) & Format(CCur(lstCompraItens.List(i, 5)), "#,##0.00")
+                        
+                        
+                        
+                        cVlrTotal = CDbl(q) * CCur(lstCompraItens.List(i, 5))
+                        
+                        .List(.ListCount - 1, 4) = Space(9 - Len(Format(cVlrTotal, "#,##0.00"))) & Format(cVlrTotal, "#,##0.00")
+                        .List(.ListCount - 1, 5) = cbbObra.List(cbbObra.ListIndex, 0)
+                        .List(.ListCount - 1, 6) = cbbObra.List(cbbObra.ListIndex, 1)
+                        .List(.ListCount - 1, 7) = cbbEtapa.List(cbbEtapa.ListIndex, 0)
+                        .List(.ListCount - 1, 8) = cbbEtapa.List(cbbEtapa.ListIndex, 1)
+                        
+                    End With
+                    
+                    Call AtualizaColunaRequisitado(q, i)
+                
+                End If
+                
+            Next i
+            
+            chbRequisitaVarios.Value = False
+            
+        End If
+        
     End If
 
 End Sub
@@ -520,9 +585,12 @@ Private Sub AtualizaColunaRequisitado(Quantidade As Double, Indice As Integer)
     txbQtde.Text = Format(0, "#,##0.00")
     lblItemUnitario.Caption = Format(0, "#,##0.00")
     lblItemTotal.Caption = Format(0, "#,##0.00")
-    cbbObra.ListIndex = -1
-    cbbEtapa.ListIndex = -1
-    lstCompraItens.ListIndex = -1
+    
+    If chbRequisitaVarios.Value = False Then
+        cbbObra.ListIndex = -1
+        cbbEtapa.ListIndex = -1
+        lstCompraItens.ListIndex = -1
+    End If
     
     txbQtde.Enabled = False: lblQtde.Enabled = False
     cbbObra.Enabled = False: lblObra.Enabled = False
@@ -818,6 +886,163 @@ Private Sub cbbEtapa_AfterUpdate()
             cbbEtapa.ListIndex = -1
         End If
 
+    End If
+
+End Sub
+Private Sub btnData_Click()
+    dtDate = IIf(txbData.Text = Empty, Date, txbData.Text)
+    txbData.Text = GetCalendario
+End Sub
+Private Sub chbRequisitaVarios_Click()
+
+    If chbRequisitaVarios.Value = True Then
+        lstCompraItens.MultiSelect = fmMultiSelectMulti
+        
+        lblProduto.Visible = False: lblItemProduto.Visible = False
+        lblQtde.Visible = False: txbQtde.Visible = False
+        lblUnitario.Visible = False: lblItemUnitario.Visible = False
+        lblTotal.Visible = False: lblItemTotal.Visible = False
+    Else
+        lstCompraItens.MultiSelect = fmMultiSelectSingle
+
+        lblProduto.Visible = True: lblItemProduto.Visible = True
+        lblQtde.Visible = True: txbQtde.Visible = True
+        lblUnitario.Visible = True: lblItemUnitario.Visible = True
+        lblTotal.Visible = True: lblItemTotal.Visible = True
+    End If
+
+End Sub
+Private Sub btnPaginaInicial_Click()
+    
+    Call lstPrincipalPopular(1)
+    
+End Sub
+Private Sub btnPaginaAnterior_Click()
+
+    Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) - 1)
+    
+End Sub
+Private Sub btnPaginaSeguinte_Click()
+
+    Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) + 1)
+
+End Sub
+Private Sub btnPaginaFinal_Click()
+
+    Call lstPrincipalPopular(myRst.PageCount)
+    
+End Sub
+Private Sub btnRegistroAnterior_Click()
+
+        If lstPrincipal.ListIndex > 0 Then
+        
+            lstPrincipal.ListIndex = lstPrincipal.ListIndex - 1
+            
+        ElseIf lstPrincipal.ListIndex = 0 And CLng(lblPaginaAtual.Caption) > 1 Then
+            
+            Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) - 1)
+            
+            lstPrincipal.ListIndex = myRst.PageSize - 1
+            
+        ElseIf CLng(lblPaginaAtual.Caption) = 1 And lstPrincipal.ListIndex = 0 Then
+        
+            MsgBox "Primeiro registro"
+            Exit Sub
+            
+        Else
+        
+            lstPrincipal.ListIndex = -1
+            
+        End If
+        
+End Sub
+Private Sub btnRegistroSeguinte_Click()
+
+    If lstPrincipal.ListIndex = -1 Then
+        
+        lstPrincipal.ListIndex = 0
+    
+    ElseIf lstPrincipal.ListIndex = myRst.PageSize - 1 And CLng(lblPaginaAtual.Caption) < myRst.PageCount Then
+        
+        Call lstPrincipalPopular(CLng(lblPaginaAtual.Caption) + 1)
+        
+        lstPrincipal.ListIndex = 0
+        
+    ElseIf CLng(lblPaginaAtual.Caption) = myRst.PageCount And (lstPrincipal.ListIndex + 1) = lstPrincipal.ListCount Then
+    
+        MsgBox "Último registro"
+        Exit Sub
+        
+    Else
+    
+        lstPrincipal.ListIndex = lstPrincipal.ListIndex + 1
+    
+    End If
+    
+End Sub
+Private Sub scrPagina_Change()
+
+    If bChangeScrPag = True Then
+        
+        Call lstPrincipalPopular(scrPagina.Value)
+        
+    End If
+
+End Sub
+Private Sub btnFiltrar_Click()
+
+    Set myRst = New ADODB.Recordset
+    Set myRst = oRequisicao.Recordset
+    
+    If myRst.PageCount > 0 Then
+    
+        myRst.AbsolutePage = myRst.PageCount
+        
+        bChangeScrPag = False
+        
+        With scrPagina
+            .Max = myRst.PageCount
+            .Value = myRst.PageCount
+        End With
+        
+        Call lstPrincipalPopular(myRst.PageCount)
+    Else
+    
+        lstPrincipal.Clear
+        
+    End If
+
+End Sub
+Private Sub TrataBotoesNavegacao()
+
+    If CLng(lblPaginaAtual.Caption) = myRst.PageCount And CLng(lblPaginaAtual.Caption) > 1 Then
+    
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaFinal.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+        
+    ElseIf CLng(lblPaginaAtual.Caption) < myRst.PageCount And CLng(lblPaginaAtual.Caption) = 1 Then
+    
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaFinal.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        
+    ElseIf CLng(lblPaginaAtual.Caption) = myRst.PageCount And CLng(lblPaginaAtual.Caption) = 1 Then
+    
+        btnPaginaInicial.Enabled = False
+        btnPaginaAnterior.Enabled = False
+        btnPaginaFinal.Enabled = False
+        btnPaginaSeguinte.Enabled = False
+    
+    Else
+    
+        btnPaginaInicial.Enabled = True
+        btnPaginaAnterior.Enabled = True
+        btnPaginaFinal.Enabled = True
+        btnPaginaSeguinte.Enabled = True
+        
     End If
 
 End Sub
